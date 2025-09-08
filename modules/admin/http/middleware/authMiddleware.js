@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { sendUnauthorizedError } = require('../utils/responseHandler');
+const { sendUnauthorizedError } = require('../traits/responseHandler');
 
 module.exports = (roles = []) => {
   return async (req, res, next) => {

@@ -10,7 +10,6 @@ const cors = require("cors");
 const expressListEndpoints = require("express-list-endpoints");
 const cookieParser = require("cookie-parser");
 const { createAdminUser } = require("./database/seeders/adminUser");
-const { createSiteSettings } = require("./database/seeders/siteSettings");
 const { policyData } = require("./database/seeders/policy");
 const { seedMetaTags } = require("./database/seeders/metaTags");
 const { createClient } = require("redis");
@@ -66,7 +65,6 @@ const startServer = async () => {
     Logger.info("✅ Database connected and synced");
 
     await createAdminUser();
-    await createSiteSettings();
     await policyData();
     await seedMetaTags();
 

@@ -8,6 +8,6 @@ router.post('/register', Controller.register);
 router.post('/login', Controller.login);
 
 router.use(authMiddleware(['admin']));
-router.post('/logout', Controller.logout);
+// router.post('/logout', Controller.logout);
 
 module.exports = router;

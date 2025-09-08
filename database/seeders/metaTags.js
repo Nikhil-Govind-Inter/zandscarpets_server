@@ -13,41 +13,7 @@ const defaultMetaTags = [
         meta_keywords: "healthcare staffing, nursing jobs, healthcare professionals",
         canonical_url: "/",
     },
-    {
-        page: "health-care-professional-landing",
-        meta_title: "Healthcare Professionals | Join Xpress Health",
-        meta_description: "Discover flexible opportunities for nurses, doctors, and allied health professionals.",
-        meta_keywords: "nursing jobs, healthcare jobs, flexible shifts",
-        canonical_url: "/health-care-professional-landing",
-    },
-    {
-        page: "app-features-professional",
-        meta_title: "App Features for Professionals | Xpress Health",
-        meta_description: "Manage shifts, track payments, and explore opportunities with our professional app.",
-        meta_keywords: "healthcare app, nursing app, job management",
-        canonical_url: "/app-features-professional",
-    },
-    {
-        page: "app-features-providers",
-        meta_title: "App Features for Providers | Xpress Health",
-        meta_description: "Hire qualified professionals, manage schedules, and streamline operations with our provider app.",
-        meta_keywords: "healthcare provider app, hire nurses, hospital staffing",
-        canonical_url: "/app-features-providers",
-    },
-    {
-        page: "pharmacy-landing",
-        meta_title: "Pharmacy Solutions | Xpress Health",
-        meta_description: "Connect pharmacies with qualified staff and discover digital solutions for pharmacy management.",
-        meta_keywords: "pharmacy staffing, pharmacy jobs, healthcare pharmacy",
-        canonical_url: "/pharmacy-landing",
-    },
-    {
-        page: "power-of-ai",
-        meta_title: "The Power of AI in Healthcare | Xpress Health",
-        meta_description: "Learn how AI is transforming healthcare staffing and workforce management.",
-        meta_keywords: "AI healthcare, healthcare technology, AI staffing",
-        canonical_url: "/power-of-ai",
-    },
+    
     {
         page: "about",
         meta_title: "About Us | Xpress Health",
@@ -82,34 +48,6 @@ const defaultMetaTags = [
         meta_description: "Understand how Xpress Health collects, uses, and protects your personal data.",
         meta_keywords: "privacy policy, data protection, user privacy",
         canonical_url: "/privacy-policy",
-    },
-    {
-        page: "cookie-policy",
-        meta_title: "Cookie Policy | Xpress Health",
-        meta_description: "Learn about the cookies we use to improve your browsing experience.",
-        meta_keywords: "cookie policy, website cookies, browsing privacy",
-        canonical_url: "/cookie-policy",
-    },
-    {
-        page: "professional-faq",
-        meta_title: "FAQs for Healthcare Professionals | Xpress Health",
-        meta_description: "Find answers to frequently asked questions by healthcare professionals.",
-        meta_keywords: "healthcare FAQ, nursing FAQ, professional support",
-        canonical_url: "/professional-faq",
-    },
-    {
-        page: "provider-faq",
-        meta_title: "FAQs for Healthcare Providers | Xpress Health",
-        meta_description: "Answers to common questions asked by hospitals and healthcare providers.",
-        meta_keywords: "provider FAQ, hospital FAQ, staffing FAQ",
-        canonical_url: "/provider-faq",
-    },
-    {
-        page: "refer-a-friend",
-        meta_title: "Refer a Friend | Xpress Health",
-        meta_description: "Refer your colleagues and friends to Xpress Health and earn rewards.",
-        meta_keywords: "refer a friend, healthcare referral, referral program",
-        canonical_url: "/refer-a-friend",
     },
 ];
 
