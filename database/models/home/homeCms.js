@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-        milestone_description: {
+      milestone_description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -23,14 +23,14 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       make_ride_media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        allowNull: true,
+      },
+      make_ride_media_desktop_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      make_ride_desktop_media: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      make_ride_mobile_media: {
+      make_ride_media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -57,73 +57,58 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-     app_feature_sub_title: {
+      app_feature_sub_title: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      apple_store_image: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      apple_store_image_alt: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      play_store_image: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      play_store_img_alt: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
+      
       app_feature_media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        allowNull: true,
+      },
+      app_feature_media_desktop_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      app_feature_desktop_media: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      app_feature_mobile_media: {
+      app_feature_media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
       app_feature_media_alt: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-      
-       investment_title: {
-        type: DataTypes.STRING,
+
+      investment_title: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-       investment_media_type: {
-        type: DataTypes.STRING,
+      investment_media_type: {
+        type: DataTypes.ENUM("image", "video"),
         allowNull: true,
       },
-       investment_desktop_media: {
-        type: DataTypes.STRING,
+      investment_media_desktop_path: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-       investment_mobile_media: {
-        type: DataTypes.STRING,
+      investment_media_mobile_path: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-       investment_media_alt: {
-        type: DataTypes.STRING,
+      investment_media_alt: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-         partners_title: {
-        type: DataTypes.STRING,
+      partners_title: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-         news_title: {
-        type: DataTypes.STRING,
+      news_title: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-       blog_title: {
-        type: DataTypes.STRING,
+      blog_title: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
 

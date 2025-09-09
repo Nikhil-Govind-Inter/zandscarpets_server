@@ -60,9 +60,9 @@ const seedMetaTags = async () => {
             });
 
             if (created) {
-                console.log(`✅ Created meta tags for page: ${tagData.page}`);
+                // console.log(`✅ Created meta tags for page: ${tagData.page}`);
             } else {
-                console.log(`ℹ️ Meta tags for page "${tagData.page}" already exist. Skipping.`);
+                // console.log(`ℹ️ Meta tags for page "${tagData.page}" already exist. Skipping.`);
             }
         }
     } catch (error) {

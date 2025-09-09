@@ -9,7 +9,6 @@ const createAdminUser = async () => {
     });
 
     if (existingAdmin) {
-      console.log("✅ Admin user already exists");
       return;
     }
 

@@ -17,11 +17,19 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      card_title: {
+      button_text_one: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      button_text_one_link: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      card_description: {
+      button_text_two: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      button_text_two_link: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -29,28 +37,16 @@ module.exports = (sequelize) => {
         type: DataTypes.ENUM("image", "video"),
         allowNull: true,
       },
-      media_path: {
+      media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
       media_alt: {
         type: DataTypes.STRING,
-        allowNull: true,
-      },
-      btn_one_text: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      btn_one_link: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      btn_two_text: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      btn_two_link: {
-        type: DataTypes.TEXT,
         allowNull: true,
       },
       status: {

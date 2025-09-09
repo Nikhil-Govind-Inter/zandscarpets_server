@@ -27,9 +27,9 @@ const policyData = async () => {
       });
 
       if (created) {
-        console.log(`✅ Created policy record for: ${policy.slug}`);
+        // console.log(`✅ Created policy record for: ${policy.slug}`);
       } else {
-        console.log(`ℹ️ Policy record for "${policy.slug}" already exists. Skipping.`);
+        // console.log(`ℹ️ Policy record for "${policy.slug}" already exists. Skipping.`);
       }
     }
   } catch (error) {
