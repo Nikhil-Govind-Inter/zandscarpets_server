@@ -21,6 +21,14 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      button_text: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      button_text_link: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

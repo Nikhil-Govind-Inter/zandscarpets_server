@@ -22,10 +22,21 @@ const validationRequestPost = [
     .isLength({ max: 10000 })
     .withMessage("Description must not exceed 10,000 characters"),
 
+  // Button 1
+  body("button_text")
+    .isString()
+    .withMessage("Button text must be a valid string")
+    .isLength({ max: 255 })
+    .withMessage("Button text must not exceed 255 characters"),
+
+  body("button_text_link")
+    .isString()
+    .withMessage("Button link must be a valid string")
+    .isLength({ max: 255 })
+    .withMessage("Button link must not exceed 255 characters"),
+
   // Status
-  body("status")
-    .isBoolean()
-    .withMessage("Status must be true or false"),
+  body("status").isBoolean().withMessage("Status must be true or false"),
 
   // Sort Order
   body("sort_order")
