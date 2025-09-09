@@ -13,6 +13,12 @@ const defineHomeExploreOurExpertise = require("./home/homeExploreOurExpertise");
 const defineHomeAppFeatures = require("./home/homeAppFeatures");
 const defineHomeInvestment = require("./home/homeInvestment");
 
+// ABOUT PAGE
+const defineAboutOurValues = require("./about/aboutOurValues");
+const defineAboutOurJourney = require("./about/aboutOurJourney");
+const defineAboutMedia = require("./about/aboutMedia");
+
+
 const models = {
   AdminUser: defineAdminUser(sequelize),
   MetaTags: defineMetaTags(sequelize),
@@ -27,8 +33,13 @@ const models = {
   HomeAppFeatures: defineHomeAppFeatures(sequelize),
   HomeInvestment: defineHomeInvestment(sequelize),
 
+  // ABOUT PAGE
+  AboutOurValues: defineAboutOurValues(sequelize),
+  AboutOurJourney: defineAboutOurJourney(sequelize),
+  AboutMedia: defineAboutMedia(sequelize),
 
 
+  
 };
 
 Object.keys(models).forEach((modelName) => {
