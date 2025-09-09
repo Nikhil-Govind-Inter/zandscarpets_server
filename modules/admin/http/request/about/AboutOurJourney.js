@@ -1,7 +1,7 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  // year
+  // Year
   body("year")
     .isInt()
     .withMessage("Year must be a valid integer")
@@ -14,6 +14,13 @@ const validationRequestPost = [
     .withMessage("Title must be a valid string")
     .isLength({ max: 255 })
     .withMessage("Title must not exceed 255 characters"),
+
+  // Description
+  body("description")
+    .isString()
+    .withMessage("Description must be a valid string")
+    .isLength({ max: 10000 })
+    .withMessage("Description must not exceed 10,000 characters"),
 
   // Media
   body("media_path")

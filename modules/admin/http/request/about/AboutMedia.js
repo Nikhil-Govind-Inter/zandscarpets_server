@@ -1,30 +1,30 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  // year
-  body("year")
-    .isInt()
-    .withMessage("Year must be a valid integer")
-    .matches(/^\d{4}$/)
-    .withMessage("Year must be a 4-digit number"),
+  // Thumbnail
+  body("thumbnail").isString().withMessage("Thumbnail must be a valid string"),
 
-  // Title
-  body("title")
+  body("thumbnail_alt")
     .isString()
-    .withMessage("Title must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Title must not exceed 255 characters"),
+    .withMessage("Thumbnail alt text must not exceed 255 characters"),
 
-  // Media
-  body("media_path")
+  // Media Type
+  body("media_type")
+    .isIn(["image", "video"])
+    .withMessage("Media type must be either 'image' or 'video'"),
+
+  // Media Paths
+  body("media_desktop_path")
     .isString()
-    .withMessage("Media path must be a valid string")
-    .isLength({ max: 255 })
-    .withMessage("Media path must not exceed 255 characters"),
+    .withMessage("Media desktop path must be a valid string"),
+
+  body("media_mobile_path")
+    .isString()
+    .withMessage("Media mobile path must be a valid string"),
 
   body("media_alt")
     .isString()
-    .withMessage("Media alt text must be a valid string")
     .isLength({ max: 255 })
     .withMessage("Media alt text must not exceed 255 characters"),
 
