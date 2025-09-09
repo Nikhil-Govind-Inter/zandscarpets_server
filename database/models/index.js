@@ -18,6 +18,12 @@ const defineAboutOurValues = require("./about/aboutOurValues");
 const defineAboutOurJourney = require("./about/aboutOurJourney");
 const defineAboutMedia = require("./about/aboutMedia");
 
+// INVESTMENT PAGE
+const defineInvestmentBusinessModels = require("./investments/investmentBusinessModels");
+const defineInvestmentValues = require("./investments/investmentValues");
+const defineInvestmentCards = require("./investments/investmentCards");
+const defineInvestmentTestimonials = require("./investments/investmentTestimonials");
+
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
@@ -37,9 +43,15 @@ const models = {
   AboutOurValues: defineAboutOurValues(sequelize),
   AboutOurJourney: defineAboutOurJourney(sequelize),
   AboutMedia: defineAboutMedia(sequelize),
-
-
   
+  
+  // INVESTMENT PAGE
+  InvestmentBusinessModels: defineInvestmentBusinessModels(sequelize),
+  InvestmentValues: defineInvestmentValues(sequelize),
+  InvestmentCards: defineInvestmentCards(sequelize),
+  InvestmentTestimonials: defineInvestmentTestimonials(sequelize),
+
+
 };
 
 Object.keys(models).forEach((modelName) => {

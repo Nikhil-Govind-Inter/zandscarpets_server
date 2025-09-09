@@ -1,35 +1,23 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const AboutMedia = sequelize.define(
-    "AboutMedia",
+  const InvestmentCards = sequelize.define(
+    "InvestmentCards",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      thumbnail: {
+      icon: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      thumbnail_alt: {
+      icon_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      media_type: {
-        type: DataTypes.ENUM("image", "video"),
-        allowNull: true,
-      },
-      media_desktop_path: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      media_mobile_path: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      media_alt: {
+      description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -46,10 +34,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "about_media",
+      tableName: "investment_cards",
       timestamps: true,
     }
   );
 
-  return AboutMedia;
+  return InvestmentCards;
 };
