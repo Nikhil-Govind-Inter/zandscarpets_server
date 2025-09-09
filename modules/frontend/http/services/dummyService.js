@@ -1,27 +1,47 @@
-const { models, sequelize } = require("../../models");
+const { models } = require("../../../../database/models");
 
-
-
-class dummyService {
+class HomeService {
 
    
 
     static async index() {
     try {
-        const data = {
-            id: 1,
-            page: "Home Page",
-            status: "active",
-        };
+      const [
+        cmsData = {},
+        homeBanner = [],
+      ] = await Promise.all([
+        models.HomeCms.findOne(),
+        models.HomeBanner.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+      ]);
 
-        return data;
+      const aboutData = {
+        home_banner: this.buildBannerSection(cmsData, homeBanner),
+      };
+
+      return aboutData;
     } catch (error) {
-        throw new Error(`Error fetching data: ${error.message}`);
+      throw new Error(`Error fetching power of ai page data: ${error.message}`);
     }
-}
+  }
+
+
+ 
+
+  static buildBannerSection(cmsData, homeBanner) {
+    return {
+      milestone_description: cmsData?.milestone_description ?? '',
+      list: homeBanner.map((item) => ({
+        title: item?.title ?? '',
+        description: item?.description ?? '',
+      })) || [],
+    };
+  }
 
 
     
 }
 
-module.exports = dummyService;
+module.exports = HomeService;

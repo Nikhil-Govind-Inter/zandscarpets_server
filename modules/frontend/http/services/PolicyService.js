@@ -1,6 +1,6 @@
 const { models } = require("../../../../database/models");
 
-class HomeService {
+class PolicyService {
   static async index() {
     try {
       const [cmsData = {}, homeBanners = []] = await Promise.all([
@@ -105,4 +105,4 @@ class HomeService {
   }
 }
 
-module.exports = HomeService;
+module.exports = PolicyService;

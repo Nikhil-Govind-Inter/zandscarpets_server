@@ -17,7 +17,7 @@ class HomeBannerController {
             });
 
             const response = {
-                data: result.data,
+                list: result.data,
                 pagination: result.pagination
             };
 
