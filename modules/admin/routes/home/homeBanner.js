@@ -14,10 +14,8 @@ const fields = [
 // Create upload middleware with fields
 const upload = createUploadMiddleware("home-banner", fields);
 
-// router.get("/", Controller.index);
-router.get("/", (req, res) => {
-  res.json({ message: "Home CMS works" });
-});
+router.get("/", Controller.index);
+
 
 router.get("/:id", Controller.show);
 
