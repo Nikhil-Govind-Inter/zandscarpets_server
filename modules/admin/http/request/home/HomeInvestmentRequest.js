@@ -8,20 +8,19 @@ const validationRequestPost = [
     .isLength({ max: 255 })
     .withMessage("Title must not exceed 255 characters"),
 
-  // Icon
-  body("icon")
-    .optional()
+  // Subtitle
+  body("subtitle")
     .isString()
-    .withMessage("Icon must be a valid string")
+    .withMessage("Subtitle must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Icon must not exceed 255 characters"),
+    .withMessage("Subtitle must not exceed 255 characters"),
 
-  // Icon Alt Text
-  body("icon_alt")
+  // Description
+  body("description")
     .isString()
-    .withMessage("Icon Alt must be a valid string")
-    .isLength({ max: 255 })
-    .withMessage("Icon Alt must not exceed 255 characters"),
+    .withMessage("Description must be a valid string")
+    .isLength({ max: 10000 })
+    .withMessage("Description must not exceed 10,000 characters"),
 
   // Status
   body("status")

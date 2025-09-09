@@ -1,61 +1,55 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  // Title & Description
+  // Title
   body("title")
-    .optional()
     .isString()
+    .withMessage("Title must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Title must be a string with max 255 characters"),
+    .withMessage("Title must not exceed 255 characters"),
 
+  // Description
   body("description")
-    .optional()
     .isString()
+    .withMessage("Description must be a valid string")
     .isLength({ max: 10000 })
-    .withMessage("Description must be a string with max 10000 characters"),
+    .withMessage("Description must not exceed 10,000 characters"),
 
   // Button 1
   body("button_text")
-    .optional()
     .isString()
+    .withMessage("Button text must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Button text must be at most 255 characters"),
+    .withMessage("Button text must not exceed 255 characters"),
 
   body("button_text_link")
-    .optional()
     .isString()
+    .withMessage("Button link must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Button link must be a valid string"),
+    .withMessage("Button link must not exceed 255 characters"),
 
   // Media
-  body("media_path")
-    .optional()
-    .isString()
-    .isLength({ max: 255 }),
-
-
+  body("media_path").optional().isLength({ max: 255 }),
   body("media_alt")
-    .optional()
     .isString()
-    .isLength({ max: 255 }),
+    .withMessage("Media alt text must be a valid string")
+    .isLength({ max: 255 })
+    .withMessage("Media alt text must not exceed 255 characters"),
 
-  // Status & Sort Order
-  body("status")
-    .optional()
-    .isBoolean()
-    .withMessage("Status must be a boolean value"),
+  // Status
+  body("status").isBoolean().withMessage("Status must be true or false"),
 
+  // Sort Order
   body("sort_order")
-    .optional()
     .isInt({ min: 0 })
-    .withMessage("Sort order must be a non-negative integer"),
+    .withMessage("Sort order must be an integer greater than or equal to 0"),
 ];
 
 // ID parameter validation
 const validateId = [
   param("id")
     .isInt({ min: 1 })
-    .withMessage("ID must be a positive integer"),
+    .withMessage("ID must be an integer greater than 0"),
 ];
 
 module.exports = {

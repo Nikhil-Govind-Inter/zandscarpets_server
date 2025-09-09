@@ -1,14 +1,14 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/home/HomeExploreOurExpertiseRequest");
+const { validationRequestPost, validateId } = require("../../request/home/HomeInvestmentRequest");
 const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
 const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 
 const DataModel = models.HomeInvestment;
 
-class HomeBannerController {
+class HomeInvestmentController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -144,4 +144,4 @@ class HomeBannerController {
 
 }
 
-module.exports = HomeBannerController;
+module.exports = HomeInvestmentController;
