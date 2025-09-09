@@ -2,8 +2,8 @@
 const { ApiResponse } = require("../traits/response");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../traits/constants");
 const { ErrorHandler } = require("../traits/errorHandler");
-const service = require("../services/HomeService");
-class HomeController {
+const service = require("../services/NewsService");
+class NewsContoller {
 
     static async index(req, res) {
         try {
@@ -19,4 +19,4 @@ class HomeController {
     }
 }
 
-module.exports = HomeController;
+module.exports = NewsContoller;
