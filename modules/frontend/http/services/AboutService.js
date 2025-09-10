@@ -1,30 +1,51 @@
 const { models } = require("../../../../database/models");
+const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
 
 class AboutService {
   static async index() {
     try {
       const [
-        cmsData = {}, 
-        homeBanners = []
+        cmsData = {},
+        partners = [],
+        aboutOurValues = [],
+        aboutOurJourney = [],
+        associates = [],
+        aboutMedia = [],
       ] = await Promise.all([
-        models..findOne(),
-        models.HomeBanner.findAll({
+        models.AboutCms.findOne(),
+        models.Partner.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.AboutOurValues.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.AboutOurJourney.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.Associates.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.AboutMedia.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
       ]);
 
       const data = {
-        banner_section: this.buildBannerSection(cmsData, homeBanners),
-        section_two: this.buildSectionTwo(cmsData, homeBanners),
-        learn_more_section: this.buildLearnMoreSection(cmsData, homeBanners),
-        mission_vision_section: this.buildMissionVisionSection(cmsData, homeBanners),
-        our_values_section: this.buildOurValuesSection(cmsData, homeBanners),
-        our_journey_section: this.buildOurJourneySection(cmsData, homeBanners),
+        banner_section: this.buildBannerSection(cmsData),
+        about_section: this.buildAboutSection(cmsData),
+        learn_more_section: this.buildLearnMoreSection(cmsData),
+        mission_vision_section: this.buildMissionVisionSection(cmsData, partners),
+        our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
+        our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
         meet_team_section: this.buildMeetTeamSection(cmsData, homeBanners),
-        our_associates_section: this.buildOurAssociatesSection(cmsData, homeBanners),
-        media_recognition_section: this.buildMediaRecognitionSection(cmsData, homeBanners),
-        partner_section: this.buildPartnerSection(cmsData, homeBanners),
+        our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
+        media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
+        partner_section: this.buildPartnerSection(cmsData),
       };
 
       return data;
@@ -33,80 +54,143 @@ class AboutService {
     }
   }
 
-  static buildBannerSection(cmsData, homeBanners) {
+  static buildBannerSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
+      title: cmsData?.banner_title ?? "",
+      media: mediaWithoutType(
+        cmsData,
+        "banner_media_desktop_path",
+        "banner_media_mobile_path",
+        "banner_media_alt"
+      ),
+
+    };
+  }
+
+  static buildAboutSection(cmsData) {
+    return {
+      description: cmsData?.about_description ?? "",
+      media: mediaWithType(
+        item,
+        "about_media_type",
+        "about_media_desktop_path",
+        "about_media_mobile_path",
+        "about_media_alt"
+      ),
+    };
+  }
+
+  static buildLearnMoreSection(cmsData) {
+    return {
+      title: cmsData?.learn_more_title ?? "",
+      description: cmsData?.learn_more_description ?? "",
+      media: singleMediaWithoutType(
+        cmsData,
+        "learn_more_media_path",
+        "learn_more_media_alt",
+      ),
+    };
+  }
+
+  static buildMissionVisionSection(cmsData, partners) {
+    return {
+      partners_count: cmsData.partners_count || "100+ partners",
+      partners_list: partners.map((item) => ({
+        name: item?.name ?? "",
+        media: singleMediaWithoutType(item, "media_path", "media_alt"),
+      })),
+
+      mission: {
+        title: cmsData?.our_mission_title ?? "",
+        description: cmsData?.our_mission_description ?? "",
+      },
+      vision: {
+        title: cmsData?.our_vision_title ?? "",
+        description: cmsData?.our_vision_description ?? "",
+      },
+      leading_the_game: {
+        title: cmsData?.leading_game_title ?? "",
+        count: cmsData?.charging_station_count ?? "",
+        sub_title: cmsData?.charging_station_subtitle ?? "",
+      },
+    };
+  }
+
+
+  static buildOurValuesSection(cmsData, aboutOurValues) {
+    return {
+      title: cmsData?.our_values_title ?? "",
+      description: cmsData?.our_values_description ?? "",
       list:
-        homeBanners.map((item) => ({
+        aboutOurValues.map((item) => ({
           title: item?.title ?? "",
           description: item?.description ?? "",
         })) || [],
     };
   }
 
-  static buildMilestoneSection(cmsData, homeBanners) {
+  static buildOurJourneySection(cmsData, aboutOurJourney) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
+      title: cmsData?.our_journey_title ?? "",
+      description: cmsData?.our_journey_description ?? "",
       list:
-        homeBanners.map((item) => ({
+        aboutOurJourney.map((item) => ({
+          year: item?.year ?? "",
           title: item?.title ?? "",
           description: item?.description ?? "",
+          media: singleMediaWithoutType(
+            cmsData,
+            "media_path",
+            "media_alt",
+          ),
         })) || [],
     };
   }
 
-  static buildCompanyGrowthSection(cmsData, homeBanners) {
+  static buildMeetTeamSection(cmsData, homeBanners) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.meet_team_title ?? "",
+      description: cmsData?.meet_team_description ?? "",
+      media: singleMediaWithoutType(
+        cmsData,
+        "meet_team_media_path",
+        "meet_team_media_alt",
+      ),
     };
   }
 
-  static buildAdvertisementSection(cmsData, homeBanners) {
+  static buildOurAssociatesSection(cmsData, associates) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.our_associate_title ?? "",
+      description: cmsData?.our_associate_description ?? "",
+      list: partners.map((item) => ({
+        name: item?.name ?? "",
+        media: singleMediaWithoutType(item, "media_path", "media_alt"),
+      })),
     };
   }
 
-  static buildExploreSection(cmsData, homeBanners) {
+  static buildMediaRecognitionSection(cmsData, aboutMedia) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.media_title ?? "",
+      description: cmsData?.media_description ?? "",
+      list: aboutMedia.map((item) => ({
+        name: item?.name ?? "",
+        media: mediaWithType(
+          item,
+          "media_type",
+          "media_desktop_path",
+          "media_mobile_path",
+          "media_alt"
+        ),
+      })),
     };
   }
 
-  static buildAppFeatureSection(cmsData, homeBanners) {
+  static buildPartnerSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildInvestmentSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.contact_us_super_title ?? "",
+      description: cmsData?.contact_us_title ?? "",
     };
   }
 }

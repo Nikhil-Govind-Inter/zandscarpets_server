@@ -4,6 +4,7 @@ const defineAdminUser = require("./adminuser");
 const defineMetaTags = require("./metaTags");
 const definePolicy = require("./policy");
 const definePartner = require("./partner");
+const defineAssociates = require("./associates");
 
 // HOMEPAGE
 const defineHomeCms = require("./home/homeCms");
@@ -45,6 +46,7 @@ const models = {
   MetaTags: defineMetaTags(sequelize),
   Policy: definePolicy(sequelize),
   Partner: definePartner(sequelize),
+  Associates: defineAssociates(sequelize),
 
   // HOMEPAGE
   HomeCms: defineHomeCms(sequelize),
@@ -73,7 +75,7 @@ const models = {
   NewsCms: defineNewsCms(sequelize),
   News: defineNews(sequelize),
 
-   //Blogs
+  //Blogs
   BlogCms: defineBlogCms(sequelize),
   Blogs: defineBlogs(sequelize),
 
