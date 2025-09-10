@@ -4,8 +4,11 @@ const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithout
 class HomeService {
   static async index() {
     try {
+       const cmsData = await models.HomeCms.findOne();
+       if (!cmsData) {
+        throw new Error("No CMS data found for About page");
+      }
       const [
-        cmsData = {},
         homeBanners = [],
         homeMilestone = [],
         homeMap = [],
@@ -16,7 +19,6 @@ class HomeService {
         news = [],
         blogs = [],
       ] = await Promise.all([
-        models.HomeCms.findOne(),
         models.HomeBanner.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -85,8 +87,8 @@ class HomeService {
         title: item?.title ?? "",
         description: item?.description ?? "",
         buttons: [
-          createButtonObject(item, "button_text_one", "button_text_one_link"),
-          createButtonObject(item, "button_text_two", "button_text_two_link"),
+          button(item, "button_text_one", "button_text_one_link"),
+          button(item, "button_text_two", "button_text_two_link"),
         ].filter(btn => btn.text),
         media: mediaWithType(
           item,
@@ -150,7 +152,7 @@ class HomeService {
           title: item?.title ?? "",
           description: item?.description ?? "",
           buttons: [
-            createButtonObject(item, "button_text", "button_text_link"),
+            button(item, "button_text", "button_text_link"),
           ].filter(btn => btn.text),
           media: singleMediaWithoutType(
             item,
@@ -198,7 +200,7 @@ class HomeService {
           subtitle: item?.subtitle ?? "",
           description: item?.description ?? "",
           buttons: [
-            createButtonObject(item, "button_text", "button_text_link"),
+            button(item, "button_text", "button_text_link"),
           ].filter(btn => btn.text),
         })) || [],
     };
