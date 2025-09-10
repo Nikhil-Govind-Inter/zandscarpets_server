@@ -14,11 +14,15 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
 
-      banner_logo: {
+      banner_media_desktop_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      banner_logo_alt: {
+      banner_media_mobile_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      banner_media_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
