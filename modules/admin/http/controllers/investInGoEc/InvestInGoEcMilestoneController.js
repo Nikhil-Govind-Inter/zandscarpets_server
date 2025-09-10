@@ -1,14 +1,13 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/investInGoEc/InvestInGoEcExploreRequest");
-const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
+const { validationRequestPost, validateId } = require("../../request/investInGoEc/investInGoEcMilestoneRequest");
 const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 
-const DataModel = models.InvestInGoEcExplore;
+const DataModel = models.InvestInGoEcMilestone;
 
-class InvestInGoEcExploreController {
+class InvestInGoEcMilestoneController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -39,9 +38,6 @@ class InvestInGoEcExploreController {
         const transaction = await sequelize.transaction();
 
         try {
-            const fileFields = ["media_path"];
-            handleFileUploadStore(req, fileFields);
-
             // Create data with transaction
             const data = await DataModel.create(req.body, { transaction });
 
@@ -100,11 +96,6 @@ class InvestInGoEcExploreController {
                 return sendNotFoundError(res, 'Data');
             }
 
-            
-
-            const fileFields = ["media_path"];
-            await handleFileUploadUpdate(req, data, fileFields);
-
             await data.update(req.body, { transaction });
 
             await transaction.commit();
@@ -151,4 +142,4 @@ class InvestInGoEcExploreController {
 
 }
 
-module.exports = InvestInGoEcExploreController;
+module.exports = InvestInGoEcMilestoneController;
