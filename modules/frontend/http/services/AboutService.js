@@ -9,6 +9,8 @@ class AboutService {
         partners = [],
         aboutOurValues = [],
         aboutOurJourney = [],
+        associates = [],
+        aboutMedia = [],
       ] = await Promise.all([
         models.AboutCms.findOne(),
         models.Partner.findAll({
@@ -23,6 +25,14 @@ class AboutService {
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
+        models.Associates.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.AboutMedia.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
       ]);
 
       const data = {
@@ -33,9 +43,9 @@ class AboutService {
         our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
         our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
         meet_team_section: this.buildMeetTeamSection(cmsData, homeBanners),
-        our_associates_section: this.buildOurAssociatesSection(cmsData, homeBanners),
-        media_recognition_section: this.buildMediaRecognitionSection(cmsData, homeBanners),
-        partner_section: this.buildPartnerSection(cmsData, homeBanners),
+        our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
+        media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
+        partner_section: this.buildPartnerSection(cmsData),
       };
 
       return data;
@@ -142,22 +152,45 @@ class AboutService {
       title: cmsData?.meet_team_title ?? "",
       description: cmsData?.meet_team_description ?? "",
       media: singleMediaWithoutType(
-            cmsData,
-            "meet_team_media_path",
-            "meet_team_media_alt",
-          ),
+        cmsData,
+        "meet_team_media_path",
+        "meet_team_media_alt",
+      ),
     };
   }
 
-   static buildOurAssociatesSection(cmsData, homeBanners) {
+  static buildOurAssociatesSection(cmsData, associates) {
     return {
       title: cmsData?.our_associate_title ?? "",
       description: cmsData?.our_associate_description ?? "",
-      media: singleMediaWithoutType(
-            cmsData,
-            "meet_team_media_path",
-            "meet_team_media_alt",
-          ),
+      list: partners.map((item) => ({
+        name: item?.name ?? "",
+        media: singleMediaWithoutType(item, "media_path", "media_alt"),
+      })),
+    };
+  }
+
+  static buildMediaRecognitionSection(cmsData, aboutMedia) {
+    return {
+      title: cmsData?.media_title ?? "",
+      description: cmsData?.media_description ?? "",
+      list: aboutMedia.map((item) => ({
+        name: item?.name ?? "",
+        media: mediaWithType(
+          item,
+          "media_type",
+          "media_desktop_path",
+          "media_mobile_path",
+          "media_alt"
+        ),
+      })),
+    };
+  }
+
+  static buildPartnerSection(cmsData) {
+    return {
+      title: cmsData?.contact_us_super_title ?? "",
+      description: cmsData?.contact_us_title ?? "",
     };
   }
 }
