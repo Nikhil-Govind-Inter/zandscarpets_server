@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require('../../http/middleware/authMiddleware');
+const authMiddleware = require('../../http/middleware/authMiddleware.js');
 const Controller = require("../../http/controllers/investInGoEc/InvestInGoEcExploreController.js");
 const { createUploadMiddleware } = require("../../http/middleware/multerMiddleware.js");
 
@@ -8,6 +8,7 @@ const { createUploadMiddleware } = require("../../http/middleware/multerMiddlewa
 const fields = [
     { name: "media_path", maxCount: 1 },
 ];
+
 
 
 // Create upload middleware with fields

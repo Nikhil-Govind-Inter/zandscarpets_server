@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      short_form: {
+      name: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -30,7 +30,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       points: {
-        type: DataTypes.JSON,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       status: {

@@ -2,7 +2,7 @@ const { body, param } = require("express-validator");
 
 const validationRequestPost = [
   // Short Form
-  body("short_form")
+  body("name")
     .isString()
     .withMessage("Short form must be a string")
     .isLength({ max: 50 })
@@ -30,7 +30,6 @@ const validationRequestPost = [
 
   // Media Alt (optional)
   body("media_alt")
-    .optional()
     .isString()
     .withMessage("Media alt must be a string")
     .isLength({ max: 500 })
@@ -38,7 +37,7 @@ const validationRequestPost = [
 
   // Points (array)
   body("points")
-    .isArray()
+    .isString()
     .withMessage("Points must be an array"),
 
   // Status
