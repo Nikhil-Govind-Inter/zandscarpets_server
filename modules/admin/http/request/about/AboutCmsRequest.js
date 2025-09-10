@@ -9,10 +9,12 @@ const validationRequestPost = [
     .withMessage("banner_title must be a string with max 255 characters"),
 
  body("banner_media_desktop_path")
+ .optional()
     .isString()
     .isLength({ max: 5000 }),
 
   body("banner_media_mobile_path")
+  .optional()
     .isString()
     .isLength({ max: 5000 }),
 
