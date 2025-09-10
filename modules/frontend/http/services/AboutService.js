@@ -7,7 +7,7 @@ class AboutService {
         cmsData = {}, 
         homeBanners = []
       ] = await Promise.all([
-        models..findOne(),
+        models.AboutCms.findOne(),
         models.HomeBanner.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -15,7 +15,7 @@ class AboutService {
       ]);
 
       const data = {
-        banner_section: this.buildBannerSection(cmsData, homeBanners),
+        banner_section: this.buildBannerSection(cmsData),
         section_two: this.buildSectionTwo(cmsData, homeBanners),
         learn_more_section: this.buildLearnMoreSection(cmsData, homeBanners),
         mission_vision_section: this.buildMissionVisionSection(cmsData, homeBanners),
@@ -33,14 +33,11 @@ class AboutService {
     }
   }
 
-  static buildBannerSection(cmsData, homeBanners) {
+  static buildBannerSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.banner_title ?? "",
+      title: cmsData?.banner_title ?? "",
+      
     };
   }
 
