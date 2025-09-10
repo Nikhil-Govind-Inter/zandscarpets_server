@@ -8,17 +8,17 @@ const validationRequestPost = [
     .isLength({ max: 255 })
     .withMessage("banner_title must be a string with max 255 characters"),
 
-  body("banner_logo")
-    .optional()
+ body("banner_media_desktop_path")
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage("banner_logo must be a string with max 5000 characters"),
+    .isLength({ max: 5000 }),
 
-  body("banner_logo_alt")
-    .optional()
+  body("banner_media_mobile_path")
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage("banner_logo_alt must be a string with max 5000 characters"),
+    .isLength({ max: 5000 }),
+
+  body("banner_media_alt")
+    .isString()
+    .isLength({ max: 255 }),
 
   // About
   body("about_description")

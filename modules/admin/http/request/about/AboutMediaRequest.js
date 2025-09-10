@@ -2,7 +2,10 @@ const { body, param } = require("express-validator");
 
 const validationRequestPost = [
   // Thumbnail
-  body("thumbnail").isString().withMessage("Thumbnail must be a valid string"),
+  body("thumbnail")
+    .optional()
+    .isString()
+    .withMessage("Thumbnail must be a valid string"),
 
   body("thumbnail_alt")
     .isString()
@@ -16,11 +19,12 @@ const validationRequestPost = [
 
   // Media Paths
   body("media_desktop_path")
+    .optional()
     .isString()
     .withMessage("Media desktop path must be a valid string"),
 
   body("media_mobile_path")
-  .optional()
+    .optional()
     .isString()
     .withMessage("Media mobile path must be a valid string"),
 
