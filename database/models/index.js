@@ -15,6 +15,7 @@ const defineHomeAppFeatures = require("./home/homeAppFeatures");
 const defineHomeInvestment = require("./home/homeInvestment");
 
 // ABOUT PAGE
+const defineAboutCms = require("./about/aboutCms");
 const defineAboutOurValues = require("./about/aboutOurValues");
 const defineAboutOurJourney = require("./about/aboutOurJourney");
 const defineAboutMedia = require("./about/aboutMedia");
@@ -54,10 +55,10 @@ const models = {
   HomeInvestment: defineHomeInvestment(sequelize),
 
   // ABOUT PAGE
+  AboutCms: defineAboutCms(sequelize),
   AboutOurValues: defineAboutOurValues(sequelize),
   AboutOurJourney: defineAboutOurJourney(sequelize),
   AboutMedia: defineAboutMedia(sequelize),
-
 
   // INVESTMENT PAGE
   InvestmentBusinessModels: defineInvestmentBusinessModels(sequelize),

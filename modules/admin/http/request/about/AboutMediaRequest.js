@@ -20,6 +20,7 @@ const validationRequestPost = [
     .withMessage("Media desktop path must be a valid string"),
 
   body("media_mobile_path")
+  .optional()
     .isString()
     .withMessage("Media mobile path must be a valid string"),
 
