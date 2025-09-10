@@ -44,7 +44,7 @@ class HomeService {
         banner_section: this.buildBannerSection(homeBanners),
         milestone_section: this.buildMilestoneSection(cmsData, homeMilestone),
         company_growth_section: this.buildCompanyGrowthSection(homeMap),
-        advertisement_section: this.buildAdvertisementSection(cmsData),
+        make_ride_section: this.buildMakeRideSection(cmsData),
         // explore_section: this.buildExploreSection(cmsData, homeExploreOurExpertise),
         // app_feature_section: this.buildAppFeatureSection(cmsData, homeAppFeatures),
         // investment_section: this.buildInvestmentSection(cmsData, homeInvestment),
@@ -60,6 +60,7 @@ class HomeService {
     return {
       list: homeBanners.map((item) => ({
         title: item?.title ?? "",
+        highlight_title: item?.description ?? "",
         description: item?.description ?? "",
         buttons: [
           createButtonObject(item, "button_text_one", "button_text_one_link"),
@@ -102,11 +103,17 @@ class HomeService {
     };
   }
 
-  static buildAdvertisementSection(cmsData) {
+  static buildMakeRideSection(cmsData) {
     return {
       title: cmsData?.make_ride_title ?? "",
       description: cmsData?.make_ride_description ?? "",
-      title: cmsData?.make_ride_title ?? "",
+      media: createMediaObject(
+          cmsData,
+          "make_ride_media_type",
+          "make_ride_media_desktop_path",
+          "make_ride_media_mobile_path",
+          "make_ride_media_alt"
+        ),
       
     };
   }
