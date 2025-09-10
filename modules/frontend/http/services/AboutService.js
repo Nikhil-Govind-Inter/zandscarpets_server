@@ -3,8 +3,11 @@ const { models } = require("../../../../database/models");
 class AboutService {
   static async index() {
     try {
-      const [cmsData = {}, homeBanners = []] = await Promise.all([
-        models.HomeCms.findOne(),
+      const [
+        cmsData = {}, 
+        homeBanners = []
+      ] = await Promise.all([
+        models..findOne(),
         models.HomeBanner.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -13,12 +16,15 @@ class AboutService {
 
       const data = {
         banner_section: this.buildBannerSection(cmsData, homeBanners),
-        milestone_section: this.buildMilestoneSection(cmsData, homeBanners),
-        company_growth_section: this.buildCompanyGrowthSection(cmsData, homeBanners),
-        advertisement_section: this.buildAdvertisementSection(cmsData, homeBanners),
-        explore_section: this.buildExploreSection(cmsData, homeBanners),
-        app_feature_section: this.buildAppFeatureSection(cmsData, homeBanners),
-        investment_section: this.buildInvestmentSection(cmsData, homeBanners),
+        section_two: this.buildSectionTwo(cmsData, homeBanners),
+        learn_more_section: this.buildLearnMoreSection(cmsData, homeBanners),
+        mission_vision_section: this.buildMissionVisionSection(cmsData, homeBanners),
+        our_values_section: this.buildOurValuesSection(cmsData, homeBanners),
+        our_journey_section: this.buildOurJourneySection(cmsData, homeBanners),
+        meet_team_section: this.buildMeetTeamSection(cmsData, homeBanners),
+        our_associates_section: this.buildOurAssociatesSection(cmsData, homeBanners),
+        media_recognition_section: this.buildMediaRecognitionSection(cmsData, homeBanners),
+        partner_section: this.buildPartnerSection(cmsData, homeBanners),
       };
 
       return data;
