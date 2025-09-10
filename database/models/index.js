@@ -3,6 +3,7 @@ const sequelize = require("../config/index");
 const defineAdminUser = require("./adminuser");
 const defineMetaTags = require("./metaTags");
 const definePolicy = require("./policy");
+const definePartner = require("./partner");
 
 // HOMEPAGE
 const defineHomeCms = require("./home/homeCms");
@@ -25,10 +26,24 @@ const defineInvestmentValues = require("./investments/investmentValues");
 const defineInvestmentCards = require("./investments/investmentCards");
 const defineInvestmentTestimonials = require("./investments/investmentTestimonials");
 
+
+//NEWS
+const defineNewsCms = require("./news/newsCms");
+const defineNews = require("./news/news");
+
+//BLOGS
+const defineBlogCms = require("./blogs/blogCms");
+const defineBlogs = require("./blogs/blogs");
+
+
+
+
+
 const models = {
   AdminUser: defineAdminUser(sequelize),
   MetaTags: defineMetaTags(sequelize),
   Policy: definePolicy(sequelize),
+  Partner: definePartner(sequelize),
 
   // HOMEPAGE
   HomeCms: defineHomeCms(sequelize),
@@ -50,6 +65,17 @@ const models = {
   InvestmentValues: defineInvestmentValues(sequelize),
   InvestmentCards: defineInvestmentCards(sequelize),
   InvestmentTestimonials: defineInvestmentTestimonials(sequelize),
+
+
+  //NEWS
+  NewsCms: defineNewsCms(sequelize),
+  News: defineNews(sequelize),
+
+   //Blogs
+  BlogCms: defineBlogCms(sequelize),
+  Blogs: defineBlogs(sequelize),
+
+
 };
 
 Object.keys(models).forEach((modelName) => {

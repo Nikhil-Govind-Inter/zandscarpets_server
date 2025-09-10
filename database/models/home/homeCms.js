@@ -18,6 +18,10 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+       make_ride_highlight_title: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       make_ride_description: {
         type: DataTypes.TEXT,
         allowNull: true,
