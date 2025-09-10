@@ -21,10 +21,11 @@ const defineAboutOurJourney = require("./about/aboutOurJourney");
 const defineAboutMedia = require("./about/aboutMedia");
 
 // INVESTMENT PAGE
-const defineInvestmentBusinessModels = require("./investments/investmentBusinessModels");
-const defineInvestmentValues = require("./investments/investmentValues");
-const defineInvestmentCards = require("./investments/investmentCards");
-const defineInvestmentTestimonials = require("./investments/investmentTestimonials");
+const defineInvestInGoEcCms = require("./investInGoEc/investInGoEcCms");
+const defineInvestmentBusinessModels = require("./investInGoEc/investmentBusinessModels");
+const defineInvestmentValues = require("./investInGoEc/investmentValues");
+const defineInvestmentCards = require("./investInGoEc/investmentCards");
+const defineInvestmentTestimonials = require("./investInGoEc/investmentTestimonials");
 
 
 //NEWS
@@ -61,6 +62,7 @@ const models = {
   AboutMedia: defineAboutMedia(sequelize),
 
   // INVESTMENT PAGE
+  InvestInGoEcCms: defineInvestInGoEcCms(sequelize),
   InvestmentBusinessModels: defineInvestmentBusinessModels(sequelize),
   InvestmentValues: defineInvestmentValues(sequelize),
   InvestmentCards: defineInvestmentCards(sequelize),
