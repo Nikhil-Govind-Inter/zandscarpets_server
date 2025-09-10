@@ -4,15 +4,17 @@ const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithout
 class AboutService {
   static async index() {
     try {
+      const cmsData = await models.AboutCms.findOne();
+      if (!cmsData) {
+        throw new Error("No CMS data found for About page");
+      }
       const [
-        cmsData = {},
         partners = [],
         aboutOurValues = [],
         aboutOurJourney = [],
         associates = [],
         aboutMedia = [],
       ] = await Promise.all([
-        models.AboutCms.findOne(),
         models.Partner.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -42,7 +44,7 @@ class AboutService {
         mission_vision_section: this.buildMissionVisionSection(cmsData, partners),
         our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
         our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
-        meet_team_section: this.buildMeetTeamSection(cmsData, homeBanners),
+        meet_team_section: this.buildMeetTeamSection(cmsData),
         our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
         media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
         partner_section: this.buildPartnerSection(cmsData),
@@ -50,7 +52,7 @@ class AboutService {
 
       return data;
     } catch (error) {
-      throw new Error(`Error fetching home page data: ${error.message}`);
+      throw new Error(`Error fetching about page data: ${error.message}`);
     }
   }
 
@@ -71,7 +73,7 @@ class AboutService {
     return {
       description: cmsData?.about_description ?? "",
       media: mediaWithType(
-        item,
+        cmsData,
         "about_media_type",
         "about_media_desktop_path",
         "about_media_mobile_path",
