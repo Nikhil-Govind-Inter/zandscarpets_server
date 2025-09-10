@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const InvestmentBusinessModels = sequelize.define(
-    "InvestmentBusinessModels",
+  const InvestInGoEcExplore = sequelize.define(
+    "InvestInGoEcExplore",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -46,10 +46,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "investment_business_models",
+      tableName: "invest_in_go_ec_explore",
       timestamps: true,
     }
   );
 
-  return InvestmentBusinessModels;
+  return InvestInGoEcExplore;
 };

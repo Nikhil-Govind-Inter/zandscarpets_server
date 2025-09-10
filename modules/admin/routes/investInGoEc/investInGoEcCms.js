@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require('../../http/middleware/authMiddleware');
-const Controller = require("../../http/controllers/investInGoEc/InvestInGOEcCmsController.js");
+const Controller = require("../../http/controllers/investInGoEc/InvestInGoEcCmsController.js");
 const { createUploadMiddleware } = require("../../http/middleware/multerMiddleware.js");
 
 // Define fields
@@ -13,7 +13,7 @@ const fields = [
 ];
 
 // Create upload middleware with fields
-const upload = createUploadMiddleware("home-cms", fields);
+const upload = createUploadMiddleware("invest-in-goec-cms", fields);
 
 router.get("/", Controller.index);
 // router.use(authMiddleware(["admin"]));
