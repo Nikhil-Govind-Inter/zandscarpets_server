@@ -1,5 +1,5 @@
 const { models } = require("../../../../database/models");
-const { createMediaObject, createButtonObject } = require('../traits/mediaButtonHelper');
+const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
 
 class HomeService {
   static async index() {
@@ -88,7 +88,7 @@ class HomeService {
           createButtonObject(item, "button_text_one", "button_text_one_link"),
           createButtonObject(item, "button_text_two", "button_text_two_link"),
         ].filter(btn => btn.text),
-        media: createMediaObject(
+        media: mediaWithType(
           item,
           "media_type",
           "media_desktop_path",
@@ -116,7 +116,7 @@ class HomeService {
         homeMap.map((item) => ({
           year: item?.year ?? "",
           title: item?.title ?? "",
-          media: createMediaObject(
+          media: singleMediaWithoutType(
             item,
             "media_path",
             "media_alt"
@@ -130,7 +130,7 @@ class HomeService {
       title: cmsData?.make_ride_title ?? "",
       highlight_title: cmsData?.make_ride_highlight_title ?? "",
       description: cmsData?.make_ride_description ?? "",
-      media: createMediaObject(
+      media: mediaWithType(
         cmsData,
         "make_ride_media_type",
         "make_ride_media_desktop_path",
@@ -152,7 +152,7 @@ class HomeService {
           buttons: [
             createButtonObject(item, "button_text", "button_text_link"),
           ].filter(btn => btn.text),
-          media: createMediaObject(
+          media: singleMediaWithoutType(
             item,
             "media_path",
             "media_alt"
@@ -166,7 +166,7 @@ class HomeService {
       title: cmsData?.app_feature_title ?? "",
       sub_title: cmsData?.app_feature_sub_title ?? "",
       description: cmsData?.app_feature_description ?? "",
-      media: createMediaObject(
+      media: mediaWithType(
         cmsData,
         "app_feature_media_type",
         "app_feature_media_desktop_path",
@@ -185,7 +185,7 @@ class HomeService {
   static buildInvestmentSection(cmsData, homeInvestment) {
     return {
       milestone_description: cmsData?.investment_title ?? "",
-      media: createMediaObject(
+      media: mediaWithType(
         cmsData,
         "investment_media_type",
         "investment_media_desktop_path",
@@ -210,7 +210,7 @@ class HomeService {
       list:
         partners.map((item) => ({
           name: cmsData?.name ?? "",
-          media: createMediaObject(
+          media: singleMediaWithoutType(
             item,
             "media_path",
             "media_alt"
@@ -228,7 +228,7 @@ class HomeService {
           description: item?.description ?? "",
           reading_time: item?.reading_time ?? "",
           published_on: item?.published_on ?? "",
-          media: createMediaObject(
+          media: singleMediaWithoutType(
             item,
             "thumbnail",
             "thumbnail_alt"
@@ -245,7 +245,7 @@ class HomeService {
           title: item?.title ?? "",
           description: item?.description ?? "",
           published_on: item?.published_on ?? "",
-          media: createMediaObject(
+          media: singleMediaWithoutType(
             item,
             "thumbnail",
             "thumbnail_alt"
