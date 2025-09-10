@@ -66,6 +66,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
     Logger.info("✅ Database connected and synced");
+    
 
     await createAdminUser();
     await policyData();

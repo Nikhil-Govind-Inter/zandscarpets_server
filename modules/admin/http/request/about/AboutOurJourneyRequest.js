@@ -24,6 +24,7 @@ const validationRequestPost = [
 
   // Media
   body("media_path")
+    .optional()
     .isString()
     .withMessage("Media path must be a valid string")
     .isLength({ max: 255 })
