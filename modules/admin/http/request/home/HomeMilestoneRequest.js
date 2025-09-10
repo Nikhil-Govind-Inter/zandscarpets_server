@@ -1,35 +1,34 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  // Title & Description
+  // Title
   body("title")
-    .optional()
     .isString()
+    .withMessage("Title must be a valid string")
     .isLength({ max: 255 })
-    .withMessage("Title must be a string with max 255 characters"),
+    .withMessage("Title must not exceed 255 characters"),
 
-      body("value")
-    .optional()
-    .isNumeric()
-    .withMessage("value must be a greater than 0"),
+  // Value
+  body("value")
+    .isFloat({ min: 1 }) // allows decimals, use .isInt if only integers
+    .withMessage("Value must be a number greater than 0"),
 
-  // Status & Sort Order
+  // Status
   body("status")
-    .optional()
     .isBoolean()
-    .withMessage("Status must be a boolean value"),
+    .withMessage("Status must be true or false"),
 
+  // Sort Order
   body("sort_order")
-    .optional()
     .isInt({ min: 0 })
-    .withMessage("Sort order must be a non-negative integer"),
+    .withMessage("Sort order must be an integer greater than or equal to 0"),
 ];
 
 // ID parameter validation
 const validateId = [
   param("id")
     .isInt({ min: 1 })
-    .withMessage("ID must be a positive integer"),
+    .withMessage("ID must be an integer greater than 0"),
 ];
 
 module.exports = {

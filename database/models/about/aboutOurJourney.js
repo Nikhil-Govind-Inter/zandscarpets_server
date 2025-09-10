@@ -1,31 +1,31 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const HomeInvestment = sequelize.define(
-    "HomeInvestment",
+  const AboutOurJourney = sequelize.define(
+    "AboutOurJourney",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
+      year: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       title: {
         type: DataTypes.STRING,
-        allowNull: true,
-      },
-      subtitle: {
-        type: DataTypes.TEXT,
         allowNull: true,
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      button_text: {
-        type: DataTypes.STRING,
+      media_path: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
-      button_text_link: {
+      media_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -42,10 +42,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "home_investment",
+      tableName: "about_our_journey",
       timestamps: true,
     }
   );
 
-  return HomeInvestment;
+  return AboutOurJourney;
 };
