@@ -3,6 +3,7 @@ const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithout
 const { Op } = require("sequelize");
 
 class BlogService {
+
   static async index({ page = 1, limit = 10 } = {}) {
     try {
       page = parseInt(page);
@@ -256,6 +257,7 @@ class BlogService {
         })) || [],
     };
   }
+  
   static buildGetInTouchDetailSection(cmsData) {
     return {
       title: cmsData?.footer_title ?? "",
