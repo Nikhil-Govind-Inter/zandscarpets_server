@@ -5,7 +5,7 @@ module.exports = {
   paginate: async (Model, req, options = {}) => {
     const { limit, page = 1, keyword } = req.query;
 
-    // ✅ Correct parsing and default handling
+
     const parsedLimit = limit ? parseInt(limit, 10) : 10;
     const parsedPage = parseInt(page, 10) || 1;
     const offset = (parsedPage - 1) * parsedLimit;

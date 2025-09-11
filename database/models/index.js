@@ -36,6 +36,11 @@ const defineNews = require("./news/news");
 const defineBlogCms = require("./blogs/blogCms");
 const defineBlogs = require("./blogs/blogs");
 
+//APP PAGE
+const defineAppPageCms = require("./appPage/appPageCms");
+const defineAppPageFeatures = require("./appPage/appPageFeatures");
+const defineAppPageChargeUrEv = require("./appPage/appPageChargeUrEv");
+
 
 
 
@@ -76,6 +81,12 @@ const models = {
   //Blogs
   BlogCms: defineBlogCms(sequelize),
   Blogs: defineBlogs(sequelize),
+
+  //APP PAGE
+  AppPageCms: defineAppPageCms(sequelize),
+  AppPageFeatures: defineAppPageFeatures(sequelize),
+  AppPageChargeUrEv: defineAppPageChargeUrEv(sequelize),
+
 
 
 };
