@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/blog/");
+const { validationRequestPost, validateId } = require("../../request/blog/BlogRequest");
 const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
 const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 const slugify = require("slugify");
@@ -39,14 +39,19 @@ class BlogController {
         }
 
         try {
-            req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+            req.body.slug = slugify(req.body.title || "", { lower: true, strict: true });
+
+            if (!req.body.slug) {
+                return sendErrorResponse(res, "Title is required to generate slug", null, 400);
+            }
+
 
             // Check for duplicate slug
             const existing = await DataModel.findOne({ where: { slug: req.body.slug }, paranoid: true });
             if (existing) {
                 return sendErrorResponse(res, 'A data with this name already exists', null, 409);
             }
-            const fileFields = ["thumbnail", "banner_media_desktop_path","banner_media_mobile_path"];
+            const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
 
             handleFileUploadStore(req, fileFields);
             // Create Data
@@ -102,39 +107,48 @@ class BlogController {
 
             const data = await DataModel.findByPk(id);
             if (!data) {
-                return sendNotFoundError(res, 'Data');
+                return sendNotFoundError(res, "Data");
             }
-            // Generate new slug if name is updated
-            if (req.body.name && req.body.name !== data.name) {
-                req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+
+            // Generate new slug if title is updated
+            if (req.body.title && req.body.title !== data.title) {
+                req.body.slug = slugify(req.body.title, { lower: true, strict: true });
 
                 // Check for duplicate slug (excluding current record)
                 const existing = await DataModel.findOne({
                     where: {
                         slug: req.body.slug,
-                        id: { [Op.ne]: data.id }
+                        id: { [Op.ne]: data.id },
                     },
-                    paranoid: true
+                    paranoid: true,
                 });
-                if (existing && existing.id !== data.id) {
-                    return sendErrorResponse(res, 'A Data with this name already exists', null, 409);
+
+                if (existing) {
+                    return sendErrorResponse(
+                        res,
+                        "A Data with this title already exists",
+                        null,
+                        409
+                    );
                 }
             }
-            const fileFields = ["thumbnail", "banner_media_desktop_path","banner_media_mobile_path"];
+
+            const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
             await handleFileUploadUpdate(req, data, fileFields);
-            console.log("second", req.body);
+
             // Update the data
             await data.update(req.body);
 
             // Fetch updated data with associations
             const updatedData = await DataModel.findByPk(data.id);
 
-            sendSuccessResponse(res, updatedData, 'Data updated successfully');
+            sendSuccessResponse(res, updatedData, "Data updated successfully");
         } catch (error) {
-            console.error('Data update error:', error);
+            console.error("Data update error:", error);
             sendErrorResponse(res, error);
         }
     }
+
 
 
     static async destroy(req, res) {

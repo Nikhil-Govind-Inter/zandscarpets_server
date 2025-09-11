@@ -7,16 +7,31 @@ class BlogContoller {
 
     static async index(req, res) {
         try {
-            const data = await service.index();
+            const data = await service.index(req.query);
             return ApiResponse.success(res, {
                 message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
                 data,
                 status: HTTP_STATUS.OK,
             });
         } catch (error) {
-            return ErrorHandler.handleControllerError(error, res, "homeController");
+            return ErrorHandler.handleControllerError(error, res, "BlogController");
         }
     }
+
+    static async show(req, res) {
+        try {
+            const { slug } = req.params;
+            const data = await service.show(slug);
+            return ApiResponse.success(res, {
+                message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+                data,
+                status: HTTP_STATUS.OK,
+            });
+        } catch (error) {
+            return ErrorHandler.handleControllerError(error, res, "BlogController");
+        }
+    }
+
 }
 
 module.exports = BlogContoller;
