@@ -1,24 +1,35 @@
 const { models } = require("../../../../database/models");
 
 class InvestInGoEcService {
+
   static async index() {
     try {
-      const [cmsData = {}, homeBanners = []] = await Promise.all([
-        models.HomeCms.findOne(),
-        models.HomeBanner.findAll({
+      const cmsData = await models.AppPageCms.findOne();
+      if (!cmsData) {
+        throw new Error("No CMS data found for About page");
+      }
+      const [
+        appPageFeatures = [],
+        appPageChargeUrEv = []
+      ] = await Promise.all([
+        models.AppPageFeatures.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.AppPageChargeUrEv.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
       ]);
 
       const data = {
-        banner_section: this.buildBannerSection(cmsData, homeBanners),
-        milestone_section: this.buildMilestoneSection(cmsData, homeBanners),
-        company_growth_section: this.buildCompanyGrowthSection(cmsData, homeBanners),
-        advertisement_section: this.buildAdvertisementSection(cmsData, homeBanners),
-        explore_section: this.buildExploreSection(cmsData, homeBanners),
-        app_feature_section: this.buildAppFeatureSection(cmsData, homeBanners),
-        investment_section: this.buildInvestmentSection(cmsData, homeBanners),
+        banner_section: this.buildBannerSection(cmsData),
+        about_section: this.buildAboutSection(cmsData),
+        advertisment_section: this.buildAdvertismentSection(cmsData, appPageFeatures),
+        explore_section: this.buildExploreSection(cmsData, appPageChargeUrEv),
+        why_invest_section: this.buildStartUrEvSection(cmsData),
+        testimonial_section: this.buildStartUrEvSection(cmsData),
+        invest_in_goec_section: this.buildStartUrEvSection(cmsData),
       };
 
       return data;
@@ -27,80 +38,61 @@ class InvestInGoEcService {
     }
   }
 
-  static buildBannerSection(cmsData, homeBanners) {
+  static buildBannerSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
+      title: cmsData?.banner_title ?? "",
+      media: mediaWithoutType(
+        cmsData,
+        "banner_media_desktop_path",
+        "banner_media_mobile_path",
+        "banner_media_alt"
+      ),
+    };
+  }
+
+  static buildAboutSection(cmsData) {
+    return {
+      description: cmsData?.about_description ?? "",
+    };
+  }
+
+  static buildFeatureSection(cmsData, appPageFeatures) {
+    return {
+      title: cmsData?.feature_title ?? "",
       list:
-        homeBanners.map((item) => ({
+        appPageFeatures.map((item) => ({
           title: item?.title ?? "",
-          description: item?.description ?? "",
+          highlight_title: item?.highlight_title ?? "",
+          image_one_path: item?.image_one_path ?? "",
+          image_two_path: item?.image_two_path ?? "",
         })) || [],
     };
   }
 
-  static buildMilestoneSection(cmsData, homeBanners) {
+  static buildHowToChargeSection(cmsData, appPageChargeUrEv) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
+      title: cmsData?.charge_ur_ev_title ?? "",
       list:
-        homeBanners.map((item) => ({
+        appPageChargeUrEv.map((item) => ({
           title: item?.title ?? "",
           description: item?.description ?? "",
+          media: singleMediaWithoutType(
+            item,
+            "media_path",
+            "media_alt",
+          ),
         })) || [],
     };
   }
 
-  static buildCompanyGrowthSection(cmsData, homeBanners) {
+  static buildStartUrEvSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildAdvertisementSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildExploreSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildAppFeatureSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildInvestmentSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.start_ur_journey_title ?? "",
+      media: singleMediaWithoutType(
+        cmsData,
+        "start_ur_journey_media_path",
+        "start_ur_journey_media_alt",
+      ),
     };
   }
 }
