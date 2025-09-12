@@ -1,15 +1,15 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const InvestmentCards = sequelize.define(
-    "InvestmentCards",
+  const InvestInGoEcFeatures = sequelize.define(
+    "InvestInGoEcFeatures",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      icon: {
+      icon_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -34,10 +34,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "investment_cards",
+      tableName: "invest_in_goec_features",
       timestamps: true,
     }
   );
 
-  return InvestmentCards;
+  return InvestInGoEcFeatures;
 };

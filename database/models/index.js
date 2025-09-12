@@ -25,7 +25,7 @@ const defineAboutMedia = require("./about/aboutMedia");
 const defineInvestInGoEcCms = require("./investInGoEc/investInGoEcCms");
 const defineInvestInGoEcExplore = require("./investInGoEc/investInGoEcExplore");
 const defineInvestInGoEcMilestone = require("./investInGoEc/investInGoEcMilestone");
-const defineInvestmentCards = require("./investInGoEc/investmentCards");
+const defineInvestInGoEcFeatures = require("./investInGoEc/investInGoEcFeatures");
 const defineInvestmentTestimonials = require("./investInGoEc/investmentTestimonials");
 
 
@@ -72,7 +72,7 @@ const models = {
   InvestInGoEcCms: defineInvestInGoEcCms(sequelize),
   InvestInGoEcExplore: defineInvestInGoEcExplore(sequelize),
   InvestInGoEcMilestone: defineInvestInGoEcMilestone(sequelize),
-  InvestmentCards: defineInvestmentCards(sequelize),
+  InvestInGoEcFeatures: defineInvestInGoEcFeatures(sequelize),
   InvestmentTestimonials: defineInvestmentTestimonials(sequelize),
 
 
