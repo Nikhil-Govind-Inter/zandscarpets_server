@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const AppPageCms = sequelize.define(
-    "AppPageCms",
+  const GoEcSmartCardCms = sequelize.define(
+    "GoEcSmartCardCms",
     {
       id: {
         type: DataTypes.INTEGER,

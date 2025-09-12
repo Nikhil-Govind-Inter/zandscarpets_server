@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-    const AppPageChargeUrEv = sequelize.define(
-        "AppPageChargeUrEv",
+    const GoEcSmartCardApplyStep = sequelize.define(
+        "GoEcSmartCardApplyStep",
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -38,10 +38,10 @@ module.exports = (sequelize) => {
             },
         },
         {
-            tableName: "app_page_charge_er_ev",
+            tableName: "go_ec_smart_card_apply_step",
             timestamps: true,
         }
     );
 
-    return AppPageChargeUrEv;
+    return GoEcSmartCardApplyStep;
 };

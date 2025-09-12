@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const AppPageFeatures = sequelize.define(
-    "AppPageFeatures",
+  const GoEcSmartCardKeyBenefits = sequelize.define(
+    "GoEcSmartCardKeyBenefits",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -38,10 +38,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "app_page_features",
+      tableName: "go_ec_smart_card_key_benefits",
       timestamps: true,
     }
   );
 
-  return AppPageFeatures;
+  return GoEcSmartCardKeyBenefits;
 };
