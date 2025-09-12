@@ -13,7 +13,11 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      banner_media_path: {
+      banner_media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      banner_media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -22,7 +26,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
 
-      smart_card_description: {
+      about_description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
