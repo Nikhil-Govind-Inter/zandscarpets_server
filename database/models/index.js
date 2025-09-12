@@ -26,7 +26,7 @@ const defineInvestInGoEcCms = require("./investInGoEc/investInGoEcCms");
 const defineInvestInGoEcExplore = require("./investInGoEc/investInGoEcExplore");
 const defineInvestInGoEcMilestone = require("./investInGoEc/investInGoEcMilestone");
 const defineInvestInGoEcFeatures = require("./investInGoEc/investInGoEcFeatures");
-const defineInvestmentTestimonials = require("./investInGoEc/investmentTestimonials");
+const defineInvestInGoEcPartners = require("./investInGoEc/investInGoEcPartners");
 
 
 //NEWS
@@ -73,7 +73,7 @@ const models = {
   InvestInGoEcExplore: defineInvestInGoEcExplore(sequelize),
   InvestInGoEcMilestone: defineInvestInGoEcMilestone(sequelize),
   InvestInGoEcFeatures: defineInvestInGoEcFeatures(sequelize),
-  InvestmentTestimonials: defineInvestmentTestimonials(sequelize),
+  InvestInGoEcPartners: defineInvestInGoEcPartners(sequelize),
 
 
   //NEWS

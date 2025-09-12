@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/investInGoEc/investInGoEcMilestoneRequest");
+const { validationRequestPost, validateId } = require("../../request/investInGoEc/InvestInGoEcMilestoneRequest");
 const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 

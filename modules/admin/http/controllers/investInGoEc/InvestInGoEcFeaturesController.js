@@ -9,12 +9,12 @@ const {
 const {
   validationRequestPost,
   validateId,
-} = require("../../request/investInGoEc/investInGoEcFeaturesRequest");
+} = require("../../request/investInGoEc/InvestInGoEcFeaturesRequest");
 const {
   handleFileUploadStore,
   handleFileUploadUpdate,
 } = require("../../middleware/multerMiddleware");
-const { paginate } = require("../../../http/traits/datatablePaginationHelper");
+const { paginate } = require("../../traits/datatablePaginationHelper");
 
 const DataModel = models.InvestInGoEcFeatures;
 
