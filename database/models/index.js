@@ -43,9 +43,9 @@ const defineAppPageFeatures = require("./appPage/appPageFeatures");
 const defineAppPageChargeUrEv = require("./appPage/appPageChargeUrEv");
 
 // SMART CARD PAGE
-const defineGoEcSmartCardCms = require("./goEcSmartCard /goEcSmartCardCms");
-const defineGoEcSmartCardKeyBenefits = require("./goEcSmartCard /goEcSmartCardKeyBenefits");
-// const defineAppPageChargeUrEv = require("./appPage/appPageChargeUrEv");
+const defineGoEcSmartCardCms = require("./goEcSmartCard/goEcSmartCardCms");
+const defineGoEcSmartCardKeyBenefits = require("./goEcSmartCard/goEcSmartCardKeyBenefits");
+const defineGoEcSmartCardApplyStep = require("./goEcSmartCard/goEcSmartCardApplyStep");
 
 
 
@@ -97,7 +97,7 @@ const models = {
   // SMART CARD PAGE
   GoEcSmartCardCms: defineGoEcSmartCardCms(sequelize),
   GoEcSmartCardKeyBenefits: defineGoEcSmartCardKeyBenefits(sequelize),
-  // AppPageChargeUrEv: defineAppPageChargeUrEv(sequelize),
+  GoEcSmartCardApplyStep: defineGoEcSmartCardApplyStep(sequelize),
 
 
 };
