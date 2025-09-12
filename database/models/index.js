@@ -25,8 +25,8 @@ const defineAboutMedia = require("./about/aboutMedia");
 const defineInvestInGoEcCms = require("./investInGoEc/investInGoEcCms");
 const defineInvestInGoEcExplore = require("./investInGoEc/investInGoEcExplore");
 const defineInvestInGoEcMilestone = require("./investInGoEc/investInGoEcMilestone");
-const defineInvestmentCards = require("./investInGoEc/investmentCards");
-const defineInvestmentTestimonials = require("./investInGoEc/investmentTestimonials");
+const defineInvestInGoEcFeatures = require("./investInGoEc/investInGoEcFeatures");
+const defineInvestInGoEcPartners = require("./investInGoEc/investInGoEcPartners");
 
 
 //NEWS
@@ -42,6 +42,10 @@ const defineAppPageCms = require("./appPage/appPageCms");
 const defineAppPageFeatures = require("./appPage/appPageFeatures");
 const defineAppPageChargeUrEv = require("./appPage/appPageChargeUrEv");
 
+// SMART CARD PAGE
+const defineGoEcSmartCardCms = require("./goEcSmartCard/goEcSmartCardCms");
+const defineGoEcSmartCardKeyBenefits = require("./goEcSmartCard/goEcSmartCardKeyBenefits");
+const defineGoEcSmartCardApplyStep = require("./goEcSmartCard/goEcSmartCardApplyStep");
 
 
 
@@ -72,8 +76,8 @@ const models = {
   InvestInGoEcCms: defineInvestInGoEcCms(sequelize),
   InvestInGoEcExplore: defineInvestInGoEcExplore(sequelize),
   InvestInGoEcMilestone: defineInvestInGoEcMilestone(sequelize),
-  InvestmentCards: defineInvestmentCards(sequelize),
-  InvestmentTestimonials: defineInvestmentTestimonials(sequelize),
+  InvestInGoEcFeatures: defineInvestInGoEcFeatures(sequelize),
+  InvestInGoEcPartners: defineInvestInGoEcPartners(sequelize),
 
 
   //NEWS
@@ -89,6 +93,11 @@ const models = {
   AppPageFeatures: defineAppPageFeatures(sequelize),
   AppPageChargeUrEv: defineAppPageChargeUrEv(sequelize),
 
+
+  // SMART CARD PAGE
+  GoEcSmartCardCms: defineGoEcSmartCardCms(sequelize),
+  GoEcSmartCardKeyBenefits: defineGoEcSmartCardKeyBenefits(sequelize),
+  GoEcSmartCardApplyStep: defineGoEcSmartCardApplyStep(sequelize),
 
 
 };

@@ -1,28 +1,24 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const GoEcSmartCardKeyBenefits = sequelize.define(
-    "GoEcSmartCardKeyBenefits",
+  const InvestInGoEcFeatures = sequelize.define(
+    "InvestInGoEcFeatures",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      title: {
+      icon_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      highlight_title: {
+      icon_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      image_one_path: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      image_two_path: {
-        type: DataTypes.STRING,
+      description: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       status: {
@@ -38,10 +34,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "go_ec_smart_card_key_benefits",
+      tableName: "invest_in_goec_features",
       timestamps: true,
     }
   );
 
-  return GoEcSmartCardKeyBenefits;
+  return InvestInGoEcFeatures;
 };

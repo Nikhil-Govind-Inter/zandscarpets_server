@@ -1,28 +1,16 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const InvestmentTestimonials = sequelize.define(
-    "InvestmentTestimonials",
+  const GoEcSmartCardKeyBenefits = sequelize.define(
+    "GoEcSmartCardKeyBenefits",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-      },  
-      profile_media_path: {
+      },
+      title: {
         type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      profile_media_alt: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      designation: {
-        type: DataTypes.STRING,
         allowNull: true,
       },
       description: {
@@ -42,10 +30,10 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "investment_testimonials",
+      tableName: "go_ec_smart_card_key_benefits",
       timestamps: true,
     }
   );
 
-  return InvestmentTestimonials;
+  return GoEcSmartCardKeyBenefits;
 };

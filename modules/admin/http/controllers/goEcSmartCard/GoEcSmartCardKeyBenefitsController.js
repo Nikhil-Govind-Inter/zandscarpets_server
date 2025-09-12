@@ -1,13 +1,13 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/investInGoEc/InvestInGoEcMilestoneRequest");
+const { validationRequestPost, validateId } = require("../../request/goEcSmartCard/GoEcSmartCardKeyBenefitsRequest");
 const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 
-const DataModel = models.InvestInGoEcMilestone;
+const DataModel = models.GoEcSmartCardKeyBenefits;
 
-class InvestInGoEcMilestoneController {
+class GoEcSmartCardKeyBenefitsController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -142,4 +142,4 @@ class InvestInGoEcMilestoneController {
 
 }
 
-module.exports = InvestInGoEcMilestoneController;
+module.exports = GoEcSmartCardKeyBenefitsController;

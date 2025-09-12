@@ -13,11 +13,7 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      banner_media_desktop_path: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      banner_media_mobile_path: {
+      banner_media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -26,32 +22,30 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
 
-      about_description: {
+      smart_card_description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
 
-      key_benefit_title: {
+      key_benefits_title: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      card_apply_steps_title: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      card_apply_steps_description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
 
-      card_apply_step_title: {
+
+      get_your_ev_title: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      card_apply_step_description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-
-
-      get_ur_ev_title: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-
-    
     },
     {
       tableName: "go_ec_smart_card_cms",

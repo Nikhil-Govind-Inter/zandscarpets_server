@@ -1,13 +1,14 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/investInGoEc/InvestInGoEcMilestoneRequest");
-const { paginate } = require('../../../http/traits/datatablePaginationHelper');
+const { validationRequestPost, validateId } = require("../../request/goEcSmartCard/GoEcSmartCardApplyStepRequest");
+const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
+const { paginate } = require('../../traits/datatablePaginationHelper');
 
 
-const DataModel = models.InvestInGoEcMilestone;
+const DataModel = models.GoEcSmartCardApplyStep;
 
-class InvestInGoEcMilestoneController {
+class GoEcSmartCardApplyStepController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -38,6 +39,9 @@ class InvestInGoEcMilestoneController {
         const transaction = await sequelize.transaction();
 
         try {
+            const fileFields = ["media_path"];
+            handleFileUploadStore(req, fileFields);
+
             // Create data with transaction
             const data = await DataModel.create(req.body, { transaction });
 
@@ -96,6 +100,11 @@ class InvestInGoEcMilestoneController {
                 return sendNotFoundError(res, 'Data');
             }
 
+            
+
+            const fileFields = ["media_path"];
+            await handleFileUploadUpdate(req, data, fileFields);
+
             await data.update(req.body, { transaction });
 
             await transaction.commit();
@@ -142,4 +151,4 @@ class InvestInGoEcMilestoneController {
 
 }
 
-module.exports = InvestInGoEcMilestoneController;
+module.exports = GoEcSmartCardApplyStepController;
