@@ -21,7 +21,11 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      media_path: {
+      media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },

@@ -39,7 +39,7 @@ class InvestInGoEcExploreController {
         const transaction = await sequelize.transaction();
 
         try {
-            const fileFields = ["media_path"];
+            const fileFields = ["media_desktop_path", "media_mobile_path"];
             handleFileUploadStore(req, fileFields);
 
             // Create data with transaction
@@ -100,9 +100,9 @@ class InvestInGoEcExploreController {
                 return sendNotFoundError(res, 'Data');
             }
 
-            
 
-            const fileFields = ["media_path"];
+
+            const fileFields = ["media_desktop_path", "media_mobile_path"];
             await handleFileUploadUpdate(req, data, fileFields);
 
             await data.update(req.body, { transaction });

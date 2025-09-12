@@ -10,43 +10,71 @@ module.exports = (sequelize) => {
         autoIncrement: true,
       },
       banner_title: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      invest_media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      invest_media_alt: {
+      banner_media_desktop_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      invest_description: {
+      banner_media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-
-      future_transportation_title: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      future_transportation_description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      future_transportation_media_path: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      future_transportation_media_alt: {
+      banner_media_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
 
-      business_model_title: {
+      about_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      about_media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        allowNull: true,
+      },
+      about_media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      about_media_mobile_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      about_media_alt: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+
+
+      growth_title: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      growth_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      growth_media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      growth_media_mobile_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      growth_media_alt: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+
+      explore_title: {
         type: DataTypes.STRING,
         allowNull: true,
       },
+
+
       why_invest_title: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -55,7 +83,11 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      why_invest_media_path: {
+      why_invest_media_desktop_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      why_invest_media_mobile_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -68,6 +100,8 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+
+      
       invest_in_goec_title: {
         type: DataTypes.STRING,
         allowNull: true,

@@ -43,10 +43,15 @@ class InvestInGoEcCmsController {
         try {
             const existingData = await DataModel.findOne();
             const fileFields = [
-                "invest_media_path",
-                "future_transportation_media_path",
-                "why_invest_media_path",
-                "invest_in_goec_media_path",
+                "banner_media_desktop_path",
+                "banner_media_mobile_path",
+                "about_media_desktop_path",
+                "about_media_mobile_path",
+                "growth_media_desktop_path",
+                "growth_media_mobile_path",
+                "why_invest_media_desktop_path",
+                "why_invest_media_mobile_path",
+                "invest_in_goec_media_path"
             ];
 
             let data;

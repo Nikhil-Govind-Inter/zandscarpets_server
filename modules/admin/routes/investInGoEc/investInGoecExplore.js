@@ -6,7 +6,8 @@ const { createUploadMiddleware } = require("../../http/middleware/multerMiddlewa
 
 // Define upload fields
 const fields = [
-    { name: "media_path", maxCount: 1 },
+    { name: "media_desktop_path", maxCount: 1 },
+     { name: "media_mobile_path", maxCount: 1 },
 ];
 
 

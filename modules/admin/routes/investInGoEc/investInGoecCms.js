@@ -6,9 +6,14 @@ const { createUploadMiddleware } = require("../../http/middleware/multerMiddlewa
 
 // Define fields
 const fields = [
-    { name: "invest_media_path", maxCount: 1 },
-    { name: "future_transportation_media_path", maxCount: 1 },
-    { name: "why_invest_media_path", maxCount: 1 },
+    { name: "banner_media_desktop_path", maxCount: 1 },
+    { name: "banner_media_mobile_path", maxCount: 1 },
+    { name: "about_media_desktop_path", maxCount: 1 },
+    { name: "about_media_mobile_path", maxCount: 1 },
+    { name: "growth_media_desktop_path", maxCount: 1 },
+    { name: "growth_media_mobile_path", maxCount: 1 },
+    { name: "why_invest_media_desktop_path", maxCount: 1 },
+    { name: "why_invest_media_mobile_path", maxCount: 1 },
     { name: "invest_in_goec_media_path", maxCount: 1 },
 ];
 

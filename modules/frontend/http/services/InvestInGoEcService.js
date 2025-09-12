@@ -1,22 +1,33 @@
 const { models } = require("../../../../database/models");
+const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
 
 class InvestInGoEcService {
 
   static async index() {
     try {
-      const cmsData = await models.AppPageCms.findOne();
+      const cmsData = await models.InvestInGoEcCms.findOne();
       if (!cmsData) {
-        throw new Error("No CMS data found for About page");
+        throw new Error("No CMS data found for Invest in go ec page");
       }
       const [
-        appPageFeatures = [],
-        appPageChargeUrEv = []
+        investInGoEcExplore = [],
+        investInGoEcFeatures = [],
+        investInGoEcMilestone = [],
+        investInGoEcPartners = [],
       ] = await Promise.all([
-        models.AppPageFeatures.findAll({
+        models.InvestInGoEcExplore.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
-        models.AppPageChargeUrEv.findAll({
+        models.InvestInGoEcFeatures.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.InvestInGoEcMilestone.findAll({
+          where: { status: true },
+          order: [["sort_order", "ASC"]],
+        }),
+        models.InvestInGoEcPartners.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
@@ -25,10 +36,10 @@ class InvestInGoEcService {
       const data = {
         banner_section: this.buildBannerSection(cmsData),
         about_section: this.buildAboutSection(cmsData),
-        advertisment_section: this.buildAdvertismentSection(cmsData, appPageFeatures),
-        explore_section: this.buildExploreSection(cmsData, appPageChargeUrEv),
-        why_invest_section: this.buildStartUrEvSection(cmsData),
-        testimonial_section: this.buildStartUrEvSection(cmsData),
+        growth_section: this.buildGrowthSection(cmsData),
+        explore_section: this.buildExploreSection(cmsData, investInGoEcExplore),
+        why_invest_section: this.buildWhyInvestSection(cmsData, investInGoEcFeatures, investInGoEcMilestone),
+        testimonial_section: this.buildTestimonialSection(cmsData, investInGoEcPartners),
         invest_in_goec_section: this.buildStartUrEvSection(cmsData),
       };
 
@@ -50,48 +61,122 @@ class InvestInGoEcService {
     };
   }
 
+
   static buildAboutSection(cmsData) {
     return {
       description: cmsData?.about_description ?? "",
+      media: mediaWithType(
+        cmsData,
+        "about_media_type",
+        "about_media_desktop_path",
+        "about_media_mobile_path",
+        "about_media_alt"
+      ),
     };
   }
 
-  static buildFeatureSection(cmsData, appPageFeatures) {
+  static buildGrowthSection(cmsData) {
     return {
-      title: cmsData?.feature_title ?? "",
-      list:
-        appPageFeatures.map((item) => ({
-          title: item?.title ?? "",
-          highlight_title: item?.highlight_title ?? "",
-          image_one_path: item?.image_one_path ?? "",
-          image_two_path: item?.image_two_path ?? "",
-        })) || [],
+      title: cmsData?.growth_title ?? "",
+      description: cmsData?.growth_description ?? "",
+      media: mediaWithoutType(
+        cmsData,
+        "growth_media_desktop_path",
+        "growth_media_mobile_path",
+        "growth_media_alt"
+      ),
     };
   }
 
-  static buildHowToChargeSection(cmsData, appPageChargeUrEv) {
+  static buildExploreSection(cmsData, investInGoEcExplore) {
     return {
-      title: cmsData?.charge_ur_ev_title ?? "",
+      title: cmsData?.explore_title ?? "",
       list:
-        appPageChargeUrEv.map((item) => ({
+        investInGoEcExplore.map((item) => ({
+          name: item?.name ?? "",
           title: item?.title ?? "",
           description: item?.description ?? "",
-          media: singleMediaWithoutType(
+          media: mediaWithoutType(
             item,
-            "media_path",
-            "media_alt",
+            "media_desktop_path",
+            "media_mobile_path",
+            "media_alt"
           ),
         })) || [],
     };
   }
 
+  static buildWhyInvestSection(cmsData, investInGoEcFeatures, investInGoEcMilestone) {
+    return {
+      title: cmsData?.why_invest_title ?? "",
+      description: cmsData?.why_invest_description ?? "",
+      media: mediaWithoutType(
+        cmsData,
+        "why_invest_media_desktop_path",
+        "why_invest_media_mobile_path",
+        "why_invest_media_alt"
+      ),
+      milestone_list:
+        investInGoEcMilestone.map((item) => ({
+          value: item?.value ?? "",
+          prefix: item?.prefix ?? "",
+          subtitle: item?.subtitle ?? "",
+        })) || [],
+      feature_list:
+        investInGoEcFeatures.map((item) => ({
+          description: item?.description ?? "",
+          media: singleMediaWithoutType(
+            item,
+            "icon_path",
+            "icon_alt"
+          ),
+        })) || [],
+    };
+  }
+
+  static buildWhyInvestSection(cmsData, investInGoEcPartners) {
+    return {
+      title: cmsData?.partners_title ?? "",
+      list:
+        investInGoEcPartners.map((item) => ({
+          name: item?.name ?? "",
+          designation: item?.designation ?? "",
+          description: item?.description ?? "",
+          media: singleMediaWithoutType(
+            item,
+            "profile_media_path",
+            "profile_media_alt"
+          ),
+        })) || [],
+
+    };
+  }
+
+  static buildTestimonialSection(cmsData, investInGoEcPartners) {
+    return {
+      title: cmsData?.partners_title ?? "",
+      list:
+        investInGoEcPartners.map((item) => ({
+          name: item?.name ?? "",
+          designation: item?.designation ?? "",
+          description: item?.description ?? "",
+          media: singleMediaWithoutType(
+            item,
+            "profile_media_path",
+            "profile_media_alt"
+          ),
+        })) || [],
+
+    };
+  }
+
   static buildStartUrEvSection(cmsData) {
     return {
-      title: cmsData?.start_ur_journey_title ?? "",
+      title: cmsData?.invest_in_goec_title ?? "",
       media: singleMediaWithoutType(
-        cmsData,
-        "start_ur_journey_media_path",
-        "start_ur_journey_media_alt",
+        item,
+        "invest_in_goec_media_path",
+        "invest_in_goec_media_alt"
       ),
     };
   }
