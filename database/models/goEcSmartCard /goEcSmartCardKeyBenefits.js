@@ -13,16 +13,8 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      highlight_title: {
+      description: {
         type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      image_one_path: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      image_two_path: {
-        type: DataTypes.STRING,
         allowNull: true,
       },
       status: {
