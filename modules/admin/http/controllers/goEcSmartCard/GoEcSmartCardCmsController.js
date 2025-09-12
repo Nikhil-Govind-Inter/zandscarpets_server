@@ -1,8 +1,8 @@
 const { body, validationResult } = require("express-validator");
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse } = require("../../traits/responseHandler");
-const { validationRequestPost } = require("../../request/goEcSmartCard/goEcSmartCardCmsRequest");
-const { handleFileUploadUpdate } = require("../../../http/middleware/multerMiddleware");
+const { validationRequestPost } = require("../../request/goEcSmartCard/GoEcSmartCardCmsRequest");
+const { handleFileUploadUpdate } = require("../../middleware/multerMiddleware");
 
 
 
