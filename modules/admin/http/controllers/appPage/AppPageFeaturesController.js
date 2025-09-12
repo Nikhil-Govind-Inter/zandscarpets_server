@@ -1,16 +1,14 @@
 const { validationResult } = require('express-validator');
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../../request/blog/BlogRequest");
+const { validationRequestPost, validateId } = require("../../request/apppage/AppPageFeaturesRequest");
 const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
-const { paginate } = require('../../../http/traits/datatablePaginationHelper');
-const slugify = require("slugify");
-const { Op } = require("sequelize");
+const { paginate } = require('../../traits/datatablePaginationHelper');
 
 
-const DataModel = models.Blogs;
+const DataModel = models.AppPageFeatures;
 
-class BlogController {
+class AppPageFeaturesController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -38,32 +36,22 @@ class BlogController {
             return sendValidationError(res, errors.array());
         }
 
+        const transaction = await sequelize.transaction();
+
         try {
-            req.body.slug = slugify(req.body.title || "", { lower: true, strict: true });
-
-            if (!req.body.slug) {
-                return sendErrorResponse(res, "Title is required to generate slug", null, 400);
-            }
-
-
-            // Check for duplicate slug
-            const existing = await DataModel.findOne({ where: { slug: req.body.slug }, paranoid: true });
-            if (existing) {
-                return sendErrorResponse(res, 'A data with this name already exists', null, 409);
-            }
-            const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
-
+            const fileFields = ["image_one_path","image_two_path"];
             handleFileUploadStore(req, fileFields);
-            // Create Data
-            const data = await DataModel.create(req.body);
 
-            // Fetch created data with associations
-            const createdData = await DataModel.findByPk(data.id);
+            // Create data with transaction
+            const data = await DataModel.create(req.body, { transaction });
 
-            sendSuccessResponse(res, createdData, 'Data created successfully', 201);
+            // Commit the transaction
+            await transaction.commit();
+            sendSuccessResponse(res, data, 'Data created successfully', 201);
 
         } catch (error) {
             console.error('Data creation error:', error);
+            await transaction.rollback();
             sendErrorResponse(res, error);
         }
     }
@@ -95,60 +83,42 @@ class BlogController {
     }
 
     static async update(req, res) {
-        // Run validations
-        await Promise.all([...validateId, ...validationRequestPost].map(validation => validation.run(req)));
+        await Promise.all([...validateId, ...validationRequestPost].map(v => v.run(req)));
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return sendValidationError(res, errors.array());
         }
 
+        const transaction = await sequelize.transaction();
+
         try {
             const { id } = req.params;
 
-            const data = await DataModel.findByPk(id);
+            const data = await DataModel.findByPk(id, { transaction });
             if (!data) {
-                return sendNotFoundError(res, "Data");
+                await transaction.rollback();
+                return sendNotFoundError(res, 'Data');
             }
 
-            // Generate new slug if title is updated
-            if (req.body.title && req.body.title !== data.title) {
-                req.body.slug = slugify(req.body.title, { lower: true, strict: true });
+            
 
-                // Check for duplicate slug (excluding current record)
-                const existing = await DataModel.findOne({
-                    where: {
-                        slug: req.body.slug,
-                        id: { [Op.ne]: data.id },
-                    },
-                    paranoid: true,
-                });
-
-                if (existing) {
-                    return sendErrorResponse(
-                        res,
-                        "A Data with this title already exists",
-                        null,
-                        409
-                    );
-                }
-            }
-
-            const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
+            const fileFields = ["image_one_path","image_two_path"];
             await handleFileUploadUpdate(req, data, fileFields);
 
-            // Update the data
-            await data.update(req.body);
+            await data.update(req.body, { transaction });
 
-            // Fetch updated data with associations
+            await transaction.commit();
+
             const updatedData = await DataModel.findByPk(data.id);
 
-            sendSuccessResponse(res, updatedData, "Data updated successfully");
+            return sendSuccessResponse(res, updatedData, 'Data updated successfully');
+
         } catch (error) {
-            console.error("Data update error:", error);
-            sendErrorResponse(res, error);
+            await transaction.rollback();
+            console.error('Data update error:', error);
+            return sendErrorResponse(res, error);
         }
     }
-
 
 
     static async destroy(req, res) {
@@ -181,4 +151,4 @@ class BlogController {
 
 }
 
-module.exports = BlogController;
+module.exports = AppPageFeaturesController;

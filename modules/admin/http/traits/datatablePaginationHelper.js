@@ -3,10 +3,13 @@ const { Op } = require('sequelize');
 
 module.exports = {
   paginate: async (Model, req, options = {}) => {
-    const { limit = 10, page = 1, keyword } = req.query;
-    const offset = (page - 1) * limit;
-    const parsedLimit = parseInt(limit, 15);
-    
+    const { limit, page = 1, keyword } = req.query;
+
+
+    const parsedLimit = limit ? parseInt(limit, 10) : 10;
+    const parsedPage = parseInt(page, 10) || 1;
+    const offset = (parsedPage - 1) * parsedLimit;
+
     const dynamicIlike = keyword ? `%${keyword}%` : `%%`;
     const isSearchApplied = Boolean(keyword);
 
@@ -34,7 +37,7 @@ module.exports = {
       pagination: {
         totalCount: count,
         totalPages: Math.ceil(count / parsedLimit),
-        currentPage: parseInt(page),
+        currentPage: parsedPage,
         limit: parsedLimit,
         isSearchApplied
       }

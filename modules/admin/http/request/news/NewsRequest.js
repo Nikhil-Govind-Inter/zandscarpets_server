@@ -2,7 +2,7 @@ const { body, param } = require("express-validator");
 
 const validationRequestPost = [
   // Title
-  body("title")
+ body("title")
     .notEmpty()
     .withMessage("Title is required")
     .isString()
@@ -12,8 +12,7 @@ const validationRequestPost = [
 
   // Slug
   body("slug")
-    .notEmpty()
-    .withMessage("Slug is required")
+    .optional()
     .isString()
     .withMessage("Slug must be a valid string")
     .isLength({ max: 255 })
@@ -41,16 +40,14 @@ const validationRequestPost = [
   // Published On
   body("published_on")
     .optional()
-    .isISO8601()
-    .withMessage("Published on must be a valid date (YYYY-MM-DD)"),
+    .isLength({ max: 255 })
+    .withMessage("published_on alt must not exceed 255 characters"),
 
   // Reading Time
   body("reading_time")
     .optional()
-    .isString()
-    .withMessage("Reading time must be a string")
-    .isLength({ max: 50 })
-    .withMessage("Reading time must not exceed 50 characters"),
+    .isLength({ max: 255 })
+    .withMessage("reading_time alt must not exceed 255 characters"),
 
   // Banner Media
   body("banner_media_desktop_path")

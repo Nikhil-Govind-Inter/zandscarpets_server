@@ -21,7 +21,7 @@ module.exports = (sequelize) => {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
-            recent_Blog_title: {
+            recent_blog_title: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
