@@ -14,7 +14,7 @@ class InvestInGoEcContoller {
                 status: HTTP_STATUS.OK,
             });
         } catch (error) {
-            return ErrorHandler.handleControllerError(error, res, "homeController");
+            return ErrorHandler.handleControllerError(error, res, "InvestController");
         }
     }
 }
