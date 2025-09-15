@@ -1,8 +1,9 @@
 const { validationResult } = require('express-validator');
-const { sequelize, models } = require('../../../../database/models');
-const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../request/metatags/MetatagRequest");
-const { paginate } = require('../../http/traits/datatablePaginationHelper');
+const { sequelize, models } = require('../../../../../database/models');
+const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
+const { validationRequestPost, validateId } = require("../../request/common/MetatagRequest");
+const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
+const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 
 const DataModel = models.MetaTags;
@@ -38,7 +39,6 @@ class MetaTagsController {
         const transaction = await sequelize.transaction();
 
         try {
-           
             // Create data with transaction
             const data = await DataModel.create(req.body, { transaction });
 
@@ -96,9 +96,6 @@ class MetaTagsController {
                 await transaction.rollback();
                 return sendNotFoundError(res, 'Data');
             }
-
-            
-
             await data.update(req.body, { transaction });
 
             await transaction.commit();
