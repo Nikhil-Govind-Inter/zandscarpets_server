@@ -4,7 +4,7 @@ const Controller = require("../http/controllers/PolicyContoller");
 
 
 
-router.get("/", Controller.index);
+router.get("/:slug", Controller.index);
 
 
 module.exports = router;

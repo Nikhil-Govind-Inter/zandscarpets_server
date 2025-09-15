@@ -1,106 +1,44 @@
 const { models } = require("../../../../database/models");
+const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
 
 class PolicyService {
-  static async index() {
+  static async index(slug) {
     try {
-      const [cmsData = {}, homeBanners = []] = await Promise.all([
-        models.HomeCms.findOne(),
-        models.HomeBanner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-      ]);
+      const cmsData = await models.Policy.findOne({
+        where: { slug },
+      });
+
+      if (!cmsData) {
+        throw new Error(`No CMS data found for slug: ${slug}`);
+      }
 
       const data = {
-        banner_section: this.buildBannerSection(cmsData, homeBanners),
-        milestone_section: this.buildMilestoneSection(cmsData, homeBanners),
-        company_growth_section: this.buildCompanyGrowthSection(cmsData, homeBanners),
-        advertisement_section: this.buildAdvertisementSection(cmsData, homeBanners),
-        explore_section: this.buildExploreSection(cmsData, homeBanners),
-        app_feature_section: this.buildAppFeatureSection(cmsData, homeBanners),
-        investment_section: this.buildInvestmentSection(cmsData, homeBanners),
+        banner_section: this.buildBannerSection(cmsData),
+        content: this.buildContentSection(cmsData),
       };
 
       return data;
     } catch (error) {
-      throw new Error(`Error fetching home page data: ${error.message}`);
+      throw new Error(`Error fetching policy page data: ${error.message}`);
     }
   }
 
-  static buildBannerSection(cmsData, homeBanners) {
+  static buildBannerSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      banner_title: cmsData?.banner_title ?? "",
+      media: mediaWithoutType(
+        cmsData,
+        "banner_media_desktop_path",
+        "banner_media_mobile_path",
+        "banner_media_alt"
+      ),
     };
   }
 
-  static buildMilestoneSection(cmsData, homeBanners) {
+  static buildContentSection(cmsData) {
     return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildCompanyGrowthSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildAdvertisementSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildExploreSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildAppFeatureSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
-    };
-  }
-
-  static buildInvestmentSection(cmsData, homeBanners) {
-    return {
-      milestone_description: cmsData?.milestone_description ?? "",
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: cmsData?.title ?? "",
+      description: cmsData?.description ?? "",
     };
   }
 }
