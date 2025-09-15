@@ -1,27 +1,20 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const SiteSettings = sequelize.define(
-    "SiteSettings",
+  const HeaderFooter = sequelize.define(
+    "HeaderFooter",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      address: {
+
+      header_logo: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      email: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      phone: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      logo: {
+      footer_logo: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -34,62 +27,77 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      footer_download_image_one: {
+      footer_title: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      footer_download_image_one_alt: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-        defaultValue: "",
-      },
-      footer_download_image_one_link: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      footer_download_image_two: {
+
+
+
+      location_one_address: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      footer_download_image_two_alt: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-        defaultValue: "",
-      },
-      footer_download_image_two_link: {
+      location_one_email: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      footer_logo: {
+      location_one_phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      location_two_address: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      footer_logo_alt: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-        defaultValue: "",
-      },
-      footer_description: {
+      location_two_email: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      social_media_title: {
+      location_two_phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+
+
+      app_store_image: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      subscribe_title: {
+      app_store_image_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: "",
       },
+      app_store_image_link: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+
+      playstore_image: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      playstore_image_alt: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: "",
+      },
+      playstore_image_link: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+     
+     
     },
     {
-      tableName: "site_settings",
+      tableName: "header_footer",
       timestamps: true,
       createdAt: "created_at",
       updatedAt: "updated_at",
     }
   );
 
-  return SiteSettings;
+  return HeaderFooter;
 };

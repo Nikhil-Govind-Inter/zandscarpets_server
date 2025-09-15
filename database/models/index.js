@@ -6,6 +6,7 @@ const definePolicy = require("./policy");
 const definePartner = require("./partner");
 const defineAssociates = require("./associates");
 const defineSocialMedia = require("./socialMedia");
+const defineHeaderFooter = require("./headerFooter");
 
 // HOMEPAGE
 const defineHomeCms = require("./home/homeCms");
@@ -58,6 +59,7 @@ const models = {
   Partner: definePartner(sequelize),
   Associates: defineAssociates(sequelize),
   SocialMedia: defineSocialMedia(sequelize),
+  HeaderFooter: defineHeaderFooter(sequelize),
 
   // HOMEPAGE
   HomeCms: defineHomeCms(sequelize),
