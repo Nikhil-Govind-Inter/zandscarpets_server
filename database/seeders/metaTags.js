@@ -1,5 +1,3 @@
-// seeders/meta-tags-seeder.js
-
 const MetaTags = require("../models").models.MetaTags;
 
 /**
@@ -8,44 +6,43 @@ const MetaTags = require("../models").models.MetaTags;
 const defaultMetaTags = [
     {
         page: "home",
-        meta_title: "Xpress Health - Smarter Healthcare Staffing",
-        meta_description: "Find healthcare professionals, providers, and pharmacies instantly with Xpress Health.",
-        meta_keywords: "healthcare staffing, nursing jobs, healthcare professionals",
+        meta_title: "Go EC - Smarter Energy Solutions",
+        meta_description: "Discover innovative energy solutions, sustainability practices, and eco-friendly technologies with Go EC.",
+        meta_keywords: "energy solutions, sustainable energy, eco-friendly technology",
         canonical_url: "/",
     },
-    
     {
         page: "about",
-        meta_title: "About Us | Xpress Health",
-        meta_description: "Learn more about Xpress Health, our mission, and our commitment to healthcare innovation.",
-        meta_keywords: "about xpress health, healthcare company, healthcare innovation",
+        meta_title: "About Us | Go EC",
+        meta_description: "Learn more about Go EC, our mission, and our commitment to sustainable energy innovation.",
+        meta_keywords: "about go ec, energy company, sustainable innovation",
         canonical_url: "/about",
     },
     {
         page: "blog-listing",
-        meta_title: "Healthcare Insights & News | Xpress Health Blog",
-        meta_description: "Read the latest articles, trends, and news in healthcare and staffing.",
-        meta_keywords: "healthcare blog, healthcare news, staffing insights",
+        meta_title: "Energy Insights & News | Go EC Blog",
+        meta_description: "Read the latest articles, trends, and news in energy, sustainability, and eco-friendly technologies.",
+        meta_keywords: "energy blog, sustainable energy news, eco-friendly insights",
         canonical_url: "/blog-listing",
     },
     {
         page: "contact",
-        meta_title: "Contact Us | Xpress Health",
-        meta_description: "Get in touch with Xpress Health for support, partnerships, or general inquiries.",
-        meta_keywords: "contact xpress health, healthcare support, partnerships",
+        meta_title: "Contact Us | Go EC",
+        meta_description: "Get in touch with Go EC for support, partnerships, or general inquiries.",
+        meta_keywords: "contact go ec, energy support, sustainability partnerships",
         canonical_url: "/contact",
     },
     {
         page: "terms-and-conditions",
-        meta_title: "Terms and Conditions | Xpress Health",
-        meta_description: "Read the terms and conditions for using Xpress Health’s platform and services.",
-        meta_keywords: "terms of service, xpress health policies",
+        meta_title: "Terms and Conditions | Go EC",
+        meta_description: "Read the terms and conditions for using Go EC’s platform and services.",
+        meta_keywords: "terms of service, go ec policies",
         canonical_url: "/terms-and-conditions",
     },
     {
         page: "privacy-policy",
-        meta_title: "Privacy Policy | Xpress Health",
-        meta_description: "Understand how Xpress Health collects, uses, and protects your personal data.",
+        meta_title: "Privacy Policy | Go EC",
+        meta_description: "Understand how Go EC collects, uses, and protects your personal data.",
         meta_keywords: "privacy policy, data protection, user privacy",
         canonical_url: "/privacy-policy",
     },
