@@ -1,13 +1,14 @@
 const { validationResult } = require('express-validator');
-const { sequelize, models } = require('../../../../database/models');
-const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../traits/responseHandler");
-const { validationRequestPost, validateId } = require("../request/metatags/MetatagRequest");
-const { paginate } = require('../../http/traits/datatablePaginationHelper');
+const { sequelize, models } = require('../../../../../database/models');
+const { sendValidationError, sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
+const { validationRequestPost, validateId } = require("../../request/common/SocailMediaRequest");
+const { handleFileUploadStore, handleFileUploadUpdate } = require('../../middleware/multerMiddleware');
+const { paginate } = require('../../../http/traits/datatablePaginationHelper');
 
 
-const DataModel = models.MetaTags;
+const DataModel = models.SocialMedia;
 
-class MetaTagsController {
+class SocialMediaController {
     static async index(req, res) {
         try {
             const result = await paginate(DataModel, req, {
@@ -38,7 +39,9 @@ class MetaTagsController {
         const transaction = await sequelize.transaction();
 
         try {
-           
+            const fileFields = ["icon"];
+            handleFileUploadStore(req, fileFields);
+
             // Create data with transaction
             const data = await DataModel.create(req.body, { transaction });
 
@@ -99,6 +102,9 @@ class MetaTagsController {
 
             
 
+            const fileFields = ["icon"];
+            await handleFileUploadUpdate(req, data, fileFields);
+
             await data.update(req.body, { transaction });
 
             await transaction.commit();
@@ -145,4 +151,4 @@ class MetaTagsController {
 
 }
 
-module.exports = MetaTagsController;
+module.exports = SocialMediaController;
