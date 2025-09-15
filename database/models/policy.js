@@ -10,42 +10,31 @@ module.exports = (sequelize) => {
                 primaryKey: true,
             },
             slug: {
-                type: DataTypes.ENUM("privacy-policy", "terms-and-conditions","cookie-policy"),
+                type: DataTypes.ENUM("privacy-policy", "terms-and-conditions"),
                 allowNull: true,
             },
-            title: {
+            banner_title: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
-            highlight_title: {
+            banner_media_desktop_path: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
-            description: {
+            banner_media_mobile_path: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
-            sub_description: {
-                type: DataTypes.TEXT,
-                allowNull: true,
-            },
-             faq_title: {
-                type: DataTypes.TEXT,
-                allowNull: true,
-            },
-            faq_highlight_title: {
-                type: DataTypes.TEXT,
-                allowNull: true,
-            },
-            faq_button_text: {
-                type: DataTypes.TEXT,
-                allowNull: true,
-            },
-            faq_button_link: {
+            banner_media_alt: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },
            
+            content: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+            },
+            
             deletedAt: {
                 type: DataTypes.DATE,
             },

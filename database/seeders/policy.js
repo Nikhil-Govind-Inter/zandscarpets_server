@@ -3,18 +3,13 @@ const { models } = require("../models");
 const defaultData = [
   {
     slug: "privacy-policy",
-    title: "Privacy Policy",
-    description: "Description for privacy policy",
+    banner_title: "Privacy Policy",
+    content: "Description for privacy policy",
   },
   {
     slug: "terms-and-conditions",
-    title: "Terms and Conditions",
-    description: "Description for terms and conditions",
-  },
-   {
-    slug: "cookie-policy",
-    title: "Cookie Policy",
-    description: "Description for Cookie Policy",
+    banner_title: "Terms and Conditions",
+    content: "Description for terms and conditions",
   },
 ];
 
