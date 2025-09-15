@@ -25,15 +25,8 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      targeted_keywords: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
+     
       other_meta_tags: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      canonical_url: {
         type: DataTypes.TEXT,
         allowNull: true,
       },

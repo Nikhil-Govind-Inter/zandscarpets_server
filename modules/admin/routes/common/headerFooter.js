@@ -23,7 +23,7 @@ router.get("/", Controller.index);
 // Protected routes (require admin auth)
 // router.use(authMiddleware(["admin"]));
 
-router.post("/", upload, Controller.store);
+router.post("/", upload, Controller.update);
 
 
 module.exports = router;

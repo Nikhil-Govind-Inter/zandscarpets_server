@@ -1,8 +1,5 @@
 const { body } = require("express-validator");
 
-const MAX_STRING_LENGTH = 255;
-const MAX_TEXT_LENGTH = 1000;
-
 const validationRequestPost = [
 //   body("banner_title")
 //     .isString()

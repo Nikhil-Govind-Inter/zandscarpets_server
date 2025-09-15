@@ -1,4 +1,4 @@
-const { body, validationResult } = require("express-validator");
+const { validationResult } = require("express-validator");
 const { sequelize, models } = require('../../../../../database/models');
 const { sendValidationError, sendSuccessResponse, sendErrorResponse } = require("../../traits/responseHandler");
 const { validationRequestPost } = require("../../request/common/HeaderFooterRequest");
