@@ -11,7 +11,7 @@ class NewsService {
       const offset = (page - 1) * limit;
 
       const [cmsData = {}, News = [], allNewsPaginated] = await Promise.all([
-        models.NewCms.findOne(),
+        models.NewsCms.findOne(),
 
         // Featured News
         models.News.findAll({
