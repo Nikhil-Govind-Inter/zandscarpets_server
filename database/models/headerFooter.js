@@ -61,16 +61,16 @@ module.exports = (sequelize) => {
 
 
 
-      app_store_image: {
+      apple_app_store_image: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      app_store_image_alt: {
+      apple_app_store_image_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: "",
       },
-      app_store_image_link: {
+      apple_app_store_image_link: {
         type: DataTypes.TEXT,
         allowNull: true,
       },

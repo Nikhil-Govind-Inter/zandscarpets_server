@@ -9,7 +9,7 @@ const fields = [
     { name: "header_logo", maxCount: 1 },
     { name: "footer_logo", maxCount: 1 },
     { name: "favicon", maxCount: 1 },
-    { name: "app_store_image", maxCount: 1 },
+    { name: "apple_app_store_image", maxCount: 1 },
     { name: "playstore_image", maxCount: 1 },
 ];
 

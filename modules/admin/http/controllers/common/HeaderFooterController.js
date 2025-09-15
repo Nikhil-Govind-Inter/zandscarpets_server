@@ -47,7 +47,7 @@ class HeaderFooterController {
                 "header_logo",
                 "footer_logo",
                 "favicon",
-                "app_store_image",
+                "apple_app_store_image",
                 "playstore_image",
             ];
 
