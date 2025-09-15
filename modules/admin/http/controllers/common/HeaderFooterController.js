@@ -9,6 +9,7 @@ const { handleFileUploadUpdate } = require("../../../http/middleware/multerMiddl
 const DataModel = models.HeaderFooter;
 
 
+
 class HeaderFooterController {
 
     //DATA VIEW  START
