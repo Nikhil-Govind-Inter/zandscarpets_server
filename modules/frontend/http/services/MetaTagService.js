@@ -8,7 +8,7 @@ class MetaTagService {
 
       switch (type) {
         case "blog":
-          data = await models.Blog.findOne({
+          data = await models.Blogs.findOne({
             attributes: [
               "meta_title",
               "meta_description",
@@ -50,7 +50,7 @@ class MetaTagService {
           break;
 
         default:
-          return null; // controller handles error response
+          return null; 
       }
 
       // fallback meta values
