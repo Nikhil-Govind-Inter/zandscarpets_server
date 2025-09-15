@@ -46,6 +46,9 @@ class HeaderFooterService {
   }
   static buildHeaderSection(cmsData, socialMedia) {
     return {
+      common_section: {
+        title: cmsData?.footer_title ?? '',
+      },
       footer_logo: cmsData?.footer_logo ?? '',
       footer_logo_alt: cmsData?.logo_alt ?? '',
 
