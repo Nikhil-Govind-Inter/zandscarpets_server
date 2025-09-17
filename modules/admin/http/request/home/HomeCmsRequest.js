@@ -1,65 +1,117 @@
 const { body } = require("express-validator");
 
-const MAX_STRING_LENGTH = 255;
-const MAX_TEXT_LENGTH = 1000;
-
 const validationRequestPost = [
-  body("banner_title")
-    .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "banner_title must be a string with a maximum of 1000 characters"
-    ),
-
-  body("banner_media_path")
+  // milestone
+  body("milestone_description")
     .optional()
     .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "banner_media_path must be a string with a maximum of 1000 characters"
-    ),
+    .withMessage("Milestone description must be a string"),
 
-  body("banner_media_alt")
+  // make ride
+  body("make_ride_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "banner_media_alt must be a string with a maximum of 1000 characters"
-    ),
+    .withMessage("Make ride title must be a string"),
+  body("make_ride_highlight_title")
+    .optional()
+    .isString()
+    .withMessage("Make ride highlight title must be a string"),
+  body("make_ride_description")
+    .optional()
+    .isString()
+    .withMessage("Make ride description must be a string"),
+  body("make_ride_media_type")
+    .optional()
+    .isIn(["image", "video"])
+    .withMessage("Make ride media type must be either 'image' or 'video'"),
+  body("make_ride_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("Make ride desktop path must be a string"),
+  body("make_ride_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("Make ride mobile path must be a string"),
+  body("make_ride_media_alt")
+    .optional()
+    .isString()
+    .withMessage("Make ride media alt text must be a string"),
 
-  body("smart_card_description")
+  // explore
+  body("explore_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "smart_card_description must be a string with a maximum of 1000 characters"
-    ),
+    .withMessage("Explore title must be a string"),
+  body("explore_description")
+    .optional()
+    .isString()
+    .withMessage("Explore description must be a string"),
 
-  body("key_benefits_title")
+  // app feature
+  body("app_feature_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_STRING_LENGTH })
-    .withMessage(
-      "key_benefits_title must be a string with a maximum of 255 characters"
-    ),
+    .withMessage("App feature title must be a string"),
+  body("app_feature_description")
+    .optional()
+    .isString()
+    .withMessage("App feature description must be a string"),
+  body("app_feature_sub_title")
+    .optional()
+    .isString()
+    .withMessage("App feature subtitle must be a string"),
+  body("app_feature_media_type")
+    .optional()
+    .isIn(["image", "video"])
+    .withMessage("App feature media type must be either 'image' or 'video'"),
+  body("app_feature_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("App feature desktop path must be a string"),
+  body("app_feature_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("App feature mobile path must be a string"),
+  body("app_feature_media_alt")
+    .optional()
+    .isString()
+    .withMessage("App feature media alt must be a string"),
 
-  body("card_apply_steps_title")
+  // investment
+  body("investment_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_STRING_LENGTH })
-    .withMessage(
-      "card_apply_steps_title must be a string with a maximum of 255 characters"
-    ),
+    .withMessage("Investment title must be a string"),
+  body("investment_media_type")
+    .optional()
+    .isIn(["image", "video"])
+    .withMessage("Investment media type must be either 'image' or 'video'"),
+  body("investment_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("Investment desktop path must be a string"),
+  body("investment_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("Investment mobile path must be a string"),
+  body("investment_media_alt")
+    .optional()
+    .isString()
+    .withMessage("Investment media alt must be a string"),
 
-  body("card_apply_steps_description")
+  // other simple fields
+  body("partners_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "card_apply_steps_description must be a string with a maximum of 1000 characters"
-    ),
-
-  body("get_your_ev_title")
+    .withMessage("Partners title must be a string"),
+  body("news_title")
+    .optional()
     .isString()
-    .isLength({ max: MAX_TEXT_LENGTH })
-    .withMessage(
-      "get_your_ev_title must be a string with a maximum of 1000 characters"
-    ),
+    .withMessage("News title must be a string"),
+  body("blog_title")
+    .optional()
+    .isString()
+    .withMessage("Blog title must be a string"),
 ];
 
 module.exports = {
