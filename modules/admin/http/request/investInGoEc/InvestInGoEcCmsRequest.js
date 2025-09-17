@@ -1,117 +1,132 @@
 const { body } = require("express-validator");
 
 const validationRequestPost = [
-  // Banner Title
+  // Banner
   body("banner_title")
-    .isString()
-    .isLength({ max: 255 })
-    .withMessage("banner_title must be at most 255 characters"),
-
-  // Invest Media Path
-  body("invest_media_path")
     .optional()
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage("invest_media_path must be at most 5000 characters"),
+    .withMessage("banner_title must be a string"),
 
-  // Invest Media Alt
-  body("invest_media_alt")
-    .isString()
-    .isLength({ max: 255 })
-    .withMessage("invest_media_alt must be at most 255 characters"),
-
-  // Invest Description
-  body("invest_description")
-    .isString()
-    .isLength({ max: 5000 })
-    .withMessage("invest_description must be at most 5000 characters"),
-
-  // Future Transportation Title
-  body("future_transportation_title")
-    .isString()
-    .isLength({ max: 255 })
-    .withMessage("future_transportation_title must be at most 255 characters"),
-
-  // Future Transportation Description
-  body("future_transportation_description")
-    .isString()
-    .isLength({ max: 5000 })
-    .withMessage(
-      "future_transportation_description must be at most 5000 characters"
-    ),
-
-  // Future Transportation Media Path
-  body("future_transportation_media_path")
+  body("banner_media_desktop_path")
     .optional()
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage(
-      "future_transportation_media_path must be at most 5000 characters"
-    ),
+    .withMessage("banner_media_desktop_path must be a string"),
 
-  // Future Transportation Media Alt
-  body("future_transportation_media_alt")
+  body("banner_media_mobile_path")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage(
-      "future_transportation_media_alt must be at most 255 characters"
-    ),
+    .withMessage("banner_media_mobile_path must be a string"),
 
-  // Business Model Title
-  body("business_model_title")
+  body("banner_media_alt")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage("business_model_title must be at most 255 characters"),
+    .withMessage("banner_media_alt must be a string"),
 
-  // Why Invest Title
+  // About Section
+  body("about_description")
+    .optional()
+    .isString()
+    .withMessage("about_description must be a string"),
+
+  body("about_media_type")
+    .optional()
+    .isIn(["image", "video"])
+    .withMessage("about_media_type must be either 'image' or 'video'"),
+
+  body("about_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("about_media_desktop_path must be a string"),
+
+  body("about_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("about_media_mobile_path must be a string"),
+
+  body("about_media_alt")
+    .optional()
+    .isString()
+    .withMessage("about_media_alt must be a string"),
+
+  // Growth Section
+  body("growth_title")
+    .optional()
+    .isString()
+    .withMessage("growth_title must be a string"),
+
+  body("growth_description")
+    .optional()
+    .isString()
+    .withMessage("growth_description must be a string"),
+
+  body("growth_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("growth_media_desktop_path must be a string"),
+
+  body("growth_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("growth_media_mobile_path must be a string"),
+
+  body("growth_media_alt")
+    .optional()
+    .isString()
+    .withMessage("growth_media_alt must be a string"),
+
+  // Explore Section
+  body("explore_title")
+    .optional()
+    .isString()
+    .withMessage("explore_title must be a string"),
+
+  // Why Invest Section
   body("why_invest_title")
-    .isString()
-    .isLength({ max: 255 })
-    .withMessage("why_invest_title must be at most 255 characters"),
-
-  // Why Invest Description
-  body("why_invest_description")
-    .isString()
-    .isLength({ max: 5000 })
-    .withMessage("why_invest_description must be at most 5000 characters"),
-
-  // Why Invest Media Path
-  body("why_invest_media_path")
     .optional()
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage("why_invest_media_path must be at most 5000 characters"),
+    .withMessage("why_invest_title must be a string"),
 
-  // Why Invest Media Alt
+  body("why_invest_description")
+    .optional()
+    .isString()
+    .withMessage("why_invest_description must be a string"),
+
+  body("why_invest_media_desktop_path")
+    .optional()
+    .isString()
+    .withMessage("why_invest_media_desktop_path must be a string"),
+
+  body("why_invest_media_mobile_path")
+    .optional()
+    .isString()
+    .withMessage("why_invest_media_mobile_path must be a string"),
+
   body("why_invest_media_alt")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage("why_invest_media_alt must be at most 255 characters"),
+    .withMessage("why_invest_media_alt must be a string"),
 
-  // Partners Title
+  // Partners
   body("partners_title")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage("partners_title must be at most 255 characters"),
+    .withMessage("partners_title must be a string"),
 
-  // Invest In GoEc Title
+  // Invest in GoEc Section
   body("invest_in_goec_title")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage("invest_in_goec_title must be at most 255 characters"),
+    .withMessage("invest_in_goec_title must be a string"),
 
-  // Invest In GoEc Media Path
   body("invest_in_goec_media_path")
     .optional()
     .isString()
-    .isLength({ max: 5000 })
-    .withMessage("invest_in_goec_media_path must be at most 5000 characters"),
+    .withMessage("invest_in_goec_media_path must be a string"),
 
-  // Invest In GoEc Media Alt
   body("invest_in_goec_media_alt")
+    .optional()
     .isString()
-    .isLength({ max: 255 })
-    .withMessage("invest_in_goec_media_alt must be at most 255 characters"),
+    .withMessage("invest_in_goec_media_alt must be a string"),
 ];
 
 module.exports = {
