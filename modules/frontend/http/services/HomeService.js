@@ -53,10 +53,6 @@ class HomeService {
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
-        models.Partner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
         models.News.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -66,6 +62,7 @@ class HomeService {
           order: [["sort_order", "ASC"]],
         }),
       ]);
+
 
       const data = {
         banner_section: this.buildBannerSection(homeBanners),
@@ -226,6 +223,7 @@ class HomeService {
       list:
         news.map((item) => ({
           title: item?.title ?? "",
+          slug: item?.slug ?? "",
           description: item?.description ?? "",
           reading_time: item?.reading_time ?? "",
           published_on: item?.published_on ?? "",
@@ -240,6 +238,7 @@ class HomeService {
       list:
         blogs.map((item) => ({
           title: item?.title ?? "",
+          slug: item?.slug ?? "",
           description: item?.description ?? "",
           published_on: item?.published_on ?? "",
           media: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
