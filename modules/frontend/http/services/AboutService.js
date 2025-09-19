@@ -141,7 +141,7 @@ class AboutService {
           title: item?.title ?? "",
           description: item?.description ?? "",
           media: singleMediaWithoutType(
-            cmsData,
+            item,
             "media_path",
             "media_alt",
           ),
@@ -149,7 +149,7 @@ class AboutService {
     };
   }
 
-  static buildMeetTeamSection(cmsData, homeBanners) {
+  static buildMeetTeamSection(cmsData) {
     return {
       title: cmsData?.meet_team_title ?? "",
       description: cmsData?.meet_team_description ?? "",
@@ -165,7 +165,7 @@ class AboutService {
     return {
       title: cmsData?.our_associate_title ?? "",
       description: cmsData?.our_associate_description ?? "",
-      list: partners.map((item) => ({
+      list: associates.map((item) => ({
         name: item?.name ?? "",
         media: singleMediaWithoutType(item, "media_path", "media_alt"),
       })),
@@ -178,6 +178,8 @@ class AboutService {
       description: cmsData?.media_description ?? "",
       list: aboutMedia.map((item) => ({
         name: item?.name ?? "",
+        thumbnail: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
+
         media: mediaWithType(
           item,
           "media_type",

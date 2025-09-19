@@ -30,7 +30,6 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-
       feature_title: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -40,8 +39,6 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-
-
       start_ur_journey_title: {
         type: DataTypes.TEXT,
         allowNull: true,

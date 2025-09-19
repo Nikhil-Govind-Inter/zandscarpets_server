@@ -45,8 +45,8 @@ class HomeCmsController {
             const fileFields = [
                 "make_ride_media_desktop_path",
                 "make_ride_media_mobile_path",
-                "app_feature_media_desktop_path",
-                "app_feature_media_mobile_path",
+                "app_feature_hand_image",
+                "app_feature_hand_video",
                 "investment_media_desktop_path",
                 "investment_media_mobile_path",
             ];
