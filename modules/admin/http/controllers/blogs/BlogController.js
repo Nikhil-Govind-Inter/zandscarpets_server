@@ -31,42 +31,60 @@ class BlogController {
     }
 
 
-    static async store(req, res) {
-        await Promise.all(validationRequestPost.map(validation => validation.run(req)));
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return sendValidationError(res, errors.array());
-        }
-
-        try {
-            req.body.slug = slugify(req.body.title || "", { lower: true, strict: true });
-
-            if (!req.body.slug) {
-                return sendErrorResponse(res, "Title is required to generate slug", null, 400);
+     static async store(req, res) {
+            await Promise.all(validationRequestPost.map(validation => validation.run(req)));
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return sendValidationError(res, errors.array());
             }
-
-
-            // Check for duplicate slug
-            const existing = await DataModel.findOne({ where: { slug: req.body.slug }, paranoid: true });
-            if (existing) {
-                return sendErrorResponse(res, 'A data with this name already exists', null, 409);
+    
+            try {
+                if (!req.body.title || req.body.title.trim() === "") {
+                    return sendErrorResponse(res, "Title is required to generate slug", null, 400);
+                }
+    
+                let baseSlug = slugify(req.body.title.trim(), { lower: true, strict: true });
+    
+                if (!baseSlug) {
+                    return sendErrorResponse(res, "Invalid title - cannot generate slug", null, 400);
+                }
+    
+                // Check for duplicate slug
+                const existing = await DataModel.findOne({
+                    where: { slug: baseSlug },
+                    paranoid: true
+                });
+    
+                if (existing) {
+                    return sendErrorResponse(
+                        res,
+                        `Slug "${baseSlug}" already exists for record with ID: ${existing.id}`,
+                        {
+                            conflicting_record_id: existing.id,
+                            conflicting_slug: baseSlug
+                        },
+                        409
+                    );
+                }
+    
+                req.body.slug = baseSlug;
+    
+                const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
+    
+                handleFileUploadStore(req, fileFields);
+                // Create Data
+                const data = await DataModel.create(req.body);
+    
+                // Fetch created data with associations
+                const createdData = await DataModel.findByPk(data.id);
+    
+                sendSuccessResponse(res, createdData, 'Data created successfully', 201);
+    
+            } catch (error) {
+                console.error('Data creation error:', error);
+                sendErrorResponse(res, error);
             }
-            const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
-
-            handleFileUploadStore(req, fileFields);
-            // Create Data
-            const data = await DataModel.create(req.body);
-
-            // Fetch created data with associations
-            const createdData = await DataModel.findByPk(data.id);
-
-            sendSuccessResponse(res, createdData, 'Data created successfully', 201);
-
-        } catch (error) {
-            console.error('Data creation error:', error);
-            sendErrorResponse(res, error);
         }
-    }
 
 
     static async show(req, res) {
@@ -94,7 +112,7 @@ class BlogController {
         }
     }
 
-    static async update(req, res) {
+     static async update(req, res) {
         // Run validations
         await Promise.all([...validateId, ...validationRequestPost].map(validation => validation.run(req)));
         const errors = validationResult(req);
@@ -112,12 +130,20 @@ class BlogController {
 
             // Generate new slug if title is updated
             if (req.body.title && req.body.title !== data.title) {
-                req.body.slug = slugify(req.body.title, { lower: true, strict: true });
+                if (req.body.title.trim() === "") {
+                    return sendErrorResponse(res, "Title cannot be empty", null, 400);
+                }
+
+                let baseSlug = slugify(req.body.title.trim(), { lower: true, strict: true });
+
+                if (!baseSlug) {
+                    return sendErrorResponse(res, "Invalid title - cannot generate slug", null, 400);
+                }
 
                 // Check for duplicate slug (excluding current record)
                 const existing = await DataModel.findOne({
                     where: {
-                        slug: req.body.slug,
+                        slug: baseSlug,
                         id: { [Op.ne]: data.id },
                     },
                     paranoid: true,
@@ -126,11 +152,16 @@ class BlogController {
                 if (existing) {
                     return sendErrorResponse(
                         res,
-                        "A Data with this title already exists",
-                        null,
+                        `Slug "${baseSlug}" already exists for record with ID: ${existing.id}`,
+                        {
+                            conflicting_record_id: existing.id,
+                            conflicting_slug: baseSlug
+                        },
                         409
                     );
                 }
+
+                req.body.slug = baseSlug;
             }
 
             const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
