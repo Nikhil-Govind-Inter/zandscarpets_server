@@ -39,18 +39,55 @@ class NewsController {
         }
 
         try {
-            req.body.slug = slugify(req.body.title || "", { lower: true, strict: true });
-
-            if (!req.body.slug) {
+            if (!req.body.title || req.body.title.trim() === "") {
                 return sendErrorResponse(res, "Title is required to generate slug", null, 400);
             }
 
+            let baseSlug = slugify(req.body.title.trim(), { lower: true, strict: true });
 
-            // Check for duplicate slug
-            const existing = await DataModel.findOne({ where: { slug: req.body.slug }, paranoid: true });
-            if (existing) {
-                return sendErrorResponse(res, 'A data with this name already exists', null, 409);
+            if (!baseSlug) {
+                return sendErrorResponse(res, "Invalid title - cannot generate slug", null, 400);
             }
+
+            // Generate unique slug
+            let uniqueSlug = baseSlug;
+            let counter = 1;
+            let existingRecord = null;
+
+            while (true) {
+                existingRecord = await DataModel.findOne({
+                    where: { slug: uniqueSlug },
+                    paranoid: true
+                });
+
+                if (!existingRecord) {
+                    break;
+                }
+
+                // Show which record already has this slug
+                if (counter === 1) {
+                    return sendErrorResponse(
+                        res,
+                        `Slug "${uniqueSlug}" already exists for record with ID: ${existingRecord.id}. Generated unique slug: "${baseSlug}-${counter}"`,
+                        {
+                            conflicting_record_id: existingRecord.id,
+                            conflicting_slug: uniqueSlug,
+                            suggested_slug: `${baseSlug}-${counter}`
+                        },
+                        409
+                    );
+                }
+
+                uniqueSlug = `${baseSlug}-${counter}`;
+                counter++;
+
+                if (counter > 100) {
+                    return sendErrorResponse(res, "Unable to generate unique slug", null, 500);
+                }
+            }
+
+            req.body.slug = uniqueSlug;
+
             const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
 
             handleFileUploadStore(req, fileFields);
@@ -112,25 +149,57 @@ class NewsController {
 
             // Generate new slug if title is updated
             if (req.body.title && req.body.title !== data.title) {
-                req.body.slug = slugify(req.body.title, { lower: true, strict: true });
-
-                // Check for duplicate slug (excluding current record)
-                const existing = await DataModel.findOne({
-                    where: {
-                        slug: req.body.slug,
-                        id: { [Op.ne]: data.id },
-                    },
-                    paranoid: true,
-                });
-
-                if (existing) {
-                    return sendErrorResponse(
-                        res,
-                        "A Data with this title already exists",
-                        null,
-                        409
-                    );
+                if (req.body.title.trim() === "") {
+                    return sendErrorResponse(res, "Title cannot be empty", null, 400);
                 }
+
+                let baseSlug = slugify(req.body.title.trim(), { lower: true, strict: true });
+
+                if (!baseSlug) {
+                    return sendErrorResponse(res, "Invalid title - cannot generate slug", null, 400);
+                }
+
+                // Generate unique slug
+                let uniqueSlug = baseSlug;
+                let counter = 1;
+                let existingRecord = null;
+
+                while (true) {
+                    existingRecord = await DataModel.findOne({
+                        where: {
+                            slug: uniqueSlug,
+                            id: { [Op.ne]: data.id },
+                        },
+                        paranoid: true,
+                    });
+
+                    if (!existingRecord) {
+                        break;
+                    }
+
+                    // Show which record already has this slug
+                    if (counter === 1) {
+                        return sendErrorResponse(
+                            res,
+                            `Slug "${uniqueSlug}" already exists for record with ID: ${existingRecord.id}. Generated unique slug: "${baseSlug}-${counter}"`,
+                            {
+                                conflicting_record_id: existingRecord.id,
+                                conflicting_slug: uniqueSlug,
+                                suggested_slug: `${baseSlug}-${counter}`
+                            },
+                            409
+                        );
+                    }
+
+                    uniqueSlug = `${baseSlug}-${counter}`;
+                    counter++;
+
+                    if (counter > 100) {
+                        return sendErrorResponse(res, "Unable to generate unique slug", null, 500);
+                    }
+                }
+
+                req.body.slug = uniqueSlug;
             }
 
             const fileFields = ["thumbnail", "banner_media_desktop_path", "banner_media_mobile_path"];
