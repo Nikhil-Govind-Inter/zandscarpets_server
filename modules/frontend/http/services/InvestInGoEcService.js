@@ -96,6 +96,7 @@ class InvestInGoEcService {
           name: item?.name ?? "",
           title: item?.title ?? "",
           description: item?.description ?? "",
+          points: item?.points,
           media: mediaWithoutType(
             item,
             "media_desktop_path",
@@ -134,23 +135,6 @@ class InvestInGoEcService {
     };
   }
 
-  static buildWhyInvestSection(cmsData, investInGoEcPartners) {
-    return {
-      title: cmsData?.partners_title ?? "",
-      list:
-        investInGoEcPartners.map((item) => ({
-          name: item?.name ?? "",
-          designation: item?.designation ?? "",
-          description: item?.description ?? "",
-          media: singleMediaWithoutType(
-            item,
-            "profile_media_path",
-            "profile_media_alt"
-          ),
-        })) || [],
-
-    };
-  }
 
   static buildTestimonialSection(cmsData, investInGoEcPartners) {
     return {
@@ -174,7 +158,7 @@ class InvestInGoEcService {
     return {
       title: cmsData?.invest_in_goec_title ?? "",
       media: singleMediaWithoutType(
-        item,
+        cmsData,
         "invest_in_goec_media_path",
         "invest_in_goec_media_alt"
       ),

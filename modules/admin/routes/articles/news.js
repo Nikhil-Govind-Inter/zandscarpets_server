@@ -13,7 +13,7 @@ const fields = [
 
 
 // Create upload middleware with fields
-const upload = createUploadMiddleware("blog", fields);
+const upload = createUploadMiddleware("news", fields);
 
 router.get("/", Controller.index);
 

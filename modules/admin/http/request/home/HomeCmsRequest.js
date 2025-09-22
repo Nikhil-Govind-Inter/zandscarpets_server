@@ -60,22 +60,27 @@ const validationRequestPost = [
     .optional()
     .isString()
     .withMessage("App feature subtitle must be a string"),
-  body("app_feature_media_type")
-    .optional()
-    .isIn(["image", "video"])
-    .withMessage("App feature media type must be either 'image' or 'video'"),
-  body("app_feature_media_desktop_path")
-    .optional()
-    .isString()
-    .withMessage("App feature desktop path must be a string"),
-  body("app_feature_media_mobile_path")
+  // body("app_feature_media_type")
+  //   .optional()
+  //   .isIn(["image", "video"])
+  //   .withMessage("App feature media type must be either 'image' or 'video'"),
+  body("app_feature_hand_image")
     .optional()
     .isString()
-    .withMessage("App feature mobile path must be a string"),
-  body("app_feature_media_alt")
+    .withMessage("App feature hand image must be a string"),
+  body("app_feature_hand_image_alt")
     .optional()
     .isString()
-    .withMessage("App feature media alt must be a string"),
+    .withMessage("App feature hand image alt must be a string"),
+
+  body("app_feature_hand_video")
+    .optional()
+    .isString()
+    .withMessage("App feature hand video must be a string"),
+  body("app_feature_hand_video_alt")
+    .optional()
+    .isString()
+    .withMessage("App feature hand video alt must be a string"),
 
   // investment
   body("investment_title")

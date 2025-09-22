@@ -30,7 +30,7 @@ module.exports = (sequelize) => {
                 allowNull: true,
             },
             published_on: {
-                type: DataTypes.STRING,
+                type: DataTypes.DATE,
                 allowNull: true,
             },
             reading_time: {

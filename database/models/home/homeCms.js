@@ -65,20 +65,20 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      
-      app_feature_media_type: {
-        type: DataTypes.ENUM("image", "video"),
-        allowNull: true,
-      },
-      app_feature_media_desktop_path: {
+
+      app_feature_hand_image:{
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      app_feature_media_mobile_path: {
+      app_feature_hand_image_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      app_feature_media_alt: {
+      app_feature_hand_video: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      app_feature_hand_video_alt: {
         type: DataTypes.TEXT,
         allowNull: true,
       },

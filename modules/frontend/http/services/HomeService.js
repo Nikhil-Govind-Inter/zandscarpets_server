@@ -1,11 +1,17 @@
 const { models } = require("../../../../database/models");
-const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
+const {
+  mediaWithType,
+  mediaWithoutType,
+  singleMediaWithType,
+  singleMediaWithoutType,
+  button,
+} = require("../traits/mediaButtonHelper");
 
 class HomeService {
   static async index() {
     try {
-       const cmsData = await models.HomeCms.findOne();
-       if (!cmsData) {
+      const cmsData = await models.HomeCms.findOne();
+      if (!cmsData) {
         throw new Error("No CMS data found for About page");
       }
       const [
@@ -47,10 +53,6 @@ class HomeService {
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
-        models.Partner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
         models.News.findAll({
           where: { status: true },
           order: [["sort_order", "ASC"]],
@@ -59,17 +61,26 @@ class HomeService {
           where: { status: true },
           order: [["sort_order", "ASC"]],
         }),
-
       ]);
+
 
       const data = {
         banner_section: this.buildBannerSection(homeBanners),
         milestone_section: this.buildMilestoneSection(cmsData, homeMilestone),
         company_growth_section: this.buildCompanyGrowthSection(homeMap),
         make_ride_section: this.buildMakeRideSection(cmsData),
-        explore_section: this.buildExploreSection(cmsData, homeExploreOurExpertise),
-        app_feature_section: this.buildAppFeatureSection(cmsData, homeAppFeatures),
-        investment_section: this.buildInvestmentSection(cmsData, homeInvestment),
+        explore_section: this.buildExploreSection(
+          cmsData,
+          homeExploreOurExpertise
+        ),
+        app_feature_section: this.buildAppFeatureSection(
+          cmsData,
+          homeAppFeatures
+        ),
+        investment_section: this.buildInvestmentSection(
+          cmsData,
+          homeInvestment
+        ),
         partners_section: this.buildPartnersSection(cmsData, partners),
         news_section: this.buildNewsSection(cmsData, news),
         blog_section: this.buildBlogSection(cmsData, blogs),
@@ -83,21 +94,22 @@ class HomeService {
 
   static buildBannerSection(homeBanners) {
     return {
-      list: homeBanners.map((item) => ({
-        title: item?.title ?? "",
-        description: item?.description ?? "",
-        buttons: [
-          button(item, "button_text_one", "button_text_one_link"),
-          button(item, "button_text_two", "button_text_two_link"),
-        ].filter(btn => btn.text),
-        media: mediaWithType(
-          item,
-          "media_type",
-          "media_desktop_path",
-          "media_mobile_path",
-          "media_alt"
-        ),
-      })) || [],
+      list:
+        homeBanners.map((item) => ({
+          title: item?.title ?? "",
+          description: item?.description ?? "",
+          buttons: [
+            button(item, "button_text_one", "button_text_one_link"),
+            button(item, "button_text_two", "button_text_two_link"),
+          ].filter((btn) => btn.text),
+          media: mediaWithType(
+            item,
+            "media_type",
+            "media_desktop_path",
+            "media_mobile_path",
+            "media_alt"
+          ),
+        })) || [],
     };
   }
 
@@ -118,11 +130,7 @@ class HomeService {
         homeMap.map((item) => ({
           year: item?.year ?? "",
           title: item?.title ?? "",
-          media: singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt"
-          ),
+          media: singleMediaWithoutType(item, "media_path", "media_alt"),
         })) || [],
     };
   }
@@ -139,7 +147,6 @@ class HomeService {
         "make_ride_media_mobile_path",
         "make_ride_media_alt"
       ),
-
     };
   }
 
@@ -151,14 +158,10 @@ class HomeService {
         homeExploreOurExpertise.map((item) => ({
           title: item?.title ?? "",
           description: item?.description ?? "",
-          buttons: [
-            button(item, "button_text", "button_text_link"),
-          ].filter(btn => btn.text),
-          media: singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt"
+          buttons: [button(item, "button_text", "button_text_link")].filter(
+            (btn) => btn.text
           ),
+          media: singleMediaWithoutType(item, "media_path", "media_alt"),
         })) || [],
     };
   }
@@ -168,13 +171,10 @@ class HomeService {
       title: cmsData?.app_feature_title ?? "",
       sub_title: cmsData?.app_feature_sub_title ?? "",
       description: cmsData?.app_feature_description ?? "",
-      media: mediaWithType(
-        cmsData,
-        "app_feature_media_type",
-        "app_feature_media_desktop_path",
-        "app_feature_media_mobile_path",
-        "app_feature_media_alt"
-      ),
+      hand_image: cmsData?.app_feature_hand_image ?? "",
+      hand_image_alt: cmsData?.app_feature_hand_image_alt ?? "",
+      hand_video: cmsData?.app_feature_hand_video ?? "",
+      hand_video_alt: cmsData?.app_feature_hand_video_alt ?? "",
       list:
         homeAppFeatures.map((item) => ({
           title: item?.title ?? "",
@@ -199,9 +199,9 @@ class HomeService {
           title: item?.title ?? "",
           subtitle: item?.subtitle ?? "",
           description: item?.description ?? "",
-          buttons: [
-            button(item, "button_text", "button_text_link"),
-          ].filter(btn => btn.text),
+          buttons: [button(item, "button_text", "button_text_link")].filter(
+            (btn) => btn.text
+          ),
         })) || [],
     };
   }
@@ -212,11 +212,7 @@ class HomeService {
       list:
         partners.map((item) => ({
           name: cmsData?.name ?? "",
-          media: singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt"
-          ),
+          media: singleMediaWithoutType(item, "media_path", "media_alt"),
         })) || [],
     };
   }
@@ -227,14 +223,11 @@ class HomeService {
       list:
         news.map((item) => ({
           title: item?.title ?? "",
+          slug: item?.slug ?? "",
           description: item?.description ?? "",
           reading_time: item?.reading_time ?? "",
           published_on: item?.published_on ?? "",
-          media: singleMediaWithoutType(
-            item,
-            "thumbnail",
-            "thumbnail_alt"
-          ),
+          media: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
         })) || [],
     };
   }
@@ -245,13 +238,10 @@ class HomeService {
       list:
         blogs.map((item) => ({
           title: item?.title ?? "",
+          slug: item?.slug ?? "",
           description: item?.description ?? "",
           published_on: item?.published_on ?? "",
-          media: singleMediaWithoutType(
-            item,
-            "thumbnail",
-            "thumbnail_alt"
-          ),
+          media: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
         })) || [],
     };
   }

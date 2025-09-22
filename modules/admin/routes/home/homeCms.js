@@ -8,8 +8,8 @@ const { createUploadMiddleware } = require("../../http/middleware/multerMiddlewa
 const fields = [
     { name: "make_ride_media_desktop_path", maxCount: 1 },
     { name: "make_ride_media_mobile_path", maxCount: 1 },
-    { name: "app_feature_media_desktop_path", maxCount: 1 },
-    { name: "app_feature_media_mobile_path", maxCount: 1 },
+    { name: "app_feature_hand_image", maxCount: 1 },
+    { name: "app_feature_hand_video", maxCount: 1 },
     { name: "investment_media_desktop_path", maxCount: 1 },
     { name: "investment_media_mobile_path", maxCount: 1 },
 ];
