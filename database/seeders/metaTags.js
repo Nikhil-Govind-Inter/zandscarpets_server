@@ -78,18 +78,18 @@ const defaultMetaTags = [
 
 const seedMetaTags = async () => {
     try {
-        for (const tagData of defaultMetaTags) {
-            const [record, created] = await MetaTags.findOrCreate({
-                where: { page: tagData.page },
-                defaults: tagData,
-            });
+        // for (const tagData of defaultMetaTags) {
+        //     const [record, created] = await MetaTags.findOrCreate({
+        //         where: { page: tagData.page },
+        //         defaults: tagData,
+        //     });
 
-            if (created) {
-                // console.log(`✅ Created meta tags for page: ${tagData.page}`);
-            } else {
-                // console.log(`ℹ️ Meta tags for page "${tagData.page}" already exist. Skipping.`);
-            }
-        }
+        //     if (created) {
+        //         // console.log(`✅ Created meta tags for page: ${tagData.page}`);
+        //     } else {
+        //         // console.log(`ℹ️ Meta tags for page "${tagData.page}" already exist. Skipping.`);
+        //     }
+        // }
     } catch (error) {
         console.error("❌ Failed to seed meta tags:", error.message || error);
         throw error;
