@@ -39,7 +39,7 @@ function loadRoutes(dirPath, baseRoute = "") {
             routeModule instanceof express.Router
           ) {
             router.use(routePath, routeModule);
-            console.log(`✅ Loaded route: /api/${baseRoute}${routePath}`);
+            console.log(`✅ Loaded route: /api${baseRoute}${routePath}`);
           } else {
             console.error(
               `❌ Invalid route module at ${fullPath}: Not a router or middleware function`

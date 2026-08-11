@@ -1,13 +1,20 @@
 const sequelize = require("../config/index");
 
-const defineAdminUser = require("./adminuser");
-
+const defineAdminUser = require("./admin/adminuser");
+const defineSiteSettings = require("./siteSettings/siteSettings");
+const defineSocialMedia = require("./siteSettings/socialMedia");
+const defineMetaData  = require("./siteSettings/metaData");
+const defineFooterMedia = require("./siteSettings/footerMedia")
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
-  
-
+  siteSettings: defineSiteSettings(sequelize),
+  socialMedia: defineSocialMedia(sequelize),
+  FooterMedia: defineFooterMedia(sequelize),
+  MetaData:  defineMetaData(sequelize)
 };
+
+
 
 Object.keys(models).forEach((modelName) => {
   if ("associate" in models[modelName]) {
@@ -17,22 +24,3 @@ Object.keys(models).forEach((modelName) => {
 });
 
 module.exports = { sequelize, models };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

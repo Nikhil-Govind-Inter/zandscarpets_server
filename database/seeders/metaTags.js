@@ -26,14 +26,14 @@ const defaultMetaTags = [
         canonical_url: "/about",
     },
      {
-        page: "go-ec-smart-card",
+        page: "zandscarpets-smart-card",
         meta_title: "About Us | Go EC",
         meta_description: "Learn more about Go EC, our mission, and our commitment to sustainable energy innovation.",
         meta_keywords: "about go ec, energy company, sustainable innovation",
         canonical_url: "/about",
     },
      {
-        page: "invest-in-go-ec",
+        page: "invest-in-zandscarpets",
         meta_title: "About Us | Go EC",
         meta_description: "Learn more about Go EC, our mission, and our commitment to sustainable energy innovation.",
         meta_keywords: "about go ec, energy company, sustainable innovation",

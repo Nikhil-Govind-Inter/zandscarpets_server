@@ -20,7 +20,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:8080",
-   "http://localhost:8081",
+  "http://localhost:8081",
 ];
 
 app.use(
@@ -31,12 +31,12 @@ app.use(
       }
       return callback(
         new Error(`CORS policy does not allow access from: ${origin}`),
-        false
+        false,
       );
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "10mb" }));
@@ -60,43 +60,23 @@ app.use("/api/frontend", frontendApi);
 // Error handler last
 app.use(errorMiddleware);
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
-    Logger.info("✅ Database connected and synced");
-    
 
     await createAdminUser();
     await policyData();
     await seedMetaTags();
 
-    // app.listen(PORT, () => {
-    //   Logger.info(`🚀 Server running on port ${PORT}`);
-
-    //   // 🔥 Ensure endpoints exist AFTER mounting routes
-    //   const endpoints = expressListEndpoints(app);
-
-    //   if (endpoints.length === 0) {
-    //     Logger.warn("⚠️ No endpoints found. Check if your routes are registered.");
-    //   } else {
-    //     console.log("\n📋 Registered Endpoints:");
-    //     console.table(
-    //       endpoints.map((e) => ({
-    //         methods: e.methods.join(", "),
-    //         path: e.path,
-    //       }))
-    //     );
-    //   }
-    // });
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);
 
       let endpoints = expressListEndpoints(app);
       if (!endpoints.length) {
-        Logger.warn("⚠️ No endpoints found at app level. Checking sub-routers...");
+        Logger.warn(
+          "⚠️ No endpoints found at app level. Checking sub-routers...",
+        );
 
         const backendEndpoints = expressListEndpoints(backendApi);
         const frontendEndpoints = expressListEndpoints(frontendApi);
@@ -104,14 +84,18 @@ const startServer = async () => {
         if (backendEndpoints.length) {
           Logger.info("📋 Backend Endpoints:");
           backendEndpoints.forEach((e) => {
-            Logger.info(`${e.methods.join(", ").padEnd(10)} /api/backend${e.path}`);
+            Logger.info(
+              `${e.methods.join(", ").padEnd(10)} /api/backend${e.path}`,
+            );
           });
         }
 
         if (frontendEndpoints.length) {
           Logger.info("📋 Frontend Endpoints:");
           frontendEndpoints.forEach((e) => {
-            Logger.info(`${e.methods.join(", ").padEnd(10)} /api/frontend${e.path}`);
+            Logger.info(
+              `${e.methods.join(", ").padEnd(10)} /api/frontend${e.path}`,
+            );
           });
         }
       } else {

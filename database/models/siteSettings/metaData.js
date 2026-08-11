@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const MetaTags = sequelize.define(
-    "MetaTags",
+  const MetaData = sequelize.define(
+    "MetaData",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -11,35 +11,34 @@ module.exports = (sequelize) => {
       },
       page: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       meta_title: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       meta_description: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        allowNull: false,
       },
       meta_keywords: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-     
-      other_meta_tags: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+      other_meta: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       deleted_at: {
         type: DataTypes.DATE,
       },
     },
     {
-      tableName: "meta_tags",
+      tableName: "meta_data",
       timestamps: true,
       deletedAt: "deleted_at",
-    }
+    },
   );
 
-  return MetaTags;
+  return MetaData;
 };

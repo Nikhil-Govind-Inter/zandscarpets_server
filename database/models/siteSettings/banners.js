@@ -1,48 +1,48 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const SocialMedia = sequelize.define(
-    "SocialMedia",
+  const Banners = sequelize.define(
+    "Banners",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      name: {
+      page: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      icon: {
+      desktop_media_path: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        allowNull: false,
       },
-      icon_alt: {
+      mobile_media_path: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      media_alt: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-      link: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-      sort_order: {
-        type: DataTypes.SMALLINT,
-        defaultValue: 0,
-      },
-      status: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
+      sub_title: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       deleted_at: {
         type: DataTypes.DATE,
       },
     },
     {
-      tableName: "social_media",
+      tableName: "banners",
       timestamps: true,
       deletedAt: "deleted_at",
-    }
+    },
   );
 
-  return SocialMedia;
+  return Banners;
 };
