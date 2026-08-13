@@ -9,11 +9,8 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      media: {
+     
+      media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },

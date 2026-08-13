@@ -10,7 +10,7 @@ module.exports = (roles = []) => {
 
     try {
       // Get token from Authorization header or cookie
-      const token = req.headers.authorization?.split(' ')[1] || req.cookies?.jwt;
+      const token = req.headers.authorization?.split(' ')[1] || req.cookies?.access_token;
       if (!token) {
         return sendUnauthorizedError(res, 'Authorization token required');
       }

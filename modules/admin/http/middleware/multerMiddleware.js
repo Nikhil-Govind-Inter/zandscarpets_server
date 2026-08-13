@@ -151,7 +151,7 @@ const deleteOldFile = async (filePath) => {
   if (!filePath) return;
 
   try {
-    const fullPath = path.join(__dirname, "..", filePath);
+    const fullPath = path.join(process.cwd(), filePath);
     if (fs.existsSync(fullPath)) {
       await fsPromises.unlink(fullPath);
       console.log(`Deleted old file: ${fullPath}`);
@@ -193,9 +193,15 @@ async function handleFileUploadUpdate(req, data, fileFields = []) {
   for (const field of fileFields) {
     if (req.files?.[field]?.length > 0) {
       const newFile = req.files[field][0];
+
       if (data && data[field]) {
-        await deleteOldFile(data[field]);
+        try {
+          await deleteOldFile(data[field]);
+        } catch (error) {
+          console.error(`Failed to delete old file for field "${field}":`, error);
+        }
       }
+
       req.body[field] = newFile.path;
     }
   }

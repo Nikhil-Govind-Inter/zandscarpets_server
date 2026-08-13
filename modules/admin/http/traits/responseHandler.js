@@ -25,7 +25,7 @@ const sendCustomError = (res, message, status = 400, code = 'CUSTOM_ERROR', deta
   sendErrorResponse(res, error);
 };
 
-const sendErrorResponse = (res, error, defaultMessage = 'Internal Server Error', defaultStatus = 500) => {
+const sendErrorResponse = (res, error, defaultMessage, defaultStatus = 500) => {
   if (!res || typeof res.status !== 'function') {
     console.error('Invalid response object:', error);
     return;
@@ -39,7 +39,7 @@ const sendErrorResponse = (res, error, defaultMessage = 'Internal Server Error',
   });
 
   let statusCode = defaultStatus;
-  let errorMessage = defaultMessage;
+  let errorMessage = error.message;
   let errorCode = 'INTERNAL_ERROR';
   let errorDetails = null;
 
@@ -194,6 +194,7 @@ const sendForbiddenError = (res, message = 'Access forbidden') =>
 
 const sendConflictError = (res, resource = 'Resource', message = null) =>
   sendErrorResponse(res, new CustomError(message || `${resource} already exists`, 409, 'CONFLICT'));
+
 
 module.exports = {
   CustomError,

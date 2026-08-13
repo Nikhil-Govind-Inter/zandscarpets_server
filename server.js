@@ -13,14 +13,15 @@ const { createAdminUser } = require("./database/seeders/adminUser");
 const { policyData } = require("./database/seeders/policy");
 const { seedMetaTags } = require("./database/seeders/metaTags");
 const { createClient } = require("redis");
+const { connectRedis, disconnectRedis } = require("./config/redisClient");
 
 dotenv.config();
 const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://localhost:8080",
-  "http://localhost:8081",
+  "http://localhost:5173",
+  "http://localhost:8080"
 ];
 
 app.use(
@@ -64,6 +65,7 @@ const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
+  await connectRedis();
 
     await createAdminUser();
     await policyData();
@@ -115,5 +117,6 @@ startServer();
 
 process.on("SIGINT", async () => {
   await sequelize.close();
+  await disconnectRedis();
   process.exit(0);
 });

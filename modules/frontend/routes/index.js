@@ -13,7 +13,9 @@ function loadRoutes(dirPath, baseRoute = "") {
       const stat = fs.statSync(fullPath);
 
       if (stat.isDirectory()) {
-        const dirName = file.toLowerCase();
+        const dirName = file
+          .replace(/([a-z])([A-Z])/g, "$1-$2")
+          .toLowerCase();
         const newBaseRoute = path.posix.join(baseRoute, dirName); // <--- FIXED
 
         const subRouter = loadRoutes(fullPath, newBaseRoute);

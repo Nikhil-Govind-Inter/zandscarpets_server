@@ -1,6 +1,7 @@
 const sequelize = require("../config/index");
 
 const defineAdminUser = require("./admin/adminuser");
+const defineAdminRefreshToken = require("./admin/adminRefreshToken");
 const defineSiteSettings = require("./siteSettings/siteSettings");
 const defineSocialMedia = require("./siteSettings/socialMedia");
 const defineMetaData  = require("./siteSettings/metaData");
@@ -8,8 +9,9 @@ const defineFooterMedia = require("./siteSettings/footerMedia")
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
-  siteSettings: defineSiteSettings(sequelize),
-  socialMedia: defineSocialMedia(sequelize),
+  AdminRefreshToken: defineAdminRefreshToken(sequelize),
+  SiteSettings: defineSiteSettings(sequelize),
+  SocialMedia: defineSocialMedia(sequelize),
   FooterMedia: defineFooterMedia(sequelize),
   MetaData:  defineMetaData(sequelize)
 };
