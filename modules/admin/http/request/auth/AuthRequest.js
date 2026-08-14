@@ -42,8 +42,49 @@ const validateId = [
     .withMessage("ID must be a positive integer"),
 ];
 
+// Forgot Password Validation
+const validationForgotPassword = [
+  body("email")
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+];
+
+// OTP Verification Validation
+const validationVerifyOtp = [
+  body("email")
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+
+  body("otp")
+    .notEmpty().withMessage("OTP is required")
+    .isLength({ min: 6, max: 6 }).withMessage("OTP must be 6 digits")
+    .isNumeric().withMessage("OTP must contain only digits"),
+];
+
+// Reset Password Validation
+const validationResetPassword = [
+  body("email")
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+
+  body("resetToken")
+    .notEmpty().withMessage("Reset token is required"),
+
+  body("password")
+    .notEmpty().withMessage("Password is required")
+    .isLength({ min: 8, max: 128 }).withMessage("Password must be between 8 and 128 characters")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage("Password must contain lowercase, uppercase, number, and special char"),
+];
+
 module.exports = {
   validationRequestPost,
   validationLogin,
   validateId,
+  validationForgotPassword,
+  validationVerifyOtp,
+  validationResetPassword,
 };
