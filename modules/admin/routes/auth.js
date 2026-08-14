@@ -11,4 +11,7 @@ router.post("/refresh", AuthController.refresh);
 router.post("/logout", AuthController.logout);
 router.get("/me", authMiddleware(), AuthController.me);
 
+router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/reset-password", AuthController.resetPassword);
+
 module.exports = router;

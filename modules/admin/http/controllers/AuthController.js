@@ -106,7 +106,7 @@ class AuthController {
 
       setAuthCookies(res, { accessToken, refreshToken });
 
-      sendSuccessResponse(res, { user: safeUser }, "Login successful");
+      sendSuccessResponse(res, { user: safeUser, token: accessToken }, "Login successful");
     } catch (error) {
       console.error("Login error:", error);
       sendErrorResponse(res, error);
@@ -217,6 +217,38 @@ class AuthController {
       console.error("Me error:", error);
       sendErrorResponse(res, error);
     }
+  }
+
+
+
+  static async forgotPassword(req, res) {
+    // Implement forgot password logic here
+    try {
+      const { username } = req.body;
+
+      const isUserExists = await AdminUser.findOne({ where: { username } });
+      if (!isUserExists) {
+        return sendErrorResponse(res, new Error("User not found"), { statusCode: 404 });
+      }
+
+      // send the one time otp to user email for password reset
+       
+      // Here you would typically generate a password reset token and send it via email.
+      // For now, we will just log the action.
+      sendSuccessResponse(res, null, "Forgot password endpoint hit");
+    } catch (error) {
+      sendErrorResponse(res, error);
+    }
+  }
+
+  static async resetPassword(req, res) {
+    // Implement reset password logic here
+    try {
+      
+    } catch (error) {
+      
+    }
+    sendSuccessResponse(res, null, "Reset password endpoint hit");
   }
 }
 
