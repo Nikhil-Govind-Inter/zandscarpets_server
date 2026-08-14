@@ -33,7 +33,14 @@ const Logger = require("../../../../config/logger");
 const AdminUser = models.AdminUser;
 const AdminRefreshToken = models.AdminRefreshToken;
 
-const SAFE_USER_ATTRIBUTES = ["id", "username", "email", "role", "createdAt", "updatedAt"];
+const SAFE_USER_ATTRIBUTES = [
+  "id",
+  "username",
+  "email",
+  "role",
+  "createdAt",
+  "updatedAt",
+];
 
 // Password-reset OTP flow constants
 const OTP_TTL_SECONDS = 5 * 60; // OTP + attempts counter both expire in 5 minutes
@@ -54,10 +61,11 @@ const signAccessToken = (user) =>
     {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
       issuer: process.env.JWT_ISSUER || "your-app-name",
-    }
+    },
   );
 
-const hashToken = (rawToken) => crypto.createHash("sha256").update(rawToken).digest("hex");
+const hashToken = (rawToken) =>
+  crypto.createHash("sha256").update(rawToken).digest("hex");
 
 const issueRefreshToken = async (userId) => {
   const rawToken = crypto.randomBytes(40).toString("hex");
@@ -74,7 +82,7 @@ const issueRefreshToken = async (userId) => {
 
 class AuthController {
   static async register(req, res) {
-    await Promise.all(validationRequestPost.map(v => v.run(req)));
+    await Promise.all(validationRequestPost.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors);
 
@@ -82,14 +90,20 @@ class AuthController {
       const { username, password, email, role } = req.body;
 
       // Check existing user
-      const existingUserByUsername = await AdminUser.findOne({ where: { username } });
+      const existingUserByUsername = await AdminUser.findOne({
+        where: { username },
+      });
       if (existingUserByUsername) {
-        return sendErrorResponse(res, new Error("Username already exists"), { statusCode: 409 });
+        return sendErrorResponse(res, new Error("Username already exists"), {
+          statusCode: 409,
+        });
       }
 
       const existingUserByEmail = await AdminUser.findOne({ where: { email } });
       if (existingUserByEmail) {
-        return sendErrorResponse(res, new Error("Email already exists"), { statusCode: 409 });
+        return sendErrorResponse(res, new Error("Email already exists"), {
+          statusCode: 409,
+        });
       }
 
       // Hash password
@@ -98,11 +112,16 @@ class AuthController {
       const user = await sequelize.transaction(async (t) =>
         AdminUser.create(
           { username, email, password: hashedPassword, role: role || "user" },
-          { transaction: t }
-        )
+          { transaction: t },
+        ),
       );
 
-      return sendSuccessResponse(res, { user }, "User registered successfully", 201);
+      return sendSuccessResponse(
+        res,
+        { user },
+        "User registered successfully",
+        201,
+      );
     } catch (error) {
       console.error("Register error:", error);
       return sendErrorResponse(res, error);
@@ -110,21 +129,30 @@ class AuthController {
   }
 
   static async login(req, res) {
-    await Promise.all(validationLogin.map(v => v.run(req)));
+    await Promise.all(validationLogin.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors);
 
     try {
       const { username, password } = req.body;
       const user = await AdminUser.findOne({
-        where: { username, status: true },
-        attributes: [...SAFE_USER_ATTRIBUTES, "password"],
+        where: { username },
+        attributes: [...SAFE_USER_ATTRIBUTES, "password", "is_active"],
       });
 
-      if (!user) return sendUnauthorizedError(res, "Invalid username or password");
+      if (!user)
+        return sendUnauthorizedError(res, "Invalid credentials.");
+
+      if (!user.is_active) {
+        return sendUnauthorizedError(
+          res,
+          "Account is inactive. Please contact admin",
+        );
+      }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) return sendUnauthorizedError(res, "Invalid username or password");
+      if (!isPasswordValid)
+        return sendUnauthorizedError(res, "Invalid username or password");
 
       const { password: _password, ...safeUser } = user.toJSON();
 
@@ -133,7 +161,11 @@ class AuthController {
 
       setAuthCookies(res, { accessToken, refreshToken });
 
-      sendSuccessResponse(res, { user: safeUser, token: accessToken }, "Login successful");
+      sendSuccessResponse(
+        res,
+        { user: safeUser, token: accessToken },
+        "Login successful",
+      );
     } catch (error) {
       console.error("Login error:", error);
       sendErrorResponse(res, error);
@@ -143,10 +175,13 @@ class AuthController {
   static async refresh(req, res) {
     try {
       const rawToken = req.cookies?.[REFRESH_COOKIE_NAME];
-      if (!rawToken) return sendUnauthorizedError(res, "Refresh token required");
+      if (!rawToken)
+        return sendUnauthorizedError(res, "Refresh token required");
 
       const tokenHash = hashToken(rawToken);
-      const existingRow = await AdminRefreshToken.findOne({ where: { tokenHash } });
+      const existingRow = await AdminRefreshToken.findOne({
+        where: { tokenHash },
+      });
 
       if (!existingRow) {
         clearAuthCookies(res);
@@ -158,10 +193,13 @@ class AuthController {
         // Revoke every outstanding token for this user as a precaution.
         await AdminRefreshToken.update(
           { revokedAt: new Date() },
-          { where: { userId: existingRow.userId, revokedAt: null } }
+          { where: { userId: existingRow.userId, revokedAt: null } },
         );
         clearAuthCookies(res);
-        return sendUnauthorizedError(res, "Session invalid, please log in again");
+        return sendUnauthorizedError(
+          res,
+          "Session invalid, please log in again",
+        );
       }
 
       if (existingRow.expiresAt.getTime() < Date.now()) {
@@ -170,7 +208,7 @@ class AuthController {
       }
 
       const user = await AdminUser.findOne({
-        where: { id: existingRow.userId, status: true },
+        where: { id: existingRow.userId, is_active: true },
         attributes: SAFE_USER_ATTRIBUTES,
       });
 
@@ -179,7 +217,8 @@ class AuthController {
         return sendUnauthorizedError(res, "User not found");
       }
 
-      const { rawToken: newRefreshToken, row: newRow } = await issueRefreshToken(user.id);
+      const { rawToken: newRefreshToken, row: newRow } =
+        await issueRefreshToken(user.id);
       existingRow.revokedAt = new Date();
       existingRow.replacedByTokenId = newRow.id;
       await existingRow.save();
@@ -196,14 +235,16 @@ class AuthController {
 
   static async logout(req, res) {
     try {
-      const accessToken = req.headers.authorization?.split(" ")[1] || req.cookies?.[ACCESS_COOKIE_NAME];
+      const accessToken =
+        req.headers.authorization?.split(" ")[1] ||
+        req.cookies?.[ACCESS_COOKIE_NAME];
       const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
 
       if (refreshToken) {
         const tokenHash = hashToken(refreshToken);
         await AdminRefreshToken.update(
           { revokedAt: new Date() },
-          { where: { tokenHash, revokedAt: null } }
+          { where: { tokenHash, revokedAt: null } },
         );
       }
 
@@ -212,8 +253,12 @@ class AuthController {
         if (redisClient) {
           try {
             const decoded = jwt.decode(accessToken);
-            const ttlSeconds = decoded?.exp ? Math.max(decoded.exp - Math.floor(Date.now() / 1000), 1) : ms(ACCESS_TOKEN_EXPIRES_IN) / 1000;
-            await redisClient.set(`blacklist:${accessToken}`, "1", { EX: ttlSeconds });
+            const ttlSeconds = decoded?.exp
+              ? Math.max(decoded.exp - Math.floor(Date.now() / 1000), 1)
+              : ms(ACCESS_TOKEN_EXPIRES_IN) / 1000;
+            await redisClient.set(`blacklist:${accessToken}`, "1", {
+              EX: ttlSeconds,
+            });
           } catch (err) {
             console.error("Logout blacklist error:", err.message);
           }
@@ -233,7 +278,7 @@ class AuthController {
   static async me(req, res) {
     try {
       const user = await AdminUser.findOne({
-        where: { id: req.user.id, status: true },
+        where: { id: req.user.id, is_active: true },
         attributes: SAFE_USER_ATTRIBUTES,
       });
 
@@ -246,55 +291,93 @@ class AuthController {
     }
   }
 
-
-
   // Handles both the initial OTP send and any resend request — same idempotent
   // behavior either way, so the frontend can call this endpoint for "Resend OTP" too.
   static async forgotPassword(req, res) {
-    await Promise.all(validationForgotPassword.map(v => v.run(req)));
+    await Promise.all(validationForgotPassword.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors);
 
     try {
       const { email } = req.body;
 
-      const user = await AdminUser.findOne({ where: { email, status: true } });
+      const user = await AdminUser.findOne({
+        where: { email, is_active: true },
+      });
       // Explicitly tell the user when the email isn't registered, per product decision.
       if (!user) {
-        return sendErrorResponse(res, new CustomError("This email is not registered", 404, "EMAIL_NOT_FOUND"));
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "This email is not registered",
+            404,
+            "EMAIL_NOT_FOUND",
+          ),
+        );
       }
 
       const redisClient = req.app.get("redisClient");
       if (!redisClient) {
         Logger.error("forgotPassword: redisClient unavailable");
-        return sendErrorResponse(res, new CustomError("Service temporarily unavailable", 503, "SERVICE_UNAVAILABLE"));
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "Service temporarily unavailable",
+            503,
+            "SERVICE_UNAVAILABLE",
+          ),
+        );
       }
 
-      const existingCooldownTtl = await redisClient.ttl(otpCooldownKey(user.id));
+      const existingCooldownTtl = await redisClient.ttl(
+        otpCooldownKey(user.id),
+      );
       if (existingCooldownTtl > 0) {
         return sendErrorResponse(
           res,
-          new CustomError("Too many request attempts. Wait for a while before trying again", 429, "OTP_COOLDOWN", {
-            cooldownSeconds: existingCooldownTtl,
-          })
+          new CustomError(
+            "Too many request attempts. Wait for a while before trying again",
+            429,
+            "OTP_COOLDOWN",
+            {
+              cooldownSeconds: existingCooldownTtl,
+            },
+          ),
         );
       }
 
       const otp = crypto.randomInt(100000, 1000000).toString();
-      await redisClient.set(otpKey(user.id), hashToken(otp), { EX: OTP_TTL_SECONDS });
+      await redisClient.set(otpKey(user.id), hashToken(otp), {
+        EX: OTP_TTL_SECONDS,
+      });
       await redisClient.del(otpAttemptsKey(user.id));
 
       try {
         await sendOtpEmail(user.email, otp);
       } catch (mailError) {
-        Logger.error("forgotPassword: failed to send OTP email", { message: mailError.message });
-        return sendErrorResponse(res, new CustomError("Failed to send verification code", 500, "EMAIL_SEND_FAILED"));
+        Logger.error("forgotPassword: failed to send OTP email", {
+          message: mailError.message,
+        });
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "Failed to send verification code",
+            500,
+            "EMAIL_SEND_FAILED",
+          ),
+        );
       }
 
       // Cooldown only starts counting once the email has actually been sent.
-      await redisClient.set(otpCooldownKey(user.id), "1", { EX: OTP_RESEND_COOLDOWN_SECONDS });
+      await redisClient.set(otpCooldownKey(user.id), "1", {
+        EX: OTP_RESEND_COOLDOWN_SECONDS,
+      });
 
-      return sendSuccessResponse(res, { cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS }, "Verification code sent to your email");
+      return sendSuccessResponse(
+        res,
+        { cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS },
+        "Verification code sent to your email",
+      );
     } catch (error) {
       console.error("Forgot password error:", error);
       sendErrorResponse(res, error);
@@ -302,22 +385,34 @@ class AuthController {
   }
 
   static async verifyOtp(req, res) {
-    await Promise.all(validationVerifyOtp.map(v => v.run(req)));
+    await Promise.all(validationVerifyOtp.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors);
 
     try {
       const { email, otp } = req.body;
       const invalidOtpError = () =>
-        sendErrorResponse(res, new CustomError("Invalid or expired code", 400, "OTP_INVALID"));
+        sendErrorResponse(
+          res,
+          new CustomError("Invalid or expired code", 400, "OTP_INVALID"),
+        );
 
-      const user = await AdminUser.findOne({ where: { email, status: true } });
+      const user = await AdminUser.findOne({
+        where: { email, is_active: true },
+      });
       if (!user) return invalidOtpError();
 
       const redisClient = req.app.get("redisClient");
       if (!redisClient) {
         Logger.error("verifyOtp: redisClient unavailable");
-        return sendErrorResponse(res, new CustomError("Service temporarily unavailable", 503, "SERVICE_UNAVAILABLE"));
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "Service temporarily unavailable",
+            503,
+            "SERVICE_UNAVAILABLE",
+          ),
+        );
       }
 
       const storedHash = await redisClient.get(otpKey(user.id));
@@ -332,12 +427,19 @@ class AuthController {
           await redisClient.del(otpKey(user.id));
           await redisClient.del(otpAttemptsKey(user.id));
           // Lock out resends for longer after burning all attempts.
-          await redisClient.set(otpCooldownKey(user.id), "1", { EX: OTP_LOCKOUT_COOLDOWN_SECONDS });
+          await redisClient.set(otpCooldownKey(user.id), "1", {
+            EX: OTP_LOCKOUT_COOLDOWN_SECONDS,
+          });
           return sendErrorResponse(
             res,
-            new CustomError("Too many incorrect attempts. Please request a new code.", 429, "OTP_MAX_ATTEMPTS", {
-              cooldownSeconds: OTP_LOCKOUT_COOLDOWN_SECONDS,
-            })
+            new CustomError(
+              "Too many incorrect attempts. Please request a new code.",
+              429,
+              "OTP_MAX_ATTEMPTS",
+              {
+                cooldownSeconds: OTP_LOCKOUT_COOLDOWN_SECONDS,
+              },
+            ),
           );
         }
 
@@ -345,7 +447,7 @@ class AuthController {
           res,
           new CustomError("Incorrect code", 400, "OTP_INVALID", {
             remainingAttempts: OTP_MAX_ATTEMPTS - attempts,
-          })
+          }),
         );
       }
 
@@ -354,7 +456,11 @@ class AuthController {
       await redisClient.del(otpAttemptsKey(user.id));
 
       const rawResetToken = crypto.randomBytes(32).toString("hex");
-      await redisClient.set(resetTokenKey(hashToken(rawResetToken)), String(user.id), { EX: RESET_TOKEN_TTL_SECONDS });
+      await redisClient.set(
+        resetTokenKey(hashToken(rawResetToken)),
+        String(user.id),
+        { EX: RESET_TOKEN_TTL_SECONDS },
+      );
 
       sendSuccessResponse(res, { resetToken: rawResetToken }, "Code verified");
     } catch (error) {
@@ -364,26 +470,42 @@ class AuthController {
   }
 
   static async resetPassword(req, res) {
-    await Promise.all(validationResetPassword.map(v => v.run(req)));
+    await Promise.all(validationResetPassword.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors);
 
     try {
       const { email, resetToken, password } = req.body;
 
-      const user = await AdminUser.findOne({ where: { email, status: true } });
+      const user = await AdminUser.findOne({
+        where: { email, is_active: true },
+      });
       if (!user) return sendNotFoundError(res, "User");
 
       const redisClient = req.app.get("redisClient");
       if (!redisClient) {
         Logger.error("resetPassword: redisClient unavailable");
-        return sendErrorResponse(res, new CustomError("Service temporarily unavailable", 503, "SERVICE_UNAVAILABLE"));
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "Service temporarily unavailable",
+            503,
+            "SERVICE_UNAVAILABLE",
+          ),
+        );
       }
 
       const tokenKey = resetTokenKey(hashToken(resetToken));
       const storedUserId = await redisClient.get(tokenKey);
       if (!storedUserId || Number(storedUserId) !== user.id) {
-        return sendErrorResponse(res, new CustomError("Invalid or expired reset token", 400, "RESET_TOKEN_INVALID"));
+        return sendErrorResponse(
+          res,
+          new CustomError(
+            "Invalid or expired reset token",
+            400,
+            "RESET_TOKEN_INVALID",
+          ),
+        );
       }
 
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -395,7 +517,7 @@ class AuthController {
         // shouldn't survive a password reset.
         await AdminRefreshToken.update(
           { revokedAt: new Date() },
-          { where: { userId: user.id, revokedAt: null }, transaction: t }
+          { where: { userId: user.id, revokedAt: null }, transaction: t },
         );
       });
 

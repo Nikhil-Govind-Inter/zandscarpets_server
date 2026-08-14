@@ -4,7 +4,12 @@ const {
   sendErrorResponse,
   sendSuccessResponse,
 } = require("../../traits/responseHandler");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
+const {
+  getCache,
+  setCache,
+  invalidateCache,
+  cacheKeys,
+} = require("../../traits/cacheHelper");
 
 const fileFields = ["header_logo_media_path", "footer_logo_media_path"];
 
@@ -13,7 +18,11 @@ class SiteSettingsController {
     try {
       const cached = await getCache(req, cacheKeys.siteSettings());
       if (cached) {
-        return sendSuccessResponse(res, cached, "Site settings retrieved successfully from cache");
+        return sendSuccessResponse(
+          res,
+          cached,
+          "Site settings retrieved successfully from cache",
+        );
       }
 
       const data = await models.SiteSettings.findOne();
@@ -28,19 +37,15 @@ class SiteSettingsController {
 
   static async update(req, res) {
     try {
-      const { id } = req.params;
-
-      const siteSettings = await models.SiteSettings.findByPk(id);
-      if (!siteSettings) {
-        return sendErrorResponse(res, new Error("Site settings not found"), {
-          statusCode: 404,
-        });
-      }
+      let siteSettings = await models.SiteSettings.findOne();
 
       await handleFileUploadUpdate(req, siteSettings, fileFields);
 
-      await siteSettings.update(req.body);
-
+      if (!siteSettings) {
+        siteSettings = await models.SiteSettings.create(req.body);
+      } else {
+        await siteSettings.update(req.body);
+      }
       await invalidateCache(req, cacheKeys.siteSettings());
 
       sendSuccessResponse(

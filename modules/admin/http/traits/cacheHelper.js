@@ -64,6 +64,9 @@ const cacheKeys = {
   socialMediaList: (req) => `admin:cache:socialmedia:list:${stableStringify(req.query)}`,
   socialMediaListPattern: () => "admin:cache:socialmedia:list:*",
   socialMediaItem: (id) => `admin:cache:socialmedia:item:${id}`,
+  userList: (req) => `admin:cache:user:list:${stableStringify(req.query)}`,
+  userListPattern: () => "admin:cache:user:list:*",
+  userItem: (id) => `admin:cache:user:item:${id}`,
 };
 
 module.exports = {

@@ -12,9 +12,9 @@ const uploadFields = [
 const upload = createUploadMiddleware('site-settings', uploadFields);
 
 
-router.use(authMiddleware());
+router.use(authMiddleware(['admin', 'user']));
 router.get("/", Controller.get);
-router.put("/:id", upload, Controller.update);
+router.put("/", upload, Controller.update);
 
 module.exports = router;
 

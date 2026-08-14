@@ -11,7 +11,7 @@ const uploadFields = [{ name: "media_path" }];
 
 const upload = createUploadMiddleware("social-media", uploadFields);
 
-router.use(authMiddleware());
+router.use(authMiddleware(["admin", 'user']));
 router.get("/", Controller.list);
 router.get("/:id", Controller.getById);
 router.post("/", upload, Controller.create);

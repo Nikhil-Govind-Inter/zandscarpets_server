@@ -17,7 +17,7 @@ const syncDatabase = async () => {
     Logger.info("✅ Database connected and synced");
     process.exit(0);
   } catch (error) {
-    Logger.error("❌ Failed to sync database: " + error.message);
+    Logger.error("❌ Failed to sync database: " + error);
     process.exit(1);
   }
 };
