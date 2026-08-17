@@ -10,6 +10,7 @@ const validationRequestPost = [
     body('email').notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email format'),
     body('phone_number').notEmpty().withMessage('Phone number is required').isString().withMessage('Phone number must be a string'),
     body('whatsapp_number').notEmpty().withMessage('WhatsApp number is required').isString().withMessage('WhatsApp number must be a string'),
+    body('admin_email').notEmpty().isEmail().withMessage('Invalid email format'),
 ]
 
 

@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const { Op } = require("sequelize");
 const { sequelize, models } = require("../../../../database/models/index");
 const {
   sendValidationError,
@@ -27,7 +28,7 @@ const {
   clearAuthCookies,
 } = require("../traits/authCookies");
 const ms = require("ms");
-const { sendOtpEmail } = require("../traits/mailer");
+const Mailer = require("../traits/mailer");
 const Logger = require("../../../../config/logger");
 
 const AdminUser = models.AdminUser;
@@ -57,7 +58,7 @@ const resetTokenKey = (hashedToken) => `pwreset:token:${hashedToken}`;
 const signAccessToken = (user) =>
   jwt.sign(
     { id: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET || "fallback-secret-key",
+    process.env.JWT_SECRET,
     {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
       issuer: process.env.JWT_ISSUER || "your-app-name",
@@ -135,9 +136,12 @@ class AuthController {
 
     try {
       const { username, password } = req.body;
+
+      // Find user by username or email in a single query
       const user = await AdminUser.findOne({
-        where: { username },
-        attributes: [...SAFE_USER_ATTRIBUTES, "password", "is_active"],
+        where: {
+          [Op.or]: [{ username }, { email: username }],
+        },
       });
 
       if (!user)
@@ -152,7 +156,7 @@ class AuthController {
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid)
-        return sendUnauthorizedError(res, "Invalid username or password");
+        return sendUnauthorizedError(res, "Invalid password");
 
       const { password: _password, ...safeUser } = user.toJSON();
 
@@ -353,7 +357,7 @@ class AuthController {
       await redisClient.del(otpAttemptsKey(user.id));
 
       try {
-        await sendOtpEmail(user.email, otp);
+        await Mailer.sendOtpEmail(user.email, otp);
       } catch (mailError) {
         Logger.error("forgotPassword: failed to send OTP email", {
           message: mailError.message,

@@ -67,6 +67,9 @@ const cacheKeys = {
   userList: (req) => `admin:cache:user:list:${stableStringify(req.query)}`,
   userListPattern: () => "admin:cache:user:list:*",
   userItem: (id) => `admin:cache:user:item:${id}`,
+  metaDataList: (req) => `admin:cache:metadata:list:${stableStringify(req.query)}`,
+  metaDataListPattern: () => "admin:cache:metadata:list:*",
+  metaDataItem: (id) => `admin:cache:metadata:item:${id}`,
 };
 
 module.exports = {

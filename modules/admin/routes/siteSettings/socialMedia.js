@@ -1,5 +1,5 @@
 const express = require("express");
-const Controller = require("../../http/controllers/SocialMedia/SocialMediaController");
+const Controller = require("../../http/controllers/SiteSettings/SocialMediaController");
 const {
   createUploadMiddleware,
 } = require("../../http/middleware/multerMiddleware");

@@ -1,5 +1,5 @@
 const express = require('express');
-const Controller = require('../../http/controllers/SiteSettings/SIteSetttingsController');
+const Controller = require('../../http/controllers/SiteSettings/SiteSettingsController');
 const { createUploadMiddleware } = require('../../http/middleware/multerMiddleware');
 const authMiddleware = require('../../http/middleware/authMiddleware');
 
@@ -14,7 +14,7 @@ const upload = createUploadMiddleware('site-settings', uploadFields);
 
 router.use(authMiddleware(['admin', 'user']));
 router.get("/", Controller.get);
-router.put("/", upload, Controller.update);
+router.put("/:id", upload, Controller.update);
 
 module.exports = router;
 

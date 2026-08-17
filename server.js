@@ -1,5 +1,7 @@
-const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
+
+const express = require("express");
 const { sequelize } = require("./database/models");
 const backendApi = require("./modules/admin/routes/index");
 const frontendApi = require("./modules/frontend/routes/index");
@@ -9,19 +11,15 @@ const path = require("path");
 const cors = require("cors");
 const expressListEndpoints = require("express-list-endpoints");
 const cookieParser = require("cookie-parser");
-const { createAdminUser } = require("./database/seeders/adminUser");
-const { policyData } = require("./database/seeders/policy");
-const { seedMetaTags } = require("./database/seeders/metaTags");
 const { createClient } = require("redis");
 const { connectRedis, disconnectRedis } = require("./config/redisClient");
 
-dotenv.config();
 const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "http://localhost:8080"
+  "http://localhost:8080",
 ];
 
 app.use(
@@ -65,11 +63,11 @@ const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
-  await connectRedis();
+    await connectRedis();
 
-    await createAdminUser();
-    await policyData();
-    await seedMetaTags();
+    // await createAdminUser();
+    // await policyData();
+    // await seedMetaTags();
 
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);

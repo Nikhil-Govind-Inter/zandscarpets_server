@@ -3,17 +3,19 @@ const { sendUnauthorizedError } = require('../traits/responseHandler');
 
 module.exports = (roles = []) => {
   return async (req, res, next) => {
-    // Skip processing during module loading (no valid req/res)
-    if (!req || !res || typeof res.status !== 'function') {
-      return next();
-    }
+    // // Skip processing during module loading (no valid req/res)
+    // if (!req || !res || typeof res.status !== 'function') {
+    //   return next();
+    // }
 
     try {
       // Get token from Authorization header or cookie
-      const token = req.headers.authorization?.split(' ')[1] || req.cookies?.access_token;
+      const token = req.cookies?.access_token;
       if (!token) {
         return sendUnauthorizedError(res, 'Authorization token required');
       }
+
+      console.log(req.cookies.access_token);
 
       // Check blacklist (optional)
       const redisClient = req.app.get('redisClient');
@@ -25,7 +27,7 @@ module.exports = (roles = []) => {
       }
 
       // Verify JWT
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Check role
       if (roles.length && !roles.includes(decoded.role)) {

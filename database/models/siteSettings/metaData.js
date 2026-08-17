@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      page_slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       meta_title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -25,10 +29,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      other_meta: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+      // other_meta: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
       deleted_at: {
         type: DataTypes.DATE,
       },

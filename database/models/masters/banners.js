@@ -1,55 +1,52 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const SiteSettings = sequelize.define(
-    "SiteSettings",
+  const Banners = Sequelize.define(
+    "Banners",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-
-      header_logo_media_path:{
+      page: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      footer_logo_media_path:{
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-
-      address:{
+      desktop_media_path: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-
-      email:{
+      mobile_media_path: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      media_alt: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
-      phone_number:{
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
-      whatsapp_number:{
+      sub_title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
-      admin_email:{
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: "admin@intersmart.in",
-      }
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      deleted_at: {
+        type: DataTypes.DATE,
+      },
     },
     {
-      tableName: "site_settings",
+      tableName: "banners",
       timestamps: true,
+      deletedAt: "deleted_at",
     },
   );
 
-  return SiteSettings;
+  return Banners;
 };

@@ -5,30 +5,31 @@ const { body, param } = require("express-validator");
 // `.optional()` on one array mutates the exact same chain used by the other).
 const usernameRule = () =>
   body("username")
-    .isLength({ min: 3, max: 50 }).withMessage("Username must be between 3 and 50 characters")
-    .matches(/^[a-zA-Z0-9_]+$/).withMessage("Username can only contain letters, numbers, and underscores")
-    .trim().toLowerCase();
+    .isLength({ min: 3, max: 50 })
+    .withMessage("Username must be between 3 and 50 characters")
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage("Username can only contain letters, numbers, and underscores")
+    .trim()
+    .toLowerCase();
 
 const emailRule = () =>
-  body("email")
-    .isEmail().withMessage("Invalid email format")
-    .normalizeEmail();
+  body("email").isEmail().withMessage("Invalid email format").normalizeEmail();
 
 const passwordRule = () =>
   body("password")
-    .isLength({ min: 8, max: 128 }).withMessage("Password must be between 8 and 128 characters")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage("Password must contain lowercase, uppercase, number, and special char");
-
+    .isLength({ min: 8, max: 128 })
+    .withMessage("Password must be between 8 and 128 characters");
 const roleRule = () =>
   body("role")
     .optional()
-    .isIn(["admin", "user"]).withMessage("Role must be either admin or user");
+    .isIn(["admin", "user"])
+    .withMessage("Role must be either admin or user");
 
 const isActiveRule = () =>
   body("is_active")
     .optional()
-    .isBoolean().withMessage("is_active must be a boolean");
+    .isBoolean()
+    .withMessage("is_active must be a boolean");
 
 // Create — username/email/password are required
 const validationRequestPost = [
