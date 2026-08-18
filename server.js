@@ -16,6 +16,7 @@ const { connectRedis, disconnectRedis } = require("./config/redisClient");
 const {createAdminUser} = require("./database/seeders/adminUser");
 const { seedPages } = require("./database/seeders/pages");
 const { seedMetaTags } = require("./database/seeders/metaTags");
+const { PORT, REDIS_URL } = require("./constants");
 
 
 const app = express();
@@ -46,7 +47,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-const redisClient = createClient({ url: process.env.REDIS_URL });
+const redisClient = createClient({ url: REDIS_URL });
 
 redisClient
   .connect()
@@ -63,11 +64,19 @@ app.use("/api/frontend", frontendApi);
 // Error handler last
 app.use(errorMiddleware);
 
-const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
     await connectRedis();
+
+    try {
+      await sequelize.authenticate();
+      console.log("✅ Database connected");
+    } catch (dbError) {
+      console.log("❌ Database connection failed: " + dbError.message);
+      throw dbError;
+    }
+
     // await sequelize.sync({ alter: true });
 
     // await createAdminUser();

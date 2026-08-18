@@ -1,3 +1,5 @@
+const { NODE_ENV } = require("../../../../constants");
+
 class CustomError extends Error {
   constructor(message, status = 500, code = 'CUSTOM_ERROR', details = null) {
     super(message);
@@ -155,7 +157,7 @@ const sendErrorResponse = (res, error, defaultMessage, defaultStatus = 500) => {
       code: errorCode,
       statusCode,
       ...(errorDetails && { details: errorDetails }),
-      ...(process.env.NODE_ENV === 'development' && { stack: error?.stack }),
+      ...(NODE_ENV === 'development' && { stack: error?.stack }),
     },
     timestamp: new Date().toISOString(),
   };

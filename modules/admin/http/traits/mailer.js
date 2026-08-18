@@ -2,8 +2,8 @@ const Logger = require("../../../../config/logger");
 const { models } = require("../../../../database/models");
 const { redisClient } = require("../../../../config/redisClient");
 const { cacheKeys, DEFAULT_TTL } = require("./cacheHelper");
+const { BREVO_DEFAULT_FROM, BREVO_API_KEY, BREVO_DEFAULT_REPLY_TO, BREVO_SEND_URL } = require("../../../../constants");
 
-const BREVO_SEND_URL = process.env.BREVO_SEND_URL;
 
 class Mailer {
   /**
@@ -39,7 +39,7 @@ class Mailer {
       }
     }
 
-    return siteSettings?.admin_email || process.env.BREVO_DEFAULT_FROM;
+    return siteSettings?.admin_email || BREVO_DEFAULT_FROM;
   }
 
   /**
@@ -49,9 +49,9 @@ class Mailer {
    * silently upstream) apart from "the email provider actually failed".
    */
   static async sendOtpEmail(toEmail, otp) {
-    const apiKey = process.env.BREVO_API_KEY;
-    const fromEmail = process.env.BREVO_DEFAULT_FROM;
-    const replyTo = process.env.BREVO_DEFAULT_REPLY_TO || fromEmail;
+    const apiKey = BREVO_API_KEY;
+    const fromEmail = BREVO_DEFAULT_FROM;
+    const replyTo = BREVO_DEFAULT_REPLY_TO || fromEmail;
 
     if (!apiKey || !fromEmail) {
       throw new Error("Email provider is not configured (missing BREVO_API_KEY/from address)");

@@ -1,8 +1,9 @@
 // config/redis.js
 const { createClient } = require("redis");
+const { REDIS_URL } = require("../constants");
 
 const redisClient = createClient({
-  url: process.env.REDIS_URL,
+  url: REDIS_URL,
 });
 
 

@@ -1,10 +1,9 @@
 const ms = require("ms");
+const { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } = require("../../../../constants");
 
-const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
-const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "30d";
+const ACCESS_TOKEN_EXPIRES_IN = JWT_EXPIRES_IN || "15m";
+const REFRESH_TOKEN_EXPIRES_IN = JWT_REFRESH_EXPIRES_IN || "30d";
 
-const ACCESS_COOKIE_NAME = "access_token";
-const REFRESH_COOKIE_NAME = "refresh_token";
 
 // Refresh cookie is scoped to /api/backend/auth so the browser only ever
 // sends it to the auth endpoints that need it, not to every API call.

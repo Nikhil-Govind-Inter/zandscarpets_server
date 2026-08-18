@@ -5,6 +5,7 @@
 
 const { ApiResponse } = require('./response');
 const { HTTP_STATUS, RESPONSE_MESSAGES, ERROR_CODES } = require('./constants');
+const { NODE_ENV } = require('../../../../constants');
 
 class ErrorHandler {
     
@@ -92,7 +93,7 @@ class ErrorHandler {
         }
         
         // Generic error handling
-        if (process.env.NODE_ENV === 'development') {
+        if (NODE_ENV === 'development') {
             return ApiResponse.error(res, {
                 message: error.message || RESPONSE_MESSAGES.ERROR.INTERNAL_SERVER,
                 status: HTTP_STATUS.INTERNAL_SERVER_ERROR,

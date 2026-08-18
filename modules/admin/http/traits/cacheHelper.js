@@ -60,26 +60,65 @@ const stableStringify = (obj = {}) => {
 };
 
 const cacheKeys = {
+  
+  // SITE SETTINGS
   siteSettings: () => "admin:cache:sitesettings",
+  
+  // SOCIAL MEDIA
   socialMediaList: (req) => `admin:cache:socialmedia:list:${stableStringify(req.query)}`,
   socialMediaListPattern: () => "admin:cache:socialmedia:list:*",
   socialMediaItem: (id) => `admin:cache:socialmedia:item:${id}`,
+ 
+//  USERS
   userList: (req) => `admin:cache:user:list:${stableStringify(req.query)}`,
   userListPattern: () => "admin:cache:user:list:*",
   userItem: (id) => `admin:cache:user:item:${id}`,
+  
+  // META DATA
   metaDataList: (req) => `admin:cache:metadata:list:${stableStringify(req.query)}`,
   metaDataListPattern: () => "admin:cache:metadata:list:*",
   metaDataItem: (id) => `admin:cache:metadata:item:${id}`,
+  
+  // PAGES
   pagesList: (req) => `admin:cache:pages:list:${stableStringify(req.query)}`,
   pagesListPattern: () => "admin:cache:pages:*",
   activePages: () => "admin:cache:pages:active",
   pagesItem: (id) => `admin:cache:pages:item:${id}`,
+
+//  BANNERS
   bannersList: (req) => `admin:cache:banners:list:${stableStringify(req.query)}`,
   bannersListPattern: () => "admin:cache:banners:list:*",
   bannersItem: (id) => `admin:cache:banners:item:${id}`,
+  
+  // FOOTER MEDIA
   footerMediaList: (req) => `admin:cache:footermedia:list:${stableStringify(req.query)}`,
   footerMediaListPattern: () => "admin:cache:footermedia:list:*",
   footerMediaItem: (id) => `admin:cache:footermedia:item:${id}`,
+  
+  // ADS BANNERS
+  adsBannerList: (req) => `admin:cache:adsbanner:list:${stableStringify(req.query)}`,
+  adsBannerListPattern: () => "admin:cache:adsbanner:list:*",
+  adsBannerItem: (id) => `admin:cache:adsbanner:item:${id}`,
+  
+  // FAQS
+  faqsList: (req) => `admin:cache:faqs:list:${stableStringify(req.query)}`,
+  faqsListPattern: () => "admin:cache:faqs:list:*",
+  faqsItem: (id) => `admin:cache:faqs:item:${id}`,
+  
+  // INDUSTRY
+  industryList: (req) => `admin:cache:industry:list:${stableStringify(req.query)}`,
+  industryListPattern: () => "admin:cache:industry:list:*",
+  industryItem: (id) => `admin:cache:industry:item:${id}`,
+  
+  // OUR FEATURES
+  ourFeaturesList: (req) => `admin:cache:ourfeatures:list:${stableStringify(req.query)}`,
+  ourFeaturesListPattern: () => "admin:cache:ourfeatures:list:*",
+  ourFeaturesItem: (id) => `admin:cache:ourfeatures:item:${id}`,
+  
+  // WORK PLANS
+  workPlanList: (req) => `admin:cache:workplan:list:${stableStringify(req.query)}`,
+  workPlanListPattern: () => "admin:cache:workplan:list:*",
+  workPlanItem: (id) => `admin:cache:workplan:item:${id}`,
 };
 
 module.exports = {

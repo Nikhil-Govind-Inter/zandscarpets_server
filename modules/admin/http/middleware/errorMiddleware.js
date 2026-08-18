@@ -1,4 +1,5 @@
 const Logger = require("../../../../config/logger");
+const { NODE_ENV } = require("../../../../constants");
 
 const errorMiddleware = (error, req, res, next) => {
   Logger.error(`${error.message} - ${req.method} ${req.url}`);
@@ -13,7 +14,7 @@ const errorMiddleware = (error, req, res, next) => {
     success: false,
     error: {
       message,
-      ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+      ...(NODE_ENV === "development" && { stack: error.stack }),
     },
   });
 };

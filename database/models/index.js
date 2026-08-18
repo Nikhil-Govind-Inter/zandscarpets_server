@@ -8,6 +8,11 @@ const defineMetaData  = require("./siteSettings/metaData");
 const defineFooterMedia = require("./siteSettings/footerMedia")
 const definePage = require("./masters/page");
 const defineBanners = require("./siteSettings/banners");
+const defineAdsBanner = require("./masters/AdsBanner");
+const defineFaqs = require("./masters/faqs");
+const defineIndustry = require("./masters/industry");
+const defineOurFeatures = require("./masters/ourFeatures");
+const defineWorkPlan = require("./masters/workPlan");
 const models = {
   AdminUser: defineAdminUser(sequelize),
   AdminRefreshToken: defineAdminRefreshToken(sequelize),
@@ -17,6 +22,11 @@ const models = {
   MetaData:  defineMetaData(sequelize),
   Page: definePage(sequelize),
   Banners: defineBanners(sequelize),
+  AdsBanner: defineAdsBanner(sequelize),
+  Faqs: defineFaqs(sequelize),
+  Industry: defineIndustry(sequelize),
+  OurFeatures: defineOurFeatures(sequelize),
+  WorkPlan: defineWorkPlan(sequelize),
 };
 
 

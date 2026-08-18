@@ -1,12 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { sendUnauthorizedError } = require('../traits/responseHandler');
+const { JWT_SECRET } = require('../../../../constants');
 
 module.exports = (roles = []) => {
   return async (req, res, next) => {
-    // // Skip processing during module loading (no valid req/res)
-    // if (!req || !res || typeof res.status !== 'function') {
-    //   return next();
-    // }
 
     try {
       // Get token from Authorization header or cookie
@@ -25,7 +22,7 @@ module.exports = (roles = []) => {
       }
 
       // Verify JWT
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
 
       // Check role
       if (roles.length && !roles.includes(decoded.role)) {

@@ -30,24 +30,20 @@ const {
 const ms = require("ms");
 const Mailer = require("../traits/mailer");
 const Logger = require("../../../../config/logger");
+const {
+  JWT_SECRET,
+  JWT_ISSUER,
+  OTP_TTL_SECONDS,
+  OTP_MAX_ATTEMPTS,
+  OTP_RESEND_COOLDOWN_SECONDS,
+  RESET_TOKEN_TTL_SECONDS,
+  OTP_LOCKOUT_COOLDOWN_SECONDS,
+} = require("../../../../constants");
 
 const AdminUser = models.AdminUser;
 const AdminRefreshToken = models.AdminRefreshToken;
 
-const SAFE_USER_ATTRIBUTES = [
-  "id",
-  "username",
-  "email",
-  "role",
-  "updatedAt",
-];
-
-// Password-reset OTP flow constants
-const OTP_TTL_SECONDS = 5 * 60; // OTP + attempts counter both expire in 5 minutes
-const OTP_MAX_ATTEMPTS = 3;
-const OTP_RESEND_COOLDOWN_SECONDS = 60;
-const OTP_LOCKOUT_COOLDOWN_SECONDS = 5 * 60; // cooldown after hitting max attempts
-const RESET_TOKEN_TTL_SECONDS = 10 * 60;
+const SAFE_USER_ATTRIBUTES = ["id", "username", "email", "role", "updatedAt"];
 
 const otpKey = (userId) => `pwreset:otp:${userId}`;
 const otpAttemptsKey = (userId) => `pwreset:attempts:${userId}`;
@@ -57,10 +53,10 @@ const resetTokenKey = (hashedToken) => `pwreset:token:${hashedToken}`;
 const signAccessToken = (user) =>
   jwt.sign(
     { id: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-      issuer: process.env.JWT_ISSUER || "your-app-name",
+      issuer: JWT_ISSUER || "your-app-name",
     },
   );
 
@@ -143,8 +139,7 @@ class AuthController {
         },
       });
 
-      if (!user)
-        return sendUnauthorizedError(res, "Invalid credentials.");
+      if (!user) return sendUnauthorizedError(res, "Invalid credentials.");
 
       if (!user.is_active) {
         return sendUnauthorizedError(
