@@ -73,7 +73,7 @@ const startServer = async () => {
     // await createAdminUser();
     // await policyData();
     // await seedPages();
-    await seedMetaTags();
+    // await seedMetaTags();
 
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);

@@ -40,10 +40,10 @@ class MetaDataController {
 
       const result = await paginate(dataModel, req, {
         include: [
-          { model: models.Page, as: "page", attributes: ["id", "page", "page_slug"] },
+          { model: models.Page, as: "page", attributes: ["page"] },
         ],
         order: [[{ model: models.Page, as: "page" }, "page", "ASC"]],
-        searchFields: ["page.page"],
+        searchFields: ["page.page", "meta_title"],
       });
 
       await setCache(req, listCacheKey, result);

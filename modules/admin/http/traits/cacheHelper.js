@@ -5,7 +5,7 @@
 // function here degrades silently (returns null / no-op) if redisClient is unavailable
 // or a redis call fails, so a cache outage never breaks a request.
 
-const DEFAULT_TTL = 300; // seconds (5 min)
+const DEFAULT_TTL = 60 * 60 * 24 * 30; // 30 day
 
 const getRedis = (req) => req.app.get("redisClient") || null;
 
@@ -77,6 +77,9 @@ const cacheKeys = {
   bannersList: (req) => `admin:cache:banners:list:${stableStringify(req.query)}`,
   bannersListPattern: () => "admin:cache:banners:list:*",
   bannersItem: (id) => `admin:cache:banners:item:${id}`,
+  footerMediaList: (req) => `admin:cache:footermedia:list:${stableStringify(req.query)}`,
+  footerMediaListPattern: () => "admin:cache:footermedia:list:*",
+  footerMediaItem: (id) => `admin:cache:footermedia:item:${id}`,
 };
 
 module.exports = {

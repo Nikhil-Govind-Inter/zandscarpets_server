@@ -32,7 +32,8 @@ class BannerController {
 
       const result = await paginate(dataModel, req, {
         order: [["id", "ASC"]],
-        searchFields: ["title", "sub_title"],
+        // page title
+        searchFields: ["title", "sub_title", "page.page"],
         include: [{ model: models.Page, as: "page" }],
       });
 
