@@ -13,11 +13,10 @@ const expressListEndpoints = require("express-list-endpoints");
 const cookieParser = require("cookie-parser");
 const { createClient } = require("redis");
 const { connectRedis, disconnectRedis } = require("./config/redisClient");
-const {createAdminUser} = require("./database/seeders/adminUser");
+const { createAdminUser } = require("./database/seeders/adminUser");
 const { seedPages } = require("./database/seeders/pages");
 const { seedMetaTags } = require("./database/seeders/metaTags");
 const { PORT, REDIS_URL } = require("./constants");
-
 
 const app = express();
 
@@ -25,7 +24,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8080",
-  "https://admin-zandcarpets.netlify.app"
+  "https://admin-zandcarpets.netlify.app",
 ];
 
 app.use(
@@ -65,7 +64,6 @@ app.use("/api/frontend", frontendApi);
 // Error handler last
 app.use(errorMiddleware);
 
-
 const startServer = async () => {
   try {
     await connectRedis();
@@ -80,10 +78,10 @@ const startServer = async () => {
 
     // await sequelize.sync({ alter: true });
 
-    await createAdminUser();
+    // await createAdminUser();
     // await policyData();
-    await seedPages();
-    await seedMetaTags();
+    // await seedPages();
+    // await seedMetaTags();
 
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);
