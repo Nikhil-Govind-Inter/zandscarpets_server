@@ -15,8 +15,6 @@ module.exports = (roles = []) => {
         return sendUnauthorizedError(res, 'Authorization token required');
       }
 
-      console.log(req.cookies.access_token);
-
       // Check blacklist (optional)
       const redisClient = req.app.get('redisClient');
       if (redisClient) {

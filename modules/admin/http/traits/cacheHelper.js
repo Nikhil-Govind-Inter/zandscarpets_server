@@ -70,6 +70,13 @@ const cacheKeys = {
   metaDataList: (req) => `admin:cache:metadata:list:${stableStringify(req.query)}`,
   metaDataListPattern: () => "admin:cache:metadata:list:*",
   metaDataItem: (id) => `admin:cache:metadata:item:${id}`,
+  pagesList: (req) => `admin:cache:pages:list:${stableStringify(req.query)}`,
+  pagesListPattern: () => "admin:cache:pages:*",
+  activePages: () => "admin:cache:pages:active",
+  pagesItem: (id) => `admin:cache:pages:item:${id}`,
+  bannersList: (req) => `admin:cache:banners:list:${stableStringify(req.query)}`,
+  bannersListPattern: () => "admin:cache:banners:list:*",
+  bannersItem: (id) => `admin:cache:banners:item:${id}`,
 };
 
 module.exports = {

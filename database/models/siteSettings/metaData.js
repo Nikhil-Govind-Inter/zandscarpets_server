@@ -9,13 +9,10 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      page: {
-        type: DataTypes.STRING,
+      page_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-      },
-      page_slug: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        unique: true,
       },
       meta_title: {
         type: DataTypes.STRING,
@@ -28,6 +25,10 @@ module.exports = (sequelize) => {
       meta_keywords: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      canonical_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       // other_meta: {
       //   type: DataTypes.STRING,
@@ -43,6 +44,10 @@ module.exports = (sequelize) => {
       deletedAt: "deleted_at",
     },
   );
+
+  MetaData.associate = (models) => {
+    MetaData.belongsTo(models.Page, { foreignKey: "page_id", as: "page" });
+  };
 
   return MetaData;
 };

@@ -167,7 +167,9 @@ class SocialMediaController {
       await invalidateCache(req, cacheKeys.socialMediaItem(id));
       await invalidateCache(req, cacheKeys.socialMediaListPattern());
 
-      sendSuccessResponse(res, null, "Social media item deleted successfully");
+      sendSuccessResponse(res, {
+        id: id,
+      }, "Social media item deleted successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }

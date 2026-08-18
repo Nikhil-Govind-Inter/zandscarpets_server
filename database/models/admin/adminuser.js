@@ -33,7 +33,8 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: 'admin_users', 
+      tableName: 'admin_users',
+      timestamps: true,
     }
   );
 

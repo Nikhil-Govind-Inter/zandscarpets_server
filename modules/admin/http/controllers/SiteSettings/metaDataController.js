@@ -39,8 +39,11 @@ class MetaDataController {
       }
 
       const result = await paginate(dataModel, req, {
-        order: [["page", "ASC"]],
-        searchFields: ["page"],
+        include: [
+          { model: models.Page, as: "page", attributes: ["id", "page", "page_slug"] },
+        ],
+        order: [[{ model: models.Page, as: "page" }, "page", "ASC"]],
+        searchFields: ["page.page"],
       });
 
       await setCache(req, listCacheKey, result);
@@ -71,7 +74,11 @@ class MetaDataController {
         );
       }
 
-      const item = await dataModel.findByPk(id);
+      const item = await dataModel.findByPk(id, {
+        include: [
+          { model: models.Page, as: "page", attributes: ["id", "page", "page_slug"] },
+        ],
+      });
       if (!item) {
         return sendNotFoundError(res, "Meta data item");
       }

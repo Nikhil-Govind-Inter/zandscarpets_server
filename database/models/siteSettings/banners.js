@@ -9,9 +9,10 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      page: {
-        type: DataTypes.STRING,
+      page_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
+        unique: true,
       },
       desktop_media_path: {
         type: DataTypes.TEXT,
@@ -43,6 +44,10 @@ module.exports = (sequelize) => {
       deletedAt: "deleted_at",
     },
   );
+
+  Banners.associate = (models) => {
+    Banners.belongsTo(models.Page, { foreignKey: "page_id", as: "page" });
+  };
 
   return Banners;
 };

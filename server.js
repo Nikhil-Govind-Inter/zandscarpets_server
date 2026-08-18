@@ -13,6 +13,10 @@ const expressListEndpoints = require("express-list-endpoints");
 const cookieParser = require("cookie-parser");
 const { createClient } = require("redis");
 const { connectRedis, disconnectRedis } = require("./config/redisClient");
+const {createAdminUser} = require("./database/seeders/adminUser");
+const { seedPages } = require("./database/seeders/pages");
+const { seedMetaTags } = require("./database/seeders/metaTags");
+
 
 const app = express();
 
@@ -64,10 +68,12 @@ const PORT = process.env.PORT;
 const startServer = async () => {
   try {
     await connectRedis();
+    // await sequelize.sync({ alter: true });
 
     // await createAdminUser();
     // await policyData();
-    // await seedMetaTags();
+    // await seedPages();
+    await seedMetaTags();
 
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);

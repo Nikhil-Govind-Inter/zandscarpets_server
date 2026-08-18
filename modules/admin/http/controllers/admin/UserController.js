@@ -18,7 +18,7 @@ const { validationResult } = require("express-validator");
 
 const dataModel = models.AdminUser;
 
-const SAFE_ATTRIBUTES = ["id", "username", "email", "role", "is_active", "createdAt", "updatedAt"];
+const SAFE_ATTRIBUTES = ["id", "username", "email", "role", "is_active", "updatedAt"];
 
 const BCRYPT_ROUNDS = 12;
 

@@ -39,7 +39,6 @@ const SAFE_USER_ATTRIBUTES = [
   "username",
   "email",
   "role",
-  "createdAt",
   "updatedAt",
 ];
 

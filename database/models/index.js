@@ -6,6 +6,8 @@ const defineSiteSettings = require("./siteSettings/siteSettings");
 const defineSocialMedia = require("./siteSettings/socialMedia");
 const defineMetaData  = require("./siteSettings/metaData");
 const defineFooterMedia = require("./siteSettings/footerMedia")
+const definePage = require("./masters/page");
+const defineBanners = require("./siteSettings/banners");
 const models = {
   AdminUser: defineAdminUser(sequelize),
   AdminRefreshToken: defineAdminRefreshToken(sequelize),
@@ -13,6 +15,8 @@ const models = {
   SocialMedia: defineSocialMedia(sequelize),
   FooterMedia: defineFooterMedia(sequelize),
   MetaData:  defineMetaData(sequelize),
+  Page: definePage(sequelize),
+  Banners: defineBanners(sequelize),
 };
 
 

@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const Banners = Sequelize.define(
-    "Banners",
+  const Page = sequelize.define(
+    "Page",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -13,25 +13,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      desktop_media_path: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      mobile_media_path: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      media_alt: {
+      page_slug: {
         type: DataTypes.STRING,
         allowNull: false,
-      },
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      sub_title: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        unique: true,
       },
       is_active: {
         type: DataTypes.BOOLEAN,
@@ -42,11 +27,16 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "banners",
+      tableName: "pages",
       timestamps: true,
       deletedAt: "deleted_at",
     },
   );
 
-  return Banners;
+  Page.associate = (models) => {
+    Page.hasOne(models.Banners, { foreignKey: "page_id", as: "banner" });
+    Page.hasOne(models.MetaData, { foreignKey: "page_id", as: "metaData" });
+  };
+
+  return Page;
 };
