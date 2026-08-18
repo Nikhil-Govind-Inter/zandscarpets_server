@@ -79,10 +79,10 @@ const startServer = async () => {
 
     // await sequelize.sync({ alter: true });
 
-    // await createAdminUser();
+    await createAdminUser();
     // await policyData();
-    // await seedPages();
-    // await seedMetaTags();
+    await seedPages();
+    await seedMetaTags();
 
     app.listen(PORT, () => {
       Logger.info(`🚀 Server running on port ${PORT}`);
