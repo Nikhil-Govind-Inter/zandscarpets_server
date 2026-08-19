@@ -48,6 +48,7 @@ module.exports = (sequelize) => {
     {
       tableName: "site_settings",
       timestamps: true,
+paranoid: true,
     },
   );
 

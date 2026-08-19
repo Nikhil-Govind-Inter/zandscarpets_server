@@ -63,7 +63,10 @@ const cacheKeys = {
   
   // SITE SETTINGS
   siteSettings: () => "admin:cache:sitesettings",
-  
+
+  // HOME CMS
+  homeCms: () => "admin:cache:homecms",
+
   // SOCIAL MEDIA
   socialMediaList: (req) => `admin:cache:socialmedia:list:${stableStringify(req.query)}`,
   socialMediaListPattern: () => "admin:cache:socialmedia:list:*",
@@ -119,6 +122,11 @@ const cacheKeys = {
   workPlanList: (req) => `admin:cache:workplan:list:${stableStringify(req.query)}`,
   workPlanListPattern: () => "admin:cache:workplan:list:*",
   workPlanItem: (id) => `admin:cache:workplan:item:${id}`,
+
+  // HOME BANNER
+  homeBannerList: (req) => `admin:cache:homebanner:list:${stableStringify(req.query)}`,
+  homeBannerListPattern: () => "admin:cache:homebanner:list:*",
+  homeBannerItem: (id) => `admin:cache:homebanner:item:${id}`,
 };
 
 module.exports = {

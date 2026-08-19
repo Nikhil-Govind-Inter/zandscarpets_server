@@ -13,6 +13,9 @@ const defineFaqs = require("./masters/faqs");
 const defineIndustry = require("./masters/industry");
 const defineOurFeatures = require("./masters/ourFeatures");
 const defineWorkPlan = require("./masters/workPlan");
+const defineHomeCms = require("./home/homeCms");
+const defineHomeBanner = require("./home/homeBanner");
+
 const models = {
   AdminUser: defineAdminUser(sequelize),
   AdminRefreshToken: defineAdminRefreshToken(sequelize),
@@ -27,6 +30,8 @@ const models = {
   Industry: defineIndustry(sequelize),
   OurFeatures: defineOurFeatures(sequelize),
   WorkPlan: defineWorkPlan(sequelize),
+  HomeCms: defineHomeCms(sequelize),
+  HomeBanner: defineHomeBanner(sequelize),
 };
 
 

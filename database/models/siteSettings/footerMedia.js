@@ -32,6 +32,7 @@ module.exports = (sequelize) => {
     {
       tableName: "footer_media",
       timestamps: true,
+paranoid: true,
       deletedAt: "deleted_at",
     },
   );

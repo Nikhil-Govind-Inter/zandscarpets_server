@@ -1,5 +1,10 @@
 const { models } = require("../../../../../database/models");
 const {
+  handleFileUploadUpdate,
+  deleteOldFile,
+  handleFileUploadStore,
+} = require("../../middleware/multerMiddleware");
+const {
   sendSuccessResponse,
   sendErrorResponse,
   sendNotFoundError,
@@ -15,56 +20,34 @@ const {
 const {
   validationRequestPost,
   validateId,
-} = require("../../request/masters/industryRequest");
+} = require("../../request/home/homeBannerRequest");
 const { validationResult } = require("express-validator");
+const { Op } = require("sequelize");
 
-const dataModel = models.Industry;
+const dataModel = models.HomeBanner;
+const fileFields = ["media_path"];
 
-class IndustryController {
+class HomeBannerController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.industryList(req);
+      const listCacheKey = cacheKeys.homeBannerList(req);
       const cached = await getCache(req, listCacheKey);
       if (cached) {
         return sendSuccessResponse(
           res,
           cached,
-          "Industry list retrieved successfully from cache",
+          "Home banner retrieved successfully from cache",
         );
       }
 
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
-        searchFields: ["title", "slug"],
+        searchFields: ["title","industry.title"],
+        include: [{ model: models.Industry, as: "industry" }],
       });
 
       await setCache(req, listCacheKey, result);
-      sendSuccessResponse(res, result, "Industry list retrieved successfully");
-    } catch (error) {
-      return sendErrorResponse(res, error);
-    }
-  }
-
-  static async getActiveIndustries(req, res) {
-    try {
-      const listCacheKey = cacheKeys.industryList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Industry list retrieved successfully from cache",
-        );
-      }
-
-      const result = await dataModel.findAll({
-        where: { is_active: true },
-        order: [["sort_order", "ASC"]],
-        attributes: ["id", "title", "slug"],
-      });
-
-      await setCache(req, listCacheKey, result);
-      sendSuccessResponse(res, result, "Industry list retrieved successfully");
+      sendSuccessResponse(res, result, "Home banner retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -77,20 +60,22 @@ class IndustryController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.industryItem(id);
+      const itemCacheKey = cacheKeys.homeBannerItem(id);
       const cached = await getCache(req, itemCacheKey);
       if (cached)
         return sendSuccessResponse(
           res,
           cached,
-          "Industry item retrieved successfully",
+          "Home banner retrieved successfully",
         );
 
-      const item = await dataModel.findByPk(id);
-      if (!item) return sendNotFoundError(res, "Industry item");
+      const item = await dataModel.findByPk(id, {
+        include: [{ model: models.Industry, as: "industry" }],
+      });
+      if (!item) return sendNotFoundError(res, "Home banner");
 
       await setCache(req, itemCacheKey, item);
-      sendSuccessResponse(res, item, "Industry item retrieved successfully");
+      sendSuccessResponse(res, item, "Home banner retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -102,19 +87,22 @@ class IndustryController {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return sendValidationError(res, errors);
 
-      const { slug } = req.body;
 
       const isItemExist = await dataModel.findOne({
-        where: { slug: slug },
-        attrubutes: ["slug"],
+        where: {
+          industry_id: req.body.industry_id,
+        },
+        attrubutes: ["page_slug"],
       });
-      if (isItemExist)
-        return sendErrorResponse(res, `${req.body.title} already exist`);
 
+      if (isItemExist)
+        return sendErrorResponse(res, `${req.body.page} already exist`);
+
+      handleFileUploadStore(req, fileFields);
       const item = await dataModel.create(req.body);
 
-      await invalidateCache(req, cacheKeys.industryListPattern());
-      sendSuccessResponse(res, item, "Industry item created successfully", 201);
+      await invalidateCache(req, cacheKeys.homeBannerListPattern());
+      sendSuccessResponse(res, item, "Home banner created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -130,24 +118,29 @@ class IndustryController {
     try {
       const { id } = req.params;
       const item = await dataModel.findByPk(id);
-      if (!item) return sendNotFoundError(res, "Industry item");
+      if (!item) return sendNotFoundError(res, "Home banner");
 
-      if (item.slug !== req.body.slug) {
-        const isItemExist = await dataModel.findOne({
-          where: { slug: req.body.slug },
-          attrubutes: ["slug"],
-        });
-        if (isItemExist)
-          return sendErrorResponse(res, `${req.body.title} already exist`);
-      }
 
+      const isItemExist = await dataModel.findOne({
+        where: {
+          industry_id: req.body.industry_id,
+          id: {
+            [Op.ne]: id,
+          },
+        },
+        attrubutes: ["page_slug"],
+      });
+
+      if (isItemExist)
+        return sendErrorResponse(res, `${req.body.page} already exist`);
+
+      await handleFileUploadUpdate(req, item, fileFields);
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
+      await invalidateCache(req, cacheKeys.homeBannerItem(id));
       await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
-      sendSuccessResponse(res, item, "Industry item updated successfully");
+      sendSuccessResponse(res, item, "Home banner updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -161,22 +154,20 @@ class IndustryController {
     try {
       const { id } = req.params;
       const item = await dataModel.findByPk(id);
-      if (!item) return sendNotFoundError(res, "Industry item");
+      if (!item) return sendNotFoundError(res, "Home banner");
+
+      if (item.media_path) await deleteOldFile(item.media_path);
 
       await item.destroy();
 
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
+      await invalidateCache(req, cacheKeys.homeBannerItem(id));
+      await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
-      sendSuccessResponse(
-        res,
-        { id: id },
-        "Industry item deleted successfully",
-      );
+      sendSuccessResponse(res, { id: id }, "Home banner deleted successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
   }
 }
 
-module.exports = IndustryController;
+module.exports = HomeBannerController;

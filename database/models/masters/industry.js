@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      slug:{
+      slug: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
@@ -44,6 +44,14 @@ module.exports = (sequelize) => {
       deletedAt: "deleted_at",
     },
   );
+
+  industry.associate = function (models) {
+    // hasMany with homeBanner
+    industry.hasOne(models.HomeBanner, {
+      foreignKey: "industry_id",
+      as: "homeBanner",
+    });
+  };
 
   return industry;
 };

@@ -1,8 +1,8 @@
 const ms = require("ms");
 const { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } = require("../../../../constants");
 
-const ACCESS_TOKEN_EXPIRES_IN = JWT_EXPIRES_IN || "15m";
-const REFRESH_TOKEN_EXPIRES_IN = JWT_REFRESH_EXPIRES_IN || "30d";
+const ACCESS_TOKEN_EXPIRES_IN = JWT_EXPIRES_IN;
+const REFRESH_TOKEN_EXPIRES_IN = JWT_REFRESH_EXPIRES_IN;
 
 
 // Refresh cookie is scoped to /api/backend/auth so the browser only ever

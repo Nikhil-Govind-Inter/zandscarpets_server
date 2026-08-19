@@ -32,6 +32,7 @@ module.exports = (sequelize) => {
     {
       tableName: "ads_banner",
       timestamps: true,
+paranoid: true,
       deletedAt: "deleted_at",
     },
   );

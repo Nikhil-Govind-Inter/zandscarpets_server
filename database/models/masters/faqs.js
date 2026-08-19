@@ -32,6 +32,7 @@ module.exports = (sequelize) => {
     {
       tableName: "faqs",
       timestamps: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );

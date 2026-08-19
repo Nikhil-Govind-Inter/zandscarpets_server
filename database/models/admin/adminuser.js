@@ -35,6 +35,7 @@ module.exports = (sequelize) => {
     {
       tableName: 'admin_users',
       timestamps: true,
+paranoid: true,
     }
   );
 

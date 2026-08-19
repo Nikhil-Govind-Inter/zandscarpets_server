@@ -17,6 +17,7 @@ const {
   validateId,
 } = require("../../request/masters/pagesRequest");
 const { validationResult } = require("express-validator");
+const { Op } = require("sequelize");
 
 const dataModel = models.Page;
 
@@ -103,6 +104,13 @@ class PagesController {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return sendValidationError(res, errors);
 
+      const isItemExist = await dataModel.findOne({
+        where: { page_slug: req.body.page_slug, deleted_at: null },
+        attrubutes: ["page_slug"],
+      });
+      if (isItemExist)
+        return sendErrorResponse(res, `${req.body.page} already exist`);
+
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.pagesListPattern());
@@ -124,10 +132,27 @@ class PagesController {
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Page item");
 
+      // except current id
+
+      const isItemExist = await dataModel.findOne({
+        where: {
+          page_slug: req.body.page_slug,
+          id: {
+            [Op.ne]: id,
+          },
+        },
+        attrubutes: ["page_slug"],
+      });
+
+      if (isItemExist)
+        return sendErrorResponse(res, `${req.body.page} already exist`);
+
       await item.update(req.body);
 
       await invalidateCache(req, cacheKeys.pagesItem(id));
       await invalidateCache(req, cacheKeys.pagesListPattern());
+      await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateCache(req, cacheKeys.metaDataListPattern());
 
       sendSuccessResponse(res, item, "Page item updated successfully");
     } catch (error) {
@@ -149,6 +174,7 @@ class PagesController {
 
       await invalidateCache(req, cacheKeys.pagesItem(id));
       await invalidateCache(req, cacheKeys.pagesListPattern());
+      await invalidateCache(req, cacheKeys.bannersListPattern());
 
       sendSuccessResponse(res, { id: id }, "Page item deleted successfully");
     } catch (error) {

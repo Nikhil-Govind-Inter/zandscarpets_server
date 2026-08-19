@@ -36,6 +36,7 @@ module.exports = (sequelize) => {
     {
       tableName: "associates",
       timestamps: true,
+paranoid: true,
       deletedAt: "deleted_at",
     }
   );

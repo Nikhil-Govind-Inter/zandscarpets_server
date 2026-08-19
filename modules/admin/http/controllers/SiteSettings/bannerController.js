@@ -11,12 +11,18 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
+const {
+  getCache,
+  setCache,
+  invalidateCache,
+  cacheKeys,
+} = require("../../traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
 } = require("../../request/siteSettings/bannerRequest");
 const { validationResult } = require("express-validator");
+const { Op } = require("sequelize");
 
 const dataModel = models.Banners;
 const fileFields = ["desktop_media_path", "mobile_media_path"];
@@ -27,7 +33,11 @@ class BannerController {
       const listCacheKey = cacheKeys.bannersList(req);
       const cached = await getCache(req, listCacheKey);
       if (cached) {
-        return sendSuccessResponse(res, cached, "Banners list retrieved successfully from cache");
+        return sendSuccessResponse(
+          res,
+          cached,
+          "Banners list retrieved successfully from cache",
+        );
       }
 
       const result = await paginate(dataModel, req, {
@@ -53,7 +63,12 @@ class BannerController {
       const { id } = req.params;
       const itemCacheKey = cacheKeys.bannersItem(id);
       const cached = await getCache(req, itemCacheKey);
-      if (cached) return sendSuccessResponse(res, cached, "Banner item retrieved successfully");
+      if (cached)
+        return sendSuccessResponse(
+          res,
+          cached,
+          "Banner item retrieved successfully",
+        );
 
       const item = await dataModel.findByPk(id, {
         include: [{ model: models.Page, as: "page" }],
@@ -73,6 +88,17 @@ class BannerController {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return sendValidationError(res, errors);
 
+      const isItemExist = await dataModel.findOne({
+        where: { page_id: req.body.page_id },
+        include: [{ model: models.Page, as: "page" }],
+        attrubutes: ["page_id"],
+      });
+      if (isItemExist)
+        return sendErrorResponse(
+          res,
+          `${isItemExist?.page?.page} banner already exist`,
+        );
+
       handleFileUploadStore(req, fileFields);
 
       const item = await dataModel.create(req.body);
@@ -86,7 +112,9 @@ class BannerController {
   }
 
   static async update(req, res) {
-    await Promise.all([...validateId, ...validationRequestPost].map((v) => v.run(req)));
+    await Promise.all(
+      [...validateId, ...validationRequestPost].map((v) => v.run(req)),
+    );
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
@@ -94,6 +122,31 @@ class BannerController {
       const { id } = req.params;
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Banner item");
+
+      // IT SHOULD except currwnt edit id
+
+      const isItemExist = await dataModel.findOne({
+        where: {
+          page_id: req.body.page_id,
+          id: {
+            [Op.ne]: req.params.id,
+          },
+        },
+        include: [
+          {
+            model: models.Page,
+            as: "page",
+            attributes: ["page"],
+          },
+        ],
+        attributes: ["id", "page_id"],
+      });
+
+      if (isItemExist)
+        return sendErrorResponse(
+          res,
+          `${isItemExist?.page?.page} banner already exist`,
+        );
 
       await handleFileUploadUpdate(req, item, fileFields);
       await item.update(req.body);
