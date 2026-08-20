@@ -32,18 +32,18 @@ class HomeBannerController {
     try {
       const listCacheKey = cacheKeys.homeBannerList(req);
       const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Home banner retrieved successfully from cache",
-        );
-      }
+      // if (cached) {
+      //   return sendSuccessResponse(
+      //     res,
+      //     cached,
+      //     "Home banner retrieved successfully from cache",
+      //   );
+      // }
 
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title","industry.title"],
-        include: [{ model: models.Industry, as: "industry" }],
+        include: [{ model: models.Industry, as: "industry", attributes: ["title"] }],
       });
 
       await setCache(req, listCacheKey, result);

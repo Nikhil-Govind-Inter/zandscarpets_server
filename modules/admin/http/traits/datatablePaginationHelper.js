@@ -41,7 +41,7 @@ const createSearchCondition = (field, searchValue, Model) => {
 
 module.exports = {
   paginate: async (Model, req, options = {}) => {
-    const { limit, page = 1, search, keyword, searchFields, startDate, endDate } = req.query;
+    const { limit, page = 1, search, keyword, searchFields, startDate, endDate, attributes } = req.query;
 
     const parsedLimit = limit ? parseInt(limit, 10) : 10;
     const parsedPage = parseInt(page, 10) || 1;
@@ -65,6 +65,21 @@ module.exports = {
       distinct: true,
       ...(includeSubQuery || hasAssociationWhere ? { subQuery: false } : {}),
     };
+
+    // Restrict selected columns when the caller passes a comma-separated
+    // `attributes` query param (e.g. `?attributes=id,page_id`). The primary
+    // key is always force-included even if not requested, since
+    // findAndCountAll's `distinct: true` above relies on it being selected.
+    if (attributes) {
+      const requestedAttributes = attributes
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean);
+      const pk = Model.primaryKeyAttribute;
+      queryOptions.attributes = requestedAttributes.includes(pk)
+        ? requestedAttributes
+        : [pk, ...requestedAttributes];
+    }
 
     // Apply date range filter
     if (startDate || endDate) {

@@ -1,9 +1,14 @@
 const ms = require("ms");
-const { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } = require("../../../../constants");
+const {
+  JWT_EXPIRES_IN,
+  JWT_REFRESH_EXPIRES_IN,
+  ACCESS_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+  NODE_ENV,
+} = require("../../../../constants");
 
 const ACCESS_TOKEN_EXPIRES_IN = JWT_EXPIRES_IN;
 const REFRESH_TOKEN_EXPIRES_IN = JWT_REFRESH_EXPIRES_IN;
-
 
 // Refresh cookie is scoped to /api/backend/auth so the browser only ever
 // sends it to the auth endpoints that need it, not to every API call.
@@ -19,8 +24,9 @@ const REFRESH_COOKIE_PATH = "/api/backend/auth";
 // behind a single reverse-proxied origin, same-site Lax would also work, but
 // None+Secure works equally well for a same-origin deployment and avoids a
 // NODE_ENV-dependent behavior difference between dev and prod.
-const sameSite = "none";
-const secure = true;
+// Strict
+const sameSite = "Strict";
+const secure = NODE_ENV === "production";
 
 const accessCookieOptions = () => ({
   httpOnly: true,
@@ -44,8 +50,18 @@ const setAuthCookies = (res, { accessToken, refreshToken }) => {
 };
 
 const clearAuthCookies = (res) => {
-  res.clearCookie(ACCESS_COOKIE_NAME, { httpOnly: true, secure, sameSite, path: "/" });
-  res.clearCookie(REFRESH_COOKIE_NAME, { httpOnly: true, secure, sameSite, path: REFRESH_COOKIE_PATH });
+  res.clearCookie(ACCESS_COOKIE_NAME, {
+    httpOnly: true,
+    secure,
+    sameSite,
+    path: "/",
+  });
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure,
+    sameSite,
+    path: REFRESH_COOKIE_PATH,
+  });
 };
 
 module.exports = {

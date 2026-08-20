@@ -44,7 +44,7 @@ class BannerController {
         order: [["id", "ASC"]],
         // page title
         searchFields: ["title", "sub_title", "page.page"],
-        include: [{ model: models.Page, as: "page" }],
+        include: [{ model: models.Page, as: "page", attributes: ["page"] }],
       });
 
       await setCache(req, listCacheKey, result);
