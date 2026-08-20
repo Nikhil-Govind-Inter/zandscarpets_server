@@ -1,8 +1,8 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  body("desktop_media_path").optional().isString().withMessage("Desktop media path must be a string"),
-  body("mobile_media_path").optional().isString().withMessage("Mobile media path must be a string"),
+  body("desktop_media_path").notEmpty().withMessage("Desktop media path is required").isString().withMessage("Desktop media path must be a string"),
+  body("mobile_media_path").notEmpty().withMessage("Mobile media path is required").isString().withMessage("Mobile media path must be a string"),
   body("page_id").notEmpty().withMessage("Page is required").isInt({ min: 1 }).withMessage("Page ID must be an integer"),
   body("media_alt").notEmpty().withMessage("Media alt is required").isString().withMessage("Media alt must be a string"),
   body("title").notEmpty().withMessage("Title is required").isString().withMessage("Title must be a string"),

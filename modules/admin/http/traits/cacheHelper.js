@@ -127,6 +127,11 @@ const cacheKeys = {
   homeBannerList: (req) => `admin:cache:homebanner:list:${stableStringify(req.query)}`,
   homeBannerListPattern: () => "admin:cache:homebanner:list:*",
   homeBannerItem: (id) => `admin:cache:homebanner:item:${id}`,
+
+  // HOME MILESTONES
+  homeMilestoneList: (req) => `admin:cache:homemilestone:list:${stableStringify(req.query)}`,
+  homeMilestoneListPattern: () => "admin:cache:homemilestone:list:*",
+  homeMilestoneItem: (id) => `admin:cache:homemilestone:item:${id}`,
 };
 
 module.exports = {

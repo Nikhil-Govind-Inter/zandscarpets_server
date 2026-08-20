@@ -125,6 +125,10 @@ const createUploadMiddleware = (subfolder, fields) => {
             } else if (isValidUrl(input)) {
               // Keep valid external URLs
               normalizedBody[fieldName] = input;
+            } else if (input.startsWith(`uploads/${subfolder}/`)) {
+              // Already-normalized relative path (e.g. unchanged existing
+              // file sent back on update without a new upload)
+              normalizedBody[fieldName] = input;
             } else {
               console.warn(`Invalid URL for ${fieldName}: ${input}`);
               normalizedBody[fieldName] = undefined; // Let controller handle

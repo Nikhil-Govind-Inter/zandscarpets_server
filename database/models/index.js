@@ -15,6 +15,7 @@ const defineOurFeatures = require("./masters/ourFeatures");
 const defineWorkPlan = require("./masters/workPlan");
 const defineHomeCms = require("./home/homeCms");
 const defineHomeBanner = require("./home/homeBanner");
+const defineHomeMilestones = require("./home/homeMilestones");
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
@@ -32,6 +33,7 @@ const models = {
   WorkPlan: defineWorkPlan(sequelize),
   HomeCms: defineHomeCms(sequelize),
   HomeBanner: defineHomeBanner(sequelize),
+  HomeMilestones: defineHomeMilestones(sequelize),
 };
 
 
