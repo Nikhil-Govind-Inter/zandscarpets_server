@@ -25,6 +25,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8080",
   "https://admin-zandcarpets.netlify.app",
+  "https://admin-zandscarpets.vercel.app"
 ];
 
 app.use(

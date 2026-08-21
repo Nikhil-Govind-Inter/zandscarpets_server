@@ -24,8 +24,9 @@ const REFRESH_COOKIE_PATH = "/api/backend/auth";
 // behind a single reverse-proxied origin, same-site Lax would also work, but
 // None+Secure works equally well for a same-origin deployment and avoids a
 // NODE_ENV-dependent behavior difference between dev and prod.
-// Strict
-const sameSite = "Strict";
+
+
+const sameSite = NODE_ENV === "production" ? "none" : "lax";
 const secure = NODE_ENV === "production";
 
 const accessCookieOptions = () => ({
