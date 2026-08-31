@@ -1,59 +1,40 @@
-const { models } = require("../../../../database/models");
-const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
+const AboutRepository = require("./AboutRepository");
+const { mediaWithType, mediaWithoutType, singleMediaWithoutType } = require('../traits/mediaButtonHelper');
 
 class AboutService {
   static async index() {
-    try {
-      const cmsData = await models.AboutCms.findOne();
-      if (!cmsData) {
-        throw new Error("No CMS data found for About page");
-      }
-      const [
-        partners = [],
-        aboutOurValues = [],
-        aboutOurJourney = [],
-        associates = [],
-        aboutMedia = [],
-      ] = await Promise.all([
-        models.Partner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.AboutOurValues.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.AboutOurJourney.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.Associates.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.AboutMedia.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-      ]);
-
-      const data = {
-        banner_section: this.buildBannerSection(cmsData),
-        about_section: this.buildAboutSection(cmsData),
-        learn_more_section: this.buildLearnMoreSection(cmsData),
-        mission_vision_section: this.buildMissionVisionSection(cmsData, partners),
-        our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
-        our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
-        meet_team_section: this.buildMeetTeamSection(cmsData),
-        our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
-        media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
-        partner_section: this.buildPartnerSection(cmsData),
-      };
-
-      return data;
-    } catch (error) {
-      throw new Error(`Error fetching about page data: ${error.message}`);
+    const cmsData = await AboutRepository.findCms();
+    if (!cmsData) {
+      throw new Error("No CMS data found for About page");
     }
+    const [
+      partners = [],
+      aboutOurValues = [],
+      aboutOurJourney = [],
+      associates = [],
+      aboutMedia = [],
+    ] = await Promise.all([
+      AboutRepository.findPartners(),
+      AboutRepository.findOurValues(),
+      AboutRepository.findOurJourney(),
+      AboutRepository.findAssociates(),
+      AboutRepository.findMedia(),
+    ]);
+
+    const data = {
+      banner_section: this.buildBannerSection(cmsData),
+      about_section: this.buildAboutSection(cmsData),
+      learn_more_section: this.buildLearnMoreSection(cmsData),
+      mission_vision_section: this.buildMissionVisionSection(cmsData, partners),
+      our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
+      our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
+      meet_team_section: this.buildMeetTeamSection(cmsData),
+      our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
+      media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
+      partner_section: this.buildPartnerSection(cmsData),
+    };
+
+    return data;
   }
 
   static buildBannerSection(cmsData) {

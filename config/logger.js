@@ -4,7 +4,7 @@ const { NODE_ENV } = require('../constants');
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.json()
   ),
   transports: [
@@ -16,7 +16,12 @@ const logger = winston.createLogger({
 if (NODE_ENV !== 'production') {
   logger.add(
     new winston.transports.Console({
-      format: winston.format.simple(),
+      format: winston.format.combine(
+        winston.format.timestamp({ format: 'HH:mm:ss' }),
+        winston.format.printf(({ level, message, timestamp }) => {
+          return `${level}: ${message}`;
+        })
+      ),
     })
   );
 }

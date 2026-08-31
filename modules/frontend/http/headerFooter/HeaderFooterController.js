@@ -2,8 +2,8 @@
 const { ApiResponse } = require("../traits/response");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../traits/constants");
 const { ErrorHandler } = require("../traits/errorHandler");
-const service = require("../services/HomeService");
-class HomeController {
+const service = require("./HeaderFooterService");
+class HeaderFooterController {
 
     static async index(req, res) {
         try {
@@ -14,9 +14,9 @@ class HomeController {
                 status: HTTP_STATUS.OK,
             });
         } catch (error) {
-            return ErrorHandler.handleControllerError(error, res, "homeController");
+            return ErrorHandler.handleControllerError(error, res, "headerFooterController");
         }
     }
 }
 
-module.exports = HomeController;
+module.exports = HeaderFooterController;

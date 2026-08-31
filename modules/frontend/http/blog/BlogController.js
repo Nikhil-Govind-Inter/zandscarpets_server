@@ -2,8 +2,8 @@
 const { ApiResponse } = require("../traits/response");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../traits/constants");
 const { ErrorHandler } = require("../traits/errorHandler");
-const service = require("../services/BlogService");
-class BlogContoller {
+const service = require("./BlogService");
+class BlogController {
 
     static async index(req, res) {
         try {
@@ -34,4 +34,4 @@ class BlogContoller {
 
 }
 
-module.exports = BlogContoller;
+module.exports = BlogController;

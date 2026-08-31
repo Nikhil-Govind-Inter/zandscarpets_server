@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Controller = require("../http/controllers/HeaderAndFooterContoller");
+const Controller = require("../http/headerFooter/HeaderFooterController");
 
 
 

@@ -2,9 +2,14 @@
 const { ApiResponse } = require("../traits/response");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../traits/constants");
 const { ErrorHandler } = require("../traits/errorHandler");
-const service = require("../services/AboutService");
-class AboutContoller {
+const service = require("./HomeService");
+class HomeController {
 
+    /*
+    * @route   GET /api/home
+    * @desc    Get Home Page
+    * @access  Public
+    */
     static async index(req, res) {
         try {
             const data = await service.index();
@@ -19,4 +24,4 @@ class AboutContoller {
     }
 }
 
-module.exports = AboutContoller;
+module.exports = HomeController;

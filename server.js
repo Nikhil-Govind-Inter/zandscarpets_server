@@ -65,63 +65,79 @@ app.use("/api/frontend", frontendApi);
 // Error handler last
 app.use(errorMiddleware);
 
+const colors = {
+  green: (str) => (process.stdout.isTTY ? `\x1b[32m${str}\x1b[0m` : str),
+  red: (str) => (process.stdout.isTTY ? `\x1b[31m${str}\x1b[0m` : str),
+  yellow: (str) => (process.stdout.isTTY ? `\x1b[33m${str}\x1b[0m` : str),
+  cyan: (str) => (process.stdout.isTTY ? `\x1b[36m${str}\x1b[0m` : str),
+  gray: (str) => (process.stdout.isTTY ? `\x1b[90m${str}\x1b[0m` : str),
+};
+
 const startServer = async () => {
+  const startTime = Date.now();
+
   try {
     await connectRedis();
+    Logger.info(colors.green("✓ Redis connected"));
 
     try {
       await sequelize.authenticate();
-      console.log("✅ Database connected");
+      Logger.info(colors.green("✓ Database connected"));
     } catch (dbError) {
-      console.log("❌ Database connection failed: " + dbError.message);
+      Logger.error(colors.red(`✗ Database connection failed — ${dbError.message}`));
       throw dbError;
     }
 
     // await sequelize.sync({ alter: true });
-
     // await createAdminUser();
     // await policyData();
     // await seedPages();
     // await seedMetaTags();
 
-    app.listen(PORT, () => {
-      Logger.info(`🚀 Server running on port ${PORT}`);
+    // Fail loudly if any routes failed to load during require()
+    const routeFailures = backendApi.errorReport ? backendApi._routeErrors : null;
+    if (routeFailures && routeFailures.length) {
+      Logger.error(colors.red(`✗ ${routeFailures.length} route(s) failed to load — refusing to start`));
+      routeFailures.forEach((e) => {
+        Logger.error(colors.red(`   ${e.route} — ${e.reason} [${path.basename(e.file)}]`));
+      });
+      process.exit(1);
+    }
 
-      let endpoints = expressListEndpoints(app);
+    app.listen(PORT, () => {
+      const bootTime = Date.now() - startTime;
+      Logger.info(colors.cyan(`🚀 Server running on port ${PORT}`) + colors.gray(` (${bootTime}ms)`));
+
+      const endpoints = expressListEndpoints(app);
+
+      const printEndpoints = (label, list, prefix = "") => {
+        if (!list.length) return;
+        Logger.info(colors.cyan(`\n📋 ${label} (${list.length}):`));
+        list.forEach((e) => {
+          Logger.info(`  ${colors.gray(e.methods.join(", ").padEnd(20))} ${prefix}${e.path}`);
+        });
+      };
+
       if (!endpoints.length) {
-        Logger.warn(
-          "⚠️ No endpoints found at app level. Checking sub-routers...",
-        );
+        Logger.warn(colors.yellow("⚠ No endpoints found at app level. Checking sub-routers..."));
 
         const backendEndpoints = expressListEndpoints(backendApi);
         const frontendEndpoints = expressListEndpoints(frontendApi);
 
-        if (backendEndpoints.length) {
-          Logger.info("📋 Backend Endpoints:");
-          backendEndpoints.forEach((e) => {
-            Logger.info(
-              `${e.methods.join(", ").padEnd(10)} /api/backend${e.path}`,
-            );
-          });
-        }
+        printEndpoints("Backend Endpoints", backendEndpoints, "/api/backend");
+        printEndpoints("Frontend Endpoints", frontendEndpoints, "/api/frontend");
 
-        if (frontendEndpoints.length) {
-          Logger.info("📋 Frontend Endpoints:");
-          frontendEndpoints.forEach((e) => {
-            Logger.info(
-              `${e.methods.join(", ").padEnd(10)} /api/frontend${e.path}`,
-            );
-          });
+        if (!backendEndpoints.length && !frontendEndpoints.length) {
+          Logger.error(colors.red("✗ No endpoints registered anywhere — check route loading above"));
         }
       } else {
-        Logger.info("📋 Registered Endpoints:");
-        endpoints.forEach((e) => {
-          Logger.info(`${e.methods.join(", ").padEnd(10)} ${e.path}`);
-        });
+        printEndpoints("Registered Endpoints", endpoints);
       }
+
+      // Logger.info("");
     });
   } catch (error) {
-    Logger.error("❌ Failed to start server: " + error.message);
+    Logger.error(colors.red(`✗ Failed to start server — ${error.message}`));
     process.exit(1);
   }
 };

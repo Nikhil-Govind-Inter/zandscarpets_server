@@ -1,21 +1,21 @@
 const { ApiResponse } = require("../traits/response");
 const { HTTP_STATUS, RESPONSE_MESSAGES } = require("../traits/constants");
 const { ErrorHandler } = require("../traits/errorHandler");
-const service = require("../services/PolicyService");
+const service = require("./MetaTagService");
 
-class PolicyController {
+class MetaTagController {
   static async index(req, res) {
     try {
-      const { slug } = req.params;
+      const { slug, type } = req.params;
 
-      if (!slug) {
+      if (!slug || !type) {
         return ApiResponse.error(res, {
-          message: "Slug is required",
+          message: "Type and slug are required",
           status: HTTP_STATUS.BAD_REQUEST,
         });
       }
 
-      const data = await service.index(slug);
+      const data = await service.index(type, slug);
 
       return ApiResponse.success(res, {
         message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
@@ -26,10 +26,10 @@ class PolicyController {
       return ErrorHandler.handleControllerError(
         error,
         res,
-        "PolicyController.index"
+        "MetaTagController.index"
       );
     }
   }
 }
 
-module.exports = PolicyController;
+module.exports = MetaTagController;

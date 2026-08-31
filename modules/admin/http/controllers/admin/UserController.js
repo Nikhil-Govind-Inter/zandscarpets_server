@@ -147,6 +147,12 @@ class UserController {
           return sendConflictError(res, "User", "Email already exists");
         }
       }
+      console.log("USER ID: ", typeof req.user.id, "ID: ", typeof id);
+
+      // DO not set status false of  the admin user
+      if(req.user.id == id && is_active === false){
+        return sendConflictError(res, "User", "You cannot disable your own account");
+      }
 
       const updates = {
         ...(username !== undefined && { username }),

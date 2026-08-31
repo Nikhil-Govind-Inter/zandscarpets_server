@@ -1,95 +1,62 @@
-const { models } = require("../../../../database/models");
+const HomeRepository = require("./HomeRepository");
 const {
   mediaWithType,
-  mediaWithoutType,
-  singleMediaWithType,
   singleMediaWithoutType,
   button,
 } = require("../traits/mediaButtonHelper");
 
 class HomeService {
   static async index() {
-    try {
-      const cmsData = await models.HomeCms.findOne();
-      if (!cmsData) {
-        throw new Error("No CMS data found for About page");
-      }
-      const [
-        homeBanners = [],
-        homeMilestone = [],
-        homeMap = [],
-        homeExploreOurExpertise = [],
-        homeAppFeatures = [],
-        homeInvestment = [],
-        partners = [],
-        news = [],
-        blogs = [],
-      ] = await Promise.all([
-        models.HomeBanner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.HomeMilestone.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.HomeMap.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.HomeExploreOurExpertise.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.HomeAppFeatures.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.HomeInvestment.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.Partner.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.News.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-        models.Blogs.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-      ]);
-
-
-      const data = {
-        banner_section: this.buildBannerSection(homeBanners),
-        milestone_section: this.buildMilestoneSection(cmsData, homeMilestone),
-        company_growth_section: this.buildCompanyGrowthSection(homeMap),
-        make_ride_section: this.buildMakeRideSection(cmsData),
-        explore_section: this.buildExploreSection(
-          cmsData,
-          homeExploreOurExpertise
-        ),
-        app_feature_section: this.buildAppFeatureSection(
-          cmsData,
-          homeAppFeatures
-        ),
-        investment_section: this.buildInvestmentSection(
-          cmsData,
-          homeInvestment
-        ),
-        partners_section: this.buildPartnersSection(cmsData, partners),
-        news_section: this.buildNewsSection(cmsData, news),
-        blog_section: this.buildBlogSection(cmsData, blogs),
-      };
-
-      return data;
-    } catch (error) {
-      throw new Error(`Error fetching home page data: ${error.message}`);
+    const cmsData = await HomeRepository.findCms();
+    if (!cmsData) {
+      throw new Error("No CMS data found for About page");
     }
+    const [
+      homeBanners = [],
+      homeMilestone = [],
+      homeMap = [],
+      homeExploreOurExpertise = [],
+      homeAppFeatures = [],
+      homeInvestment = [],
+      partners = [],
+      news = [],
+      blogs = [],
+    ] = await Promise.all([
+      HomeRepository.findBanners(),
+      HomeRepository.findMilestones(),
+      HomeRepository.findMap(),
+      HomeRepository.findExploreOurExpertise(),
+      HomeRepository.findAppFeatures(),
+      HomeRepository.findInvestment(),
+      HomeRepository.findPartners(),
+      HomeRepository.findNews(),
+      HomeRepository.findBlogs(),
+    ]);
+
+
+    const data = {
+      banner_section: this.buildBannerSection(homeBanners),
+      milestone_section: this.buildMilestoneSection(cmsData, homeMilestone),
+      company_growth_section: this.buildCompanyGrowthSection(homeMap),
+      make_ride_section: this.buildMakeRideSection(cmsData),
+      explore_section: this.buildExploreSection(
+        cmsData,
+        homeExploreOurExpertise
+      ),
+      app_feature_section: this.buildAppFeatureSection(
+        cmsData,
+        homeAppFeatures
+      ),
+      investment_section: this.buildInvestmentSection(
+        cmsData,
+        homeInvestment
+      ),
+      partners_section: this.buildPartnersSection(cmsData, partners),
+      news_section: this.buildNewsSection(cmsData, news),
+      blog_section: this.buildBlogSection(cmsData, blogs),
+    };
+
+    return data;
   }
 
   static buildBannerSection(homeBanners) {

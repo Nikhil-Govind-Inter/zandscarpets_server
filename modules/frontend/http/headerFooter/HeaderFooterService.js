@@ -1,36 +1,28 @@
-const { models } = require("../../../../database/models");
-const { mediaWithType, mediaWithoutType, singleMediaWithType, singleMediaWithoutType, button } = require('../traits/mediaButtonHelper');
+const HeaderFooterRepository = require("./HeaderFooterRepository");
 
 class HeaderFooterService {
 
 
 
   static async index() {
-    try {
-      const cmsData = await models.HeaderFooter.findOne();
-      if (!cmsData) {
-        throw new Error("No CMS data found for header and footer section");
-      }
-
-      const [
-        socialMedia = [],
-      ] = await Promise.all([
-        models.SocialMedia.findAll({
-          where: { status: true },
-          order: [["sort_order", "ASC"]],
-        }),
-      ]);
-
-
-      const data = {
-        header_section: this.buildHeaderSection(cmsData),
-        footer_section: this.buildFooterSection(cmsData, socialMedia),
-      };
-
-      return data;
-    } catch (error) {
-      throw new Error(`Error fetching power of ai page data: ${error.message}`);
+    const cmsData = await HeaderFooterRepository.findCms();
+    if (!cmsData) {
+      throw new Error("No CMS data found for header and footer section");
     }
+
+    const [
+      socialMedia = [],
+    ] = await Promise.all([
+      HeaderFooterRepository.findSocialMedia(),
+    ]);
+
+
+    const data = {
+      header_section: this.buildHeaderSection(cmsData),
+      footer_section: this.buildFooterSection(cmsData, socialMedia),
+    };
+
+    return data;
   }
 
 
