@@ -22,6 +22,8 @@ const defineAboutCms = require("./about/aboutCms");
 const defineCoreValues = require("./about/coreValues");
 const defineHistory = require("./about/history");
 const defineMessages = require("./about/messages");
+const defineContactCms = require("./contact/contactCms");
+const defineConnections = require("./contact/connections");
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
@@ -46,6 +48,8 @@ const models = {
   CoreValues: defineCoreValues(sequelize),
   History: defineHistory(sequelize),
   Messages: defineMessages(sequelize),
+  ContactCms: defineContactCms(sequelize),
+  Connections: defineConnections(sequelize),
 };
 
 

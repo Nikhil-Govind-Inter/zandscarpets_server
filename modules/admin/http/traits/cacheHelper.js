@@ -160,6 +160,14 @@ const cacheKeys = {
   messagesList: (req) => `admin:cache:messages:list:${stableStringify(req.query)}`,
   messagesListPattern: () => "admin:cache:messages:list:*",
   messagesItem: (id) => `admin:cache:messages:item:${id}`,
+
+  // CONTACT CMS
+  contactCms: () => "admin:cache:contactcms",
+
+  // CONNECTIONS
+  connectionsList: (req) => `admin:cache:connections:list:${stableStringify(req.query)}`,
+  connectionsListPattern: () => "admin:cache:connections:list:*",
+  connectionsItem: (id) => `admin:cache:connections:item:${id}`,
 };
 
 module.exports = {
