@@ -112,7 +112,7 @@ function loadRoutes(dirPath, baseRoute = "", depth = 0) {
 const rootRouter = loadRoutes(__dirname);
 const totalTime = Date.now() - startTime;
 
-const summaryColor = errorCount ? colors.red : colors.green;
+const summaryColor = errorCount ? colors.red : colors.cyan;
 console.log(
   `\n${summaryColor(`📦 ${loadedRoutes.length} loaded, ${errorCount} failed`)}${
     warnings.length ? colors.yellow(`, ${warnings.length} warning(s)`) : ""

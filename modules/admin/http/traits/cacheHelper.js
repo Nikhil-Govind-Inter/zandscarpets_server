@@ -128,10 +128,38 @@ const cacheKeys = {
   homeBannerListPattern: () => "admin:cache:homebanner:list:*",
   homeBannerItem: (id) => `admin:cache:homebanner:item:${id}`,
 
+  // HOME BRANDS
+  homeBrandsList: (req) => `admin:cache:homebrands:list:${stableStringify(req.query)}`,
+  homeBrandsListPattern: () => "admin:cache:homebrands:list:*",
+  homeBrandsItem: (id) => `admin:cache:homebrands:item:${id}`,
+
   // HOME MILESTONES
   homeMilestoneList: (req) => `admin:cache:homemilestone:list:${stableStringify(req.query)}`,
   homeMilestoneListPattern: () => "admin:cache:homemilestone:list:*",
   homeMilestoneItem: (id) => `admin:cache:homemilestone:item:${id}`,
+
+  // HOME TESTIMONAILS
+  homeTestimonialsList: (req) => `admin:cache:hometestimonials:list:${stableStringify(req.query)}`,
+  homeTestimonialsListPattern: () => "admin:cache:hometestimonials:list:*",
+  homeTestimonialsItem: (id) => `admin:cache:hometestimonials:item:${id}`,
+
+  // ABOUT CMS
+  aboutCms: () => "admin:cache:aboutcms",
+
+  // CORE VALUES
+  coreValuesList: (req) => `admin:cache:corevalues:list:${stableStringify(req.query)}`,
+  coreValuesListPattern: () => "admin:cache:corevalues:list:*",
+  coreValuesItem: (id) => `admin:cache:corevalues:item:${id}`,
+
+  // HISTORY
+  historyList: (req) => `admin:cache:history:list:${stableStringify(req.query)}`,
+  historyListPattern: () => "admin:cache:history:list:*",
+  historyItem: (id) => `admin:cache:history:item:${id}`,
+
+  // MESSAGES
+  messagesList: (req) => `admin:cache:messages:list:${stableStringify(req.query)}`,
+  messagesListPattern: () => "admin:cache:messages:list:*",
+  messagesItem: (id) => `admin:cache:messages:item:${id}`,
 };
 
 module.exports = {

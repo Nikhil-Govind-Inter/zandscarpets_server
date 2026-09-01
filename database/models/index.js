@@ -16,6 +16,12 @@ const defineWorkPlan = require("./masters/workPlan");
 const defineHomeCms = require("./home/homeCms");
 const defineHomeBanner = require("./home/homeBanner");
 const defineHomeMilestones = require("./home/homeMilestones");
+const defineHomeBrands = require("./home/homeBrands");
+const defineHomeTestimonials = require("./home/homeTestimonials");
+const defineAboutCms = require("./about/aboutCms");
+const defineCoreValues = require("./about/coreValues");
+const defineHistory = require("./about/history");
+const defineMessages = require("./about/messages");
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
@@ -34,6 +40,12 @@ const models = {
   HomeCms: defineHomeCms(sequelize),
   HomeBanner: defineHomeBanner(sequelize),
   HomeMilestones: defineHomeMilestones(sequelize),
+  HomeBrands: defineHomeBrands(sequelize),
+  HomeTestimonials: defineHomeTestimonials(sequelize),
+  AboutCms: defineAboutCms(sequelize),
+  CoreValues: defineCoreValues(sequelize),
+  History: defineHistory(sequelize),
+  Messages: defineMessages(sequelize),
 };
 
 
