@@ -7,7 +7,12 @@
 
 const DEFAULT_TTL = 60 * 60 * 24 * 30; // 30 day
 
-const getRedis = (req) => req.app.get("redisClient") || null;
+const getRedis = (ctx) => {
+  // Accept either a req (has .app) or the Express app itself, so this can be
+  // called both from request handlers and from startup code with no req in scope.
+  const app = (ctx && ctx.app) || ctx;
+  return (app && typeof app.get === "function" && app.get("redisClient")) || null;
+};
 
 const getCache = async (req, key) => {
   const redisClient = getRedis(req);
@@ -44,6 +49,23 @@ const invalidateCache = async (req, pattern) => {
     }
   } catch (error) {
     console.error("Cache invalidate error:", error.message);
+  }
+};
+
+// Flushes the entire admin cache namespace (all cacheKeys.* entries), leaving unrelated
+// Redis keys (JWT blacklist, OTP/reset-token flows) untouched. Accepts either a req or
+// the Express app directly — see getRedis above.
+const invalidateAllCache = async (ctx) => {
+  const redisClient = getRedis(ctx);
+  if (!redisClient) return;
+
+  try {
+    const keys = await redisClient.keys("admin:cache:*");
+    if (keys.length) {
+      await redisClient.del(keys);
+    }
+  } catch (error) {
+    console.error("Cache invalidate-all error:", error.message);
   }
 };
 
@@ -168,6 +190,27 @@ const cacheKeys = {
   connectionsList: (req) => `admin:cache:connections:list:${stableStringify(req.query)}`,
   connectionsListPattern: () => "admin:cache:connections:list:*",
   connectionsItem: (id) => `admin:cache:connections:item:${id}`,
+
+  // PROJECTS
+  projectsList: (req) => `admin:cache:projects:list:${stableStringify(req.query)}`,
+  projectsListPattern: () => "admin:cache:projects:list:*",
+  projectsActivePattern: () => "admin:cache:projects:active:*",
+  projectsItem: (id) => `admin:cache:projects:item:${id}`,
+
+  // SERVICE CMS
+  serviceCms: () => "admin:cache:servicecms",
+
+  // SERVICES
+  serviceList: (req) => `admin:cache:services:list:${stableStringify(req.query)}`,
+  serviceListPattern: () => "admin:cache:services:list:*",
+  serviceItem: (id) => `admin:cache:services:item:${id}`,
+
+  // PROCESS STEPS
+  processStepsList: (req) => `admin:cache:processsteps:list:${stableStringify(req.query)}`,
+  processStepsListPattern: () => "admin:cache:processsteps:list:*",
+  processStepsItem: (id) => `admin:cache:processsteps:item:${id}`,
+
+
 };
 
 module.exports = {
@@ -175,5 +218,6 @@ module.exports = {
   getCache,
   setCache,
   invalidateCache,
+  invalidateAllCache,
   cacheKeys,
 };

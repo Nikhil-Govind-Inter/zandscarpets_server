@@ -1,14 +1,13 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const Connections = sequelize.define(
-    "connections",
+  const Services = sequelize.define(
+    "services",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
       },
       title: {
         type: DataTypes.STRING,
@@ -18,20 +17,8 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      content: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      icon_media_path: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      icon_media_alt: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       sort_order: {
-        type: DataTypes.SMALLINT,
+        type: DataTypes.INTEGER,
         defaultValue: 0,
       },
       is_active: {
@@ -40,16 +27,15 @@ module.exports = (sequelize) => {
       },
       deleted_at: {
         type: DataTypes.DATE,
-        allowNull: true,
       },
     },
     {
-      tableName: "connections",
+      tableName: "services",
       timestamps: true,
       paranoid: true,
       deletedAt: "deleted_at",
     },
   );
 
-  return Connections;
+  return Services;
 };

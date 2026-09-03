@@ -54,7 +54,7 @@ function loadRoutes(dirPath, baseRoute = '', depth = 0) {
         .replace(/([a-z])([A-Z])/g, '$1-$2')
         .toLowerCase();
       const routePath = `/${routeName}`;
-      const fullRoute = `/api/${path.posix.join(baseRoute, routeName)}`;
+      const fullRoute = `/${path.posix.join(baseRoute, routeName)}`;
 
       try {
         const fileStartTime = Date.now();

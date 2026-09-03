@@ -24,6 +24,11 @@ const defineHistory = require("./about/history");
 const defineMessages = require("./about/messages");
 const defineContactCms = require("./contact/contactCms");
 const defineConnections = require("./contact/connections");
+const defineProjects = require("./projects/projects");
+// services
+const defineProcessSteps = require("./services/processSteps");
+const defineServices = require("./services/services");
+const defineServiceCms = require("./services/serviceCms");
 
 const models = {
   AdminUser: defineAdminUser(sequelize),
@@ -50,6 +55,10 @@ const models = {
   Messages: defineMessages(sequelize),
   ContactCms: defineContactCms(sequelize),
   Connections: defineConnections(sequelize),
+  Projects: defineProjects(sequelize),
+  ProcessSteps: defineProcessSteps(sequelize),
+  Services: defineServices(sequelize),
+  ServiceCms: defineServiceCms(sequelize),
 };
 
 

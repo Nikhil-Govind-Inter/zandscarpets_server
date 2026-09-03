@@ -140,8 +140,6 @@ const createUploadMiddleware = (subfolder, fields) => {
       });
 
       req.body = normalizedBody;
-      console.log("Normalized req.body:", req.body);
-
       next();
     });
   };
@@ -158,7 +156,6 @@ const deleteOldFile = async (filePath) => {
     const fullPath = path.join(process.cwd(), filePath);
     if (fs.existsSync(fullPath)) {
       await fsPromises.unlink(fullPath);
-      console.log(`Deleted old file: ${fullPath}`);
     }
   } catch (error) {
     console.error(`Failed to delete old file: ${fullPath}`, error);

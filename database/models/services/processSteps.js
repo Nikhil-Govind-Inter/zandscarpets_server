@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const industry = sequelize.define(
-    "industry",
+  const ProcessSteps = sequelize.define(
+    "processSteps",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -13,18 +13,18 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      slug: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      link: {
+      media_path:{
         type: DataTypes.TEXT,
-        allowNull: true,
+        allowNull: true
+      },
+      media_alt:{
+        type: DataTypes.STRING,
+        allowNull: true
+
       },
       sort_order: {
         type: DataTypes.SMALLINT,
@@ -39,25 +39,12 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "industry",
+      tableName: "process_steps",
       timestamps: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );
 
-  industry.associate = function (models) {
-    // hasMany with homeBanner
-    industry.hasOne(models.HomeBanner, {
-      foreignKey: "industry_id",
-      as: "homeBanner",
-    });
-
-    // hasMany with projects (one industry/category -> many projects)
-    industry.hasMany(models.Projects, {
-      foreignKey: "category_id",
-      as: "projects",
-    });
-  };
-
-  return industry;
+  return ProcessSteps;
 };

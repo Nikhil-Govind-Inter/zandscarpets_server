@@ -6,6 +6,8 @@ const validationRequestPost = [
   body('content').notEmpty().withMessage('Content is required').isString().withMessage('Content must be a string'),
   body('icon_media_path').optional().isString().withMessage('Icon media path must be a string'),
   body('icon_media_alt').optional().isString().withMessage('Icon media alt must be a string'),
+  body('sort_order').notEmpty().withMessage('Sort order is required').isInt({ min: 0 }).withMessage('Sort order must be an integer'),
+  body('is_active').notEmpty().withMessage('Is active is required').isBoolean().withMessage('Is active must be a boolean'),
 ];
 
 const validateId = [
