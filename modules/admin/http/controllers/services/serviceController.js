@@ -36,7 +36,7 @@ class ServiceController {
 
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
-        searchFields: ["title"], 
+        searchFields: ["title"],  
       });
 
       await setCache(req, listCacheKey, result);
