@@ -18,7 +18,15 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       description: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description_ar: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -27,6 +35,10 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      media_alt_ar: {
         type: DataTypes.STRING,
         allowNull: true,
       },

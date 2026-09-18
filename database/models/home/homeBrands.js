@@ -18,6 +18,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       sort_order: {
         type: DataTypes.SMALLINT,
         defaultValue: 0,
