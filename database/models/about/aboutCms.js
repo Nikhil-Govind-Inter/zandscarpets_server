@@ -106,6 +106,90 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      about_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      about_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      trust_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      trust_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      mission_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      vision_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      mission_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      vision_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      history_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      message_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      message_subtitle_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      work_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      about_core_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      about_code_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      features_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      features_sub_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      features_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      industry_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      industry_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      industry_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       tableName: "about_cms",

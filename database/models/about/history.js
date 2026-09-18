@@ -23,6 +23,14 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
       sort_order: {
         type: DataTypes.SMALLINT,
         defaultValue: 0,
