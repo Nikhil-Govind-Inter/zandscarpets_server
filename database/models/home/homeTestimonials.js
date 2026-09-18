@@ -18,12 +18,23 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      name_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       designation: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-
+      designation_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       message: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      message_ar: {
         type: DataTypes.STRING,
         allowNull: true,
       },

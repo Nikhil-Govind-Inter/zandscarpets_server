@@ -18,6 +18,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       quotes: {
         type: DataTypes.TEXT,
         allowNull: false,
@@ -31,6 +35,22 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       Organization: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      quotes_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      name_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      designation_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      organization_ar: {
         type: DataTypes.STRING,
         allowNull: false,
       },

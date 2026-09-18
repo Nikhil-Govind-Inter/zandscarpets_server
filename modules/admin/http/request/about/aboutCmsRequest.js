@@ -1,37 +1,32 @@
-const { body, param } = require('express-validator');
+const { body, param } = require("express-validator");
 
-const validationRequestPost = [
-    body('about_title').notEmpty().withMessage('About title is required').isString().withMessage('About title must be a string'),
-    body('about_description').notEmpty().withMessage('About description is required').isString().withMessage('About description must be a string'),
-    body('media_path').optional().isString().withMessage('Media path must be a string'),
-    body('media_alt').optional().isString().withMessage('Media alt must be a string'),
-    body('trust_title').notEmpty().withMessage('Trust title is required').isString().withMessage('Trust title must be a string'),
-    body('trust_description').notEmpty().withMessage('Trust description is required').isString().withMessage('Trust description must be a string'),
-    body('mission_title').notEmpty().withMessage('Mission title is required').isString().withMessage('Mission title must be a string'),
-    body('vision_title').notEmpty().withMessage('Vision title is required').isString().withMessage('Vision title must be a string'),
-    body('mission_description').notEmpty().withMessage('Mission description is required').isString().withMessage('Mission description must be a string'),
-    body('vision_description').notEmpty().withMessage('Vision description is required').isString().withMessage('Vision description must be a string'),
-    body('history_title').notEmpty().withMessage('History title is required').isString().withMessage('History title must be a string'),
-    body('message_title').notEmpty().withMessage('Message title is required').isString().withMessage('Message title must be a string'),
-    body('message_subtitle').notEmpty().withMessage('Message subtitle is required').isString().withMessage('Message subtitle must be a string'),
-    body('work_title').notEmpty().withMessage('Work title is required').isString().withMessage('Work title must be a string'),
-    body('about_core_title').notEmpty().withMessage('About core title is required').isString().withMessage('About core title must be a string'),
-    body('about_code_media_path').optional().isString().withMessage('About code media path must be a string'),
-    body('about_code_media_alt').optional().isString().withMessage('About code media alt must be a string'),
-    body('features_title').notEmpty().withMessage('Features title is required').isString().withMessage('Features title must be a string'),
-    body('features_sub_title').notEmpty().withMessage('Features sub title is required').isString().withMessage('Features sub title must be a string'),
-    body('features_description').notEmpty().withMessage('Features description is required').isString().withMessage('Features description must be a string'),
-    body('industry_title').notEmpty().withMessage('Industry title is required').isString().withMessage('Industry title must be a string'),
-    body('industry_description').notEmpty().withMessage('Industry description is required').isString().withMessage('Industry description must be a string'),
-    body('industry_media_path').optional().isString().withMessage('Industry media path must be a string'),
-    body('industry_media_alt').optional().isString().withMessage('Industry media alt must be a string'),
-]
-
-const validateId = [
-    param('id').isInt({ min: 1 }).withMessage('ID must be an integer'),
+const requiredTextFields = [
+  "about_title", "about_title_ar", "about_description", "about_description_ar",
+  "trust_title", "trust_title_ar", "trust_description", "trust_description_ar",
+  "mission_title", "mission_title_ar", "vision_title", "vision_title_ar",
+  "mission_description", "mission_description_ar", "vision_description", "vision_description_ar",
+  "history_title", "history_title_ar", "message_title", "message_title_ar",
+  "message_subtitle", "message_subtitle_ar", "work_title", "work_title_ar",
+  "about_core_title", "about_core_title_ar", "features_title", "features_title_ar",
+  "features_sub_title", "features_sub_title_ar", "features_description", "features_description_ar",
+  "industry_title", "industry_title_ar", "industry_description", "industry_description_ar",
 ];
 
-module.exports = {
-    validationRequestPost,
-    validateId
-};
+const optionalTextFields = [
+  "media_path", "media_alt", "media_alt_ar", "about_code_media_path",
+  "about_code_media_alt", "about_code_media_alt_ar", "industry_media_path",
+  "industry_media_alt", "industry_media_alt_ar",
+];
+
+const validationRequestPost = [
+  ...requiredTextFields.map((field) =>
+    body(field).notEmpty().withMessage(`${field} is required`).isString().withMessage(`${field} must be a string`),
+  ),
+  ...optionalTextFields.map((field) =>
+    body(field).optional().isString().withMessage(`${field} must be a string`),
+  ),
+];
+
+const validateId = [param("id").isInt({ min: 1 }).withMessage("ID must be an integer")];
+
+module.exports = { validationRequestPost, validateId };
