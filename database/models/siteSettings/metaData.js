@@ -18,18 +18,30 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      meta_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       meta_description: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      meta_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       meta_keywords: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      canonical_url: {
+      meta_keywords_ar: {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      // canonical_url: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
       // other_meta: {
       //   type: DataTypes.STRING,
       //   allowNull: false,

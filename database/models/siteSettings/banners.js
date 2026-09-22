@@ -26,13 +26,25 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       sub_title: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      sub_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       deleted_at: {
         type: DataTypes.DATE,

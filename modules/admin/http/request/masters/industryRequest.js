@@ -2,9 +2,15 @@ const { body, param } = require("express-validator");
 
 const validationRequestPost = [
     body("title").notEmpty().withMessage("Title is required").isString().withMessage("Title must be a string"),
+    body("title_ar").optional().isString().withMessage("Arabic title must be a string"),
+
     body("slug").notEmpty().withMessage("Slug is required").isString().withMessage("Slug must be a string"),
+    
     body("description").notEmpty().withMessage("Description is required").isString().withMessage("Description must be a string"),
+    body("description_ar").optional().isString().withMessage("Arabic description must be a string"),
+
     body("link").optional().isString().withMessage("Link must be a string"),
+    
     body("sort_order").notEmpty().withMessage("Sort order is required").isInt({ min: 1 }).withMessage("Sort order must be an integer"),
     body("is_active").notEmpty().withMessage("Is active is required").isBoolean().withMessage("Is active must be a boolean"),
 ];

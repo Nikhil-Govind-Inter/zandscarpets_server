@@ -13,9 +13,17 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       media_path:{
         type: DataTypes.TEXT,
@@ -25,6 +33,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true
 
+      },
+      media_alt_ar:{
+        type: DataTypes.STRING,
+        allowNull: true
       },
       sort_order: {
         type: DataTypes.SMALLINT,

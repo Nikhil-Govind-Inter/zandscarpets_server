@@ -9,12 +9,16 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-     
+
       media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
       media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      media_alt_ar: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -37,7 +41,7 @@ module.exports = (sequelize) => {
     {
       tableName: "social_media",
       timestamps: true,
-paranoid: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );

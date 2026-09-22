@@ -2,9 +2,16 @@ const { body, param } = require('express-validator');
 
 const validationRequestPost = [
     body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be a string'),
+    body('title_ar').notEmpty().withMessage('Arabic title is required').isString().withMessage('Arabic title must be a string'),
+
     body('description').notEmpty().withMessage('Description is required').isString().withMessage('Description must be a string'),
+    body('description_ar').optional().isString().withMessage('Arabic description must be a string'),
+
     body('service_title').notEmpty().withMessage('Service title is required').isString().withMessage('Service title must be a string'),
+    body('service_title_ar').optional().isString().withMessage('Arabic service title must be a string'),
+    
     body('process_steps_title').notEmpty().withMessage('Process steps title is required').isString().withMessage('Process steps title must be a string'),
+    body('process_steps_title_ar').optional().isString().withMessage('Arabic process steps title must be a string'),
 ]
 
 const validateId = [

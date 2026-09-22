@@ -13,7 +13,7 @@ const {
 const {
   validateId,
   validationRequestPost,
-} = require("../../request/services/serviceCms.js");
+} = require("../../request/services/serviceCmsRequest.js");
 const { validationResult } = require("express-validator");
 
 
