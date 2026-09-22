@@ -21,6 +21,7 @@
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
+    "nodemailer": "^10.0.10",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
     "redis": "^5.12.1",

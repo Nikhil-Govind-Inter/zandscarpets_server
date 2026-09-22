@@ -25,6 +25,8 @@ const defineMessages = require("./about/messages");
 const defineContactCms = require("./contact/contactCms");
 const defineConnections = require("./contact/connections");
 const defineProjects = require("./projects/projects");
+// enquiries
+const defineContactEnquiry = require("./enquiries/contactEnquiry");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
@@ -56,6 +58,7 @@ const models = {
   ContactCms: defineContactCms(sequelize),
   Connections: defineConnections(sequelize),
   Projects: defineProjects(sequelize),
+  ContactEnquiry: defineContactEnquiry(sequelize),
   ProcessSteps: defineProcessSteps(sequelize),
   Services: defineServices(sequelize),
   ServiceCms: defineServiceCms(sequelize),

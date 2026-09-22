@@ -12,11 +12,13 @@ export const DB_PORT = process.env.DB_PORT;
 export const DATABASE_URL = process.env.DATABASE_URL;
 export const DB_DIALECT = process.env.DB_DIALECT;
 export const REDIS_URL = process.env.REDIS_URL;
-export const BREVO_API_KEY = process.env.BREVO_API_KEY;
-export const BREVO_DEFAULT_FROM = process.env.BREVO_DEFAULT_FROM;
-export const BREVO_DEFAULT_FROM_NAME = process.env.BREVO_DEFAULT_FROM_NAME;
-export const BREVO_DEFAULT_REPLY_TO = process.env.BREVO_DEFAULT_REPLY_TO;
-export const BREVO_SEND_URL = process.env.BREVO_SEND_URL;
+export const SMTP_HOST = process.env.SMTP_HOST;
+export const SMTP_PORT = process.env.SMTP_PORT;
+export const SMTP_SECURE = process.env.SMTP_SECURE;
+export const SMTP_USER = process.env.SMTP_USER;
+export const SMTP_PASS = process.env.SMTP_PASS;
+export const EMAIL_FROM = process.env.EMAIL_FROM;
+export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME;
 
 
 export const OTP_TTL_SECONDS = 5 * 60; // OTP + attempts counter both expire in 5 minutes

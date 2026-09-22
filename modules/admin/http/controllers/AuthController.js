@@ -28,7 +28,7 @@ const {
   clearAuthCookies,
 } = require("../traits/authCookies");
 const ms = require("ms");
-const Mailer = require("../traits/mailer");
+const Mailer = require("../../../../services/mailerServices");
 const Logger = require("../../../../config/logger");
 const {
   JWT_SECRET,

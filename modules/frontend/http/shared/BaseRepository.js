@@ -7,6 +7,10 @@ class BaseRepository {
     return this.model.findByPk(id, options);
   }
 
+  findByEmail(email, options = {}) {
+    return this.model.findOne({ where: { email }, ...options });
+  }
+
   findOne(where = {}, options = {}) {
     return this.model.findOne({ where, ...options });
   }

@@ -210,6 +210,10 @@ const cacheKeys = {
   processStepsListPattern: () => "admin:cache:processsteps:list:*",
   processStepsItem: (id) => `admin:cache:processsteps:item:${id}`,
 
+  // CONTACT ENQUIRIES
+  contactEnquiryList: (req) => `admin:cache:contactenquiry:list:${stableStringify(req.query)}`,
+  contactEnquiryListPattern: () => "admin:cache:contactenquiry:list:*",
+  contactEnquiryItem: (id) => `admin:cache:contactenquiry:item:${id}`,
 
 };
 
