@@ -135,6 +135,11 @@ const cacheKeys = {
   industryListPattern: () => "admin:cache:industry:list:*",
   industryItem: (id) => `admin:cache:industry:item:${id}`,
   
+  // MATERIALS
+  materialsList: (req) => `admin:cache:materials:list:${stableStringify(req.query)}`,
+  materialsListPattern: () => "admin:cache:materials:list:*",
+  materialsItem: (id) => `admin:cache:materials:item:${id}`,
+
   // OUR FEATURES
   ourFeaturesList: (req) => `admin:cache:ourfeatures:list:${stableStringify(req.query)}`,
   ourFeaturesListPattern: () => "admin:cache:ourfeatures:list:*",

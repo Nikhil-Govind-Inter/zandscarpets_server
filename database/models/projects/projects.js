@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const Projects = sequelize.define(
@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      material_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       thumbnail: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -21,7 +25,16 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+      },
       location: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      location_ar: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -33,11 +46,19 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      material_type_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
       description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      description_ar: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -75,6 +96,12 @@ module.exports = (sequelize) => {
     Projects.belongsTo(models.Industry, {
       foreignKey: "category_id",
       as: "category",
+    });
+
+    // belongsTo material (one material -> many projects)
+    Projects.belongsTo(models.Materials, {
+      foreignKey: "material_id",
+      as: "material",
     });
 
     // self-referential many-to-many via a join table, so a project can

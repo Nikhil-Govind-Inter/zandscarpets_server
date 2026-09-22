@@ -12,6 +12,7 @@ const defineAdsBanner = require("./masters/AdsBanner");
 const defineFaqs = require("./masters/faqs");
 const defineIndustry = require("./masters/industry");
 const defineOurFeatures = require("./masters/ourFeatures");
+const defineMaterials = require("./masters/materials");
 const defineWorkPlan = require("./masters/workPlan");
 const defineHomeCms = require("./home/homeCms");
 const defineHomeBanner = require("./home/homeBanner");
@@ -45,6 +46,7 @@ const models = {
   Faqs: defineFaqs(sequelize),
   Industry: defineIndustry(sequelize),
   OurFeatures: defineOurFeatures(sequelize),
+  Materials: defineMaterials(sequelize),
   WorkPlan: defineWorkPlan(sequelize),
   HomeCms: defineHomeCms(sequelize),
   HomeBanner: defineHomeBanner(sequelize),
