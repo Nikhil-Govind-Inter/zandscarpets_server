@@ -66,6 +66,18 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      work_media_path: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      work_media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      work_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       about_core_title: {
         type: DataTypes.STRING,
         allowNull: false,

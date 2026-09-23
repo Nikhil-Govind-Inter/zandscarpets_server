@@ -23,6 +23,7 @@ const defineAboutCms = require("./about/aboutCms");
 const defineCoreValues = require("./about/coreValues");
 const defineHistory = require("./about/history");
 const defineMessages = require("./about/messages");
+const defineMilestones = require("./about/mileStones");
 const defineContactCms = require("./contact/contactCms");
 const defineConnections = require("./contact/connections");
 const defineProjects = require("./projects/projects");
@@ -39,12 +40,16 @@ const models = {
   SiteSettings: defineSiteSettings(sequelize),
   SocialMedia: defineSocialMedia(sequelize),
   FooterMedia: defineFooterMedia(sequelize),
+ 
+  // SITE SETTINGS
   MetaData:  defineMetaData(sequelize),
   Page: definePage(sequelize),
   Banners: defineBanners(sequelize),
   AdsBanner: defineAdsBanner(sequelize),
   Faqs: defineFaqs(sequelize),
   Industry: defineIndustry(sequelize),
+  
+  // HOME
   OurFeatures: defineOurFeatures(sequelize),
   Materials: defineMaterials(sequelize),
   WorkPlan: defineWorkPlan(sequelize),
@@ -53,17 +58,26 @@ const models = {
   HomeMilestones: defineHomeMilestones(sequelize),
   HomeBrands: defineHomeBrands(sequelize),
   HomeTestimonials: defineHomeTestimonials(sequelize),
+  
+  // ABOUT
   AboutCms: defineAboutCms(sequelize),
   CoreValues: defineCoreValues(sequelize),
   History: defineHistory(sequelize),
   Messages: defineMessages(sequelize),
+  Milestones: defineMilestones(sequelize),
+  
+  // CONTACT
   ContactCms: defineContactCms(sequelize),
   Connections: defineConnections(sequelize),
-  Projects: defineProjects(sequelize),
   ContactEnquiry: defineContactEnquiry(sequelize),
-  ProcessSteps: defineProcessSteps(sequelize),
+ 
+  // PROJECTS
+  Projects: defineProjects(sequelize),
+  
+  // SERVICES
   Services: defineServices(sequelize),
   ServiceCms: defineServiceCms(sequelize),
+  ProcessSteps: defineProcessSteps(sequelize),
 };
 
 

@@ -15,7 +15,8 @@ const requiredTextFields = [
 const optionalTextFields = [
   "media_path", "media_alt", "media_alt_ar", "about_code_media_path",
   "about_code_media_alt", "about_code_media_alt_ar", "industry_media_path",
-  "industry_media_alt", "industry_media_alt_ar",
+  "industry_media_alt", "industry_media_alt_ar", "work_media_path",
+  "work_media_alt", "work_media_alt_ar",
 ];
 
 const validationRequestPost = [

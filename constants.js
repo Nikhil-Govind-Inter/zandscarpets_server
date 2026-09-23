@@ -19,7 +19,7 @@ export const SMTP_USER = process.env.SMTP_USER;
 export const SMTP_PASS = process.env.SMTP_PASS;
 export const EMAIL_FROM = process.env.EMAIL_FROM;
 export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME;
-
+export const BASE_URL = process.env.BASE_URL;
 
 export const OTP_TTL_SECONDS = 5 * 60; // OTP + attempts counter both expire in 5 minutes
 export const OTP_MAX_ATTEMPTS = 3;

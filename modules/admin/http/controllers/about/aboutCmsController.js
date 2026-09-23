@@ -17,7 +17,7 @@ const {
 } = require("../../request/about/aboutCmsRequest");
 const { validationResult } = require("express-validator");
 
-const fileFields = ["media_path", "about_code_media_path", "industry_media_path"];
+const fileFields = ["media_path", "about_code_media_path", "industry_media_path", "work_media_path"];
 
 class AboutCmsController {
   static async get(req, res) {

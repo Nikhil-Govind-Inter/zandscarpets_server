@@ -1,13 +1,22 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const WorkPlan = sequelize.define(
-    "WorkPlan",
+  const ProductCategories = sequelize.define(
+    "ProductCategories",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+      },
+      parent_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        default: null,
+      },
+      industry_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
       title: {
         type: DataTypes.STRING,
@@ -15,35 +24,36 @@ module.exports = (sequelize) => {
       },
       title_ar: {
         type: DataTypes.STRING,
-        allowNull: true,
-      },
-      short_description: {
-        type: DataTypes.TEXT,
         allowNull: false,
+        defaultValue: "",
       },
-      short_description_ar: {
-        type: DataTypes.TEXT,
+      material_type_ar: {
+        type: DataTypes.STRING,
         allowNull: true,
       },
-      sort_order: {
-        type: DataTypes.SMALLINT,
-        defaultValue: 0,
+      media_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      sort_order: {
+        type: DataTypes.SMALLINT,
+        defaultValue: 0,
       },
       deleted_at: {
         type: DataTypes.DATE,
       },
     },
     {
-      tableName: "work_plan",
+      tableName: "product_categories",
       timestamps: true,
       paranoid: true,
       deletedAt: "deleted_at",
     },
   );
 
-  return WorkPlan;
+  return ProductCategories;
 };

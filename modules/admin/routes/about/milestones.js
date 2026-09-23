@@ -1,5 +1,5 @@
 const express = require("express");
-const Controller = require("../../http/controllers/Masters/WorkPlanController");
+const Controller = require("../../http/controllers/about/milestonesController");
 const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();

@@ -188,6 +188,11 @@ const cacheKeys = {
   messagesListPattern: () => "admin:cache:messages:list:*",
   messagesItem: (id) => `admin:cache:messages:item:${id}`,
 
+  // MILESTONES
+  milestonesList: (req) => `admin:cache:milestones:list:${stableStringify(req.query)}`,
+  milestonesListPattern: () => "admin:cache:milestones:list:*",
+  milestonesItem: (id) => `admin:cache:milestones:item:${id}`,
+
   // CONTACT CMS
   contactCms: () => "admin:cache:contactcms",
 

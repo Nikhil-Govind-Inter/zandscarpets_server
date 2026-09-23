@@ -86,7 +86,6 @@ function loadRoutes(dirPath, baseRoute = '', depth = 0) {
       }
     }
   });
-
   return router;
 }
 

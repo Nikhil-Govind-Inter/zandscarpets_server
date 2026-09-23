@@ -1,181 +1,222 @@
-const AboutRepository = require("./AboutRepository");
-const { mediaWithType, mediaWithoutType, singleMediaWithoutType } = require('../../traits/mediaButtonHelper');
+const {
+  mediaWithoutType,
+  singleMediaWithoutType,
+} = require("../../traits/mediaButtonHelper");
+const { models } = require("../../../../../database/models");
+
+// Picks the language-appropriate value; falls back to the base value when no
+// Arabic variant exists (e.g. WorkPlan has no `_ar` columns at all).
+function t(lang, base, ar) {
+  return lang === "ar" ? (ar ?? base ?? "") : (base ?? "");
+}
+
+// Collapses a media object's paired `foo`/`foo_ar` keys down to a single
+// language, recursing into nested objects (e.g. desktop/mobile).
+function localizeMedia(media, lang) {
+  if (Array.isArray(media)) return media.map((m) => localizeMedia(m, lang));
+  if (media && typeof media === "object") {
+    const result = {};
+    for (const key of Object.keys(media)) {
+      if (key.endsWith("_ar")) continue;
+      const arKey = `${key}_ar`;
+      if (Object.prototype.hasOwnProperty.call(media, arKey)) {
+        result[key] = t(lang, media[key], media[arKey]);
+      } else if (media[key] && typeof media[key] === "object") {
+        result[key] = localizeMedia(media[key], lang);
+      } else {
+        result[key] = media[key];
+      }
+    }
+    return result;
+  }
+  return media;
+}
 
 class AboutService {
-  static async index() {
-    const cmsData = await AboutRepository.findCms();
+  static async index({ lang } = {}) {
+    const normalizedLang = lang === "ar" ? "ar" : "en";
+
+    const cmsData = await models.AboutCms.findOne({});
+
     if (!cmsData) {
       throw new Error("No CMS data found for About page");
     }
+
     const [
-      partners = [],
-      aboutOurValues = [],
-      aboutOurJourney = [],
-      associates = [],
-      aboutMedia = [],
+      banner = [],
+      stats = [],
+      coreValues = [],
+      history = [],
+      messages = [],
+      worksPlans = [],
     ] = await Promise.all([
-      AboutRepository.findPartners(),
-      AboutRepository.findOurValues(),
-      AboutRepository.findOurJourney(),
-      AboutRepository.findAssociates(),
-      AboutRepository.findMedia(),
+      models.Banners.findAll({
+        includes: [
+          {
+            model: models.Page,
+            as: "page",
+            where: { is_active: true, page_slug: "about" },
+          },
+        ],
+      }),
+      models.Milestones.findAll({ where: { is_active: true } }),
+      models.CoreValues.findAll({ where: { is_active: true } }),
+      models.History.findAll({ where: { is_active: true } }),
+      models.Messages.findAll({
+        where: { is_active: true },
+        attributes: {
+          exclude: [
+            "createdAt",
+            "updatedAt",
+            "deleted_at",
+            "sort_order",
+            "is_active",
+          ],
+        },
+      }),
+      models.WorkPlan.findAll({ where: { is_active: true } }),
     ]);
 
     const data = {
-      banner_section: this.buildBannerSection(cmsData),
-      about_section: this.buildAboutSection(cmsData),
-      learn_more_section: this.buildLearnMoreSection(cmsData),
-      mission_vision_section: this.buildMissionVisionSection(cmsData, partners),
-      our_values_section: this.buildOurValuesSection(cmsData, aboutOurValues),
-      our_journey_section: this.buildOurJourneySection(cmsData, aboutOurJourney),
-      meet_team_section: this.buildMeetTeamSection(cmsData),
-      our_associates_section: this.buildOurAssociatesSection(cmsData, associates),
-      media_recognition_section: this.buildMediaRecognitionSection(cmsData, aboutMedia),
-      partner_section: this.buildPartnerSection(cmsData),
+      banner_section: this.buildBannerSection(banner, normalizedLang),
+      introduction_section: this.buildIntroductionSection(
+        cmsData,
+        stats,
+        normalizedLang,
+      ),
+      history_section: this.buildHistorySection(
+        cmsData,
+        history,
+        normalizedLang,
+      ),
+      messages_section: this.buildMessagesSection(
+        cmsData,
+        messages,
+        normalizedLang,
+      ),
+      process_section: this.buildProcessSection(
+        cmsData,
+        worksPlans,
+        normalizedLang,
+      ),
     };
 
     return data;
   }
 
-  static buildBannerSection(cmsData) {
+  static buildBannerSection(banner, lang) {
     return {
-      title: cmsData?.banner_title ?? "",
-      media: mediaWithoutType(
-        cmsData,
-        "banner_media_desktop_path",
-        "banner_media_mobile_path",
-        "banner_media_alt"
-      ),
-
-    };
-  }
-
-  static buildAboutSection(cmsData) {
-    return {
-      description: cmsData?.about_description ?? "",
-      media: mediaWithType(
-        cmsData,
-        "about_media_type",
-        "about_media_desktop_path",
-        "about_media_mobile_path",
-        "about_media_alt"
+      title: t(lang, banner[0]?.title, banner[0]?.title_ar),
+      sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
+      media: localizeMedia(
+        mediaWithoutType(
+          banner[0],
+          "desktop_media_path",
+          "mobile_media_path",
+          "media_alt",
+          "media_alt_ar",
+        ),
+        lang,
       ),
     };
   }
 
-  static buildLearnMoreSection(cmsData) {
+  static buildIntroductionSection(cmsData, stats, lang) {
     return {
-      title: cmsData?.learn_more_title ?? "",
-      description: cmsData?.learn_more_description ?? "",
-      media: singleMediaWithoutType(
-        cmsData,
-        "learn_more_media_path",
-        "learn_more_media_alt",
+      title: t(lang, cmsData?.about_title, cmsData?.about_title_ar),
+      description: t(
+        lang,
+        cmsData?.about_description,
+        cmsData?.about_description_ar,
       ),
-    };
-  }
+      media: localizeMedia(
+        singleMediaWithoutType(
+          cmsData,
+          "media_path",
+          "media_alt",
+          "media_alt_ar",
+        ),
+        lang,
+      ),
 
-  static buildMissionVisionSection(cmsData, partners) {
-    return {
-      partners_count: cmsData.partners_count || "100+ partners",
-      partners_list: partners.map((item) => ({
-        name: item?.name ?? "",
-        media: singleMediaWithoutType(item, "media_path", "media_alt"),
-      })),
-
-      mission: {
-        title: cmsData?.our_mission_title ?? "",
-        description: cmsData?.our_mission_description ?? "",
+      misison: {
+        title: t(lang, cmsData?.mission_title, cmsData?.mission_title_ar),
+        description: t(
+          lang,
+          cmsData?.mission_description,
+          cmsData?.mission_description_ar,
+        ),
       },
       vision: {
-        title: cmsData?.our_vision_title ?? "",
-        description: cmsData?.our_vision_description ?? "",
+        title: t(lang, cmsData?.vision_title, cmsData?.vision_title_ar),
+        description: t(
+          lang,
+          cmsData?.vision_description,
+          cmsData?.vision_description_ar,
+        ),
       },
-      leading_the_game: {
-        title: cmsData?.leading_game_title ?? "",
-        count: cmsData?.charging_station_count ?? "",
-        sub_title: cmsData?.charging_station_subtitle ?? "",
-      },
+
+      stats: stats.map((item) => ({
+        value: t(lang, item?.value, item?.value_ar),
+        label: t(lang, item?.label, item?.label_ar),
+      })),
     };
   }
 
-
-  static buildOurValuesSection(cmsData, aboutOurValues) {
+  static buildHistorySection(cmsData, history, lang) {
     return {
-      title: cmsData?.our_values_title ?? "",
-      description: cmsData?.our_values_description ?? "",
-      list:
-        aboutOurValues.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-        })) || [],
+      title: t(lang, cmsData?.history_title, cmsData?.history_title_ar),
+      items: history.map((item) => ({
+        year: item?.year ?? "",
+        title: t(lang, item?.title, item?.title_ar),
+        description: t(lang, item?.description, item?.description_ar),
+      })),
     };
   }
 
-  static buildOurJourneySection(cmsData, aboutOurJourney) {
+  static buildMessagesSection(cmsData, associates, lang) {
     return {
-      title: cmsData?.our_journey_title ?? "",
-      description: cmsData?.our_journey_description ?? "",
-      list:
-        aboutOurJourney.map((item) => ({
-          year: item?.year ?? "",
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-          media: singleMediaWithoutType(
+      title: t(lang, cmsData?.message_title, cmsData?.message_title_ar),
+      sub_title: t(
+        lang,
+        cmsData?.message_subtitle,
+        cmsData?.message_subtitle_ar,
+      ),
+      items: associates.map((item) => ({
+        id: item.id,
+        quotes: t(lang, item.quotes, item.quotes_ar),
+        name: t(lang, item.name, item.name_ar),
+        designation: t(lang, item.designation, item.designation_ar),
+        organization: t(lang, item.Organization, item.organization_ar),
+        media: localizeMedia(
+          singleMediaWithoutType(
             item,
             "media_path",
             "media_alt",
+            "media_alt_ar",
           ),
-        })) || [],
-    };
-  }
-
-  static buildMeetTeamSection(cmsData) {
-    return {
-      title: cmsData?.meet_team_title ?? "",
-      description: cmsData?.meet_team_description ?? "",
-      media: singleMediaWithoutType(
-        cmsData,
-        "meet_team_media_path",
-        "meet_team_media_alt",
-      ),
-    };
-  }
-
-  static buildOurAssociatesSection(cmsData, associates) {
-    return {
-      title: cmsData?.our_associate_title ?? "",
-      description: cmsData?.our_associate_description ?? "",
-      list: associates.map((item) => ({
-        name: item?.name ?? "",
-        media: singleMediaWithoutType(item, "media_path", "media_alt"),
-      })),
-    };
-  }
-
-  static buildMediaRecognitionSection(cmsData, aboutMedia) {
-    return {
-      title: cmsData?.media_title ?? "",
-      description: cmsData?.media_description ?? "",
-      list: aboutMedia.map((item) => ({
-        name: item?.name ?? "",
-        thumbnail: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
-
-        media: mediaWithType(
-          item,
-          "media_type",
-          "media_desktop_path",
-          "media_mobile_path",
-          "media_alt"
+          lang,
         ),
       })),
     };
   }
 
-  static buildPartnerSection(cmsData) {
+  static buildProcessSection(cmsData, worksPlans, lang) {
     return {
-      title: cmsData?.contact_us_super_title ?? "",
-      description: cmsData?.contact_us_title ?? "",
+      title: t(lang, cmsData?.work_title, cmsData?.work_title_ar),
+      media: localizeMedia(
+        singleMediaWithoutType(
+          cmsData,
+          "work_media_path",
+          "work_media_alt",
+          "work_media_alt_ar",
+        ),
+        lang,
+      ),
+      items: worksPlans.map((item) => ({
+        title: t(lang, item?.title, item?.title_ar),
+        short_description: t(lang, item?.short_description, item?.short_description_ar),
+      })),
     };
   }
 }
