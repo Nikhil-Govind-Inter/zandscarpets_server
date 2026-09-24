@@ -188,10 +188,10 @@ const cacheKeys = {
   historyListPattern: () => "admin:cache:history:list:*",
   historyItem: (id) => `admin:cache:history:item:${id}`,
 
-  // ABOUT FEATURES
-  aboutFeaturesList: (req) => `admin:cache:aboutfeatures:list:${stableStringify(req.query)}`,
-  aboutFeaturesListPattern: () => "admin:cache:aboutfeatures:list:*",
-  aboutFeaturesItem: (id) => `admin:cache:aboutfeatures:item:${id}`,
+  // ABOUT INDUSTRIES
+  aboutIndustriesList: (req) => `admin:cache:aboutindustries:list:${stableStringify(req.query)}`,
+  aboutIndustriesListPattern: () => "admin:cache:aboutindustries:list:*",
+  aboutIndustriesItem: (id) => `admin:cache:aboutindustries:item:${id}`,
 
   // MESSAGES
   messagesList: (req) => `admin:cache:messages:list:${stableStringify(req.query)}`,

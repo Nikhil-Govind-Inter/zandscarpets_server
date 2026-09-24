@@ -23,6 +23,7 @@ const defineHomeTestimonials = require("./home/homeTestimonials");
 const defineAboutCms = require("./about/aboutCms");
 const defineCoreValues = require("./about/coreValues");
 const defineHistory = require("./about/history");
+const defineAboutIndustries = require("./about/aboutIndustries");
 const defineMessages = require("./about/messages");
 const defineMilestones = require("./about/mileStones");
 const defineContactCms = require("./contact/contactCms");
@@ -65,6 +66,7 @@ const models = {
   AboutCms: defineAboutCms(sequelize),
   CoreValues: defineCoreValues(sequelize),
   History: defineHistory(sequelize),
+  AboutIndustries: defineAboutIndustries(sequelize),
   Messages: defineMessages(sequelize),
   Milestones: defineMilestones(sequelize),
   

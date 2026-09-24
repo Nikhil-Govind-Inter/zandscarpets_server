@@ -224,6 +224,15 @@ class AboutSectionBuilder {
       items: industries.map((item) => ({
         title: t(lang, item?.title, item?.title_ar),
         description: t(lang, item?.description, item?.description_ar),
+        media: localizeMedia(
+          singleMediaWithoutType(
+            item,
+            "media_path",
+            "media_alt",
+            "media_alt_ar",
+          ),
+          lang,
+        ),
       })),
     };
   }

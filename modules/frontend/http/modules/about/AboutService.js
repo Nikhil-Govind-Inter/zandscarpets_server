@@ -56,7 +56,7 @@ class AboutService {
         where: { is_active: true },
         order: [["sort_order", "ASC"]],
       }),
-      models.Industry.findAll({
+      models.AboutIndustries.findAll({
         where: { is_active: true },
         order: [["sort_order", "ASC"]],
       }),
