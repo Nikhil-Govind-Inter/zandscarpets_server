@@ -17,6 +17,14 @@ const {
   invalidateCache,
   cacheKeys,
 } = require("../../traits/cacheHelper");
+// Banners is shared across every page (home, about, services, contact, ...), so a
+// write here can't cheaply tell which frontend page cache it affects without an
+// extra Page lookup. Busting the (currently only) About frontend cache unconditionally
+// is a deliberate over-invalidation rather than risking stale content.
+const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -105,6 +113,7 @@ class BannerController {
       await t.commit();
 
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "Banner item created successfully", 201);
     } catch (error) {
@@ -159,6 +168,7 @@ class BannerController {
 
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "Banner item updated successfully");
     } catch (error) {
@@ -190,6 +200,7 @@ class BannerController {
 
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "Banner item deleted successfully");
     } catch (error) {

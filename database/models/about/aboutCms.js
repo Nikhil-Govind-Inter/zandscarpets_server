@@ -82,6 +82,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      about_core_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       about_code_media_path: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -173,6 +177,10 @@ module.exports = (sequelize) => {
       about_core_title_ar: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      about_core_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       about_code_media_alt_ar: {
         type: DataTypes.STRING,

@@ -24,6 +24,7 @@ const HTTP_STATUS = {
 const RESPONSE_MESSAGES = {
     SUCCESS: {
         DATA_RETRIEVED: 'Data retrieved successfully',
+        DATA_RETRIEVED_FROM_CACHE: 'Data retrieved from cache',
         DATA_CREATED: 'Data created successfully',
         DATA_UPDATED: 'Data updated successfully',
         DATA_DELETED: 'Data deleted successfully',

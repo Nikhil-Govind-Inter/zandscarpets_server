@@ -18,6 +18,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/about/messagesRequest");
@@ -81,6 +85,7 @@ class MessagesController {
       await t.commit();
 
       await invalidateCache(req, cacheKeys.messagesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, item, "Message created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -109,6 +114,7 @@ class MessagesController {
 
       await invalidateCache(req, cacheKeys.messagesItem(id));
       await invalidateCache(req, cacheKeys.messagesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "Message updated successfully");
     } catch (error) {
@@ -139,6 +145,7 @@ class MessagesController {
 
       await invalidateCache(req, cacheKeys.messagesItem(id));
       await invalidateCache(req, cacheKeys.messagesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "Message deleted successfully");
     } catch (error) {

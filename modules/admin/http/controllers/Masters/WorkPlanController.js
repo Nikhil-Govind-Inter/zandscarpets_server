@@ -13,6 +13,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/workPlanRequest");
@@ -80,6 +84,7 @@ class WorkPlanController {
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.workPlanListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, item, "Work Plan item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -102,6 +107,7 @@ class WorkPlanController {
 
       await invalidateCache(req, cacheKeys.workPlanItem(id));
       await invalidateCache(req, cacheKeys.workPlanListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "Work Plan item updated successfully");
     } catch (error) {
@@ -123,6 +129,7 @@ class WorkPlanController {
 
       await invalidateCache(req, cacheKeys.workPlanItem(id));
       await invalidateCache(req, cacheKeys.workPlanListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "Work Plan item deleted successfully");
     } catch (error) {

@@ -39,7 +39,7 @@ class CoreValuesController {
       }
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
-        searchFields: ["media_alt"],
+        searchFields: ["title", "title_ar", "media_alt"],
       });
       await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Core values retrieved successfully");

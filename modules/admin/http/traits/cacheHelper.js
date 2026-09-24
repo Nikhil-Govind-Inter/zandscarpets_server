@@ -93,6 +93,11 @@ const cacheKeys = {
   socialMediaList: (req) => `admin:cache:socialmedia:list:${stableStringify(req.query)}`,
   socialMediaListPattern: () => "admin:cache:socialmedia:list:*",
   socialMediaItem: (id) => `admin:cache:socialmedia:item:${id}`,
+
+  // FLOATING ICONS
+  floatingIconList: (req) => `admin:cache:floatingicon:list:${stableStringify(req.query)}`,
+  floatingIconListPattern: () => "admin:cache:floatingicon:list:*",
+  floatingIconItem: (id) => `admin:cache:floatingicon:item:${id}`,
  
 //  USERS
   userList: (req) => `admin:cache:user:list:${stableStringify(req.query)}`,
@@ -182,6 +187,11 @@ const cacheKeys = {
   historyList: (req) => `admin:cache:history:list:${stableStringify(req.query)}`,
   historyListPattern: () => "admin:cache:history:list:*",
   historyItem: (id) => `admin:cache:history:item:${id}`,
+
+  // ABOUT FEATURES
+  aboutFeaturesList: (req) => `admin:cache:aboutfeatures:list:${stableStringify(req.query)}`,
+  aboutFeaturesListPattern: () => "admin:cache:aboutfeatures:list:*",
+  aboutFeaturesItem: (id) => `admin:cache:aboutfeatures:item:${id}`,
 
   // MESSAGES
   messagesList: (req) => `admin:cache:messages:list:${stableStringify(req.query)}`,

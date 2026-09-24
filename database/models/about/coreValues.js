@@ -10,6 +10,14 @@ module.exports = (sequelize) => {
         autoIncrement: true,
         allowNull: false,
       },
+      title:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       media_path: {
         type: DataTypes.STRING,
         allowNull: true,

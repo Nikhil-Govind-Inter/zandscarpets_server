@@ -10,9 +10,11 @@ class AboutController {
    */
   static async index(req, res) {
     try {
-      const data = await service.index(req.query);
+      const { data, fromCache = false } = await service.index(req);
       return ApiResponse.success(res, {
-        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        message: fromCache
+          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
+          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
         data,
         status: HTTP_STATUS.OK,
       });

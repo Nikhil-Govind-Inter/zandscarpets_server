@@ -13,6 +13,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/about/milestonesRequest");
@@ -72,6 +76,7 @@ class MilestonesController {
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.milestonesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, item, "Milestone item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -94,6 +99,7 @@ class MilestonesController {
 
       await invalidateCache(req, cacheKeys.milestonesItem(id));
       await invalidateCache(req, cacheKeys.milestonesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "Milestone item updated successfully");
     } catch (error) {
@@ -115,6 +121,7 @@ class MilestonesController {
 
       await invalidateCache(req, cacheKeys.milestonesItem(id));
       await invalidateCache(req, cacheKeys.milestonesListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "Milestone item deleted successfully");
     } catch (error) {

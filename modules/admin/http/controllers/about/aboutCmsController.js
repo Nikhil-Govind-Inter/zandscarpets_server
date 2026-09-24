@@ -12,6 +12,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
 } = require("../../request/about/aboutCmsRequest");
@@ -48,6 +52,7 @@ class AboutCmsController {
         await aboutCms.update(req.body);
       }
       await invalidateCache(req, cacheKeys.aboutCms());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, aboutCms, "About CMS updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

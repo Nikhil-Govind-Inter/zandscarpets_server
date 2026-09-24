@@ -40,7 +40,7 @@ module.exports = (sequelize) => {
     {
       tableName: "our_features",
       timestamps: true,
-paranoid: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );
