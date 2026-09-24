@@ -8,7 +8,7 @@ class AboutService {
     const cacheKey = cacheKeys.about(normalizedLang);
 
     const cached = await getCache(req, cacheKey);
-    // if (cached) return { data: cached, fromCache: true };
+    if (cached) return { data: cached, fromCache: true };
 
     const cmsData = await models.AboutCms.findOne({});
 
