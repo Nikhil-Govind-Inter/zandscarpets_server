@@ -70,6 +70,10 @@ const cacheKeys = {
   siteSettings: (lang) => `frontend:cache:site-settings:${lang}`,
   siteSettingsPattern: () => "frontend:cache:site-settings:*",
 
+  // SERVICES PAGE
+  services: (lang) => `frontend:cache:services:${lang}`,
+  servicesPattern: () => "frontend:cache:services:*",
+
   // META TAGS (per page slug + lang)
   metaTags: (page, lang) => `frontend:cache:meta-tags:${page}:${lang}`,
   metaTagsPattern: () => "frontend:cache:meta-tags:*",

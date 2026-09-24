@@ -114,6 +114,7 @@ class BannerController {
 
       await invalidateCache(req, cacheKeys.bannersListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Banner item created successfully", 201);
     } catch (error) {
@@ -169,6 +170,7 @@ class BannerController {
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Banner item updated successfully");
     } catch (error) {
@@ -201,6 +203,7 @@ class BannerController {
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, { id: id }, "Banner item deleted successfully");
     } catch (error) {
