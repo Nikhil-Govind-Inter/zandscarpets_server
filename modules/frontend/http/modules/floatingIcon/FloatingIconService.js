@@ -1,8 +1,7 @@
 const { models } = require("../../../../../database/models");
 const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
 
-// Returns the Arabic value when lang is "ar" and it exists, otherwise the base value
-const t = (lang, base, ar) => (lang === "ar" && ar ? ar : base);
+const { t } = require("../../traits/localeHelper");
 
 class FloatingIconService {
   static async index(req) {

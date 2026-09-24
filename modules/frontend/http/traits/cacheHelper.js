@@ -65,6 +65,10 @@ const cacheKeys = {
   // FLOATING ICONS
   floatingIcons: (lang) => `frontend:cache:floating-icon:${lang}`,
   floatingIconsPattern: () => "frontend:cache:floating-icon:*",
+
+  // SITE SETTINGS (header/footer/floating buttons)
+  siteSettings: (lang) => `frontend:cache:site-settings:${lang}`,
+  siteSettingsPattern: () => "frontend:cache:site-settings:*",
 };
 
 module.exports = {

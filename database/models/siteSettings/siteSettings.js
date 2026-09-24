@@ -19,6 +19,11 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
 
+      header_logo_media_alt: { type: DataTypes.STRING, allowNull: true },
+      header_logo_media_alt_ar: { type: DataTypes.STRING, allowNull: true },
+      footer_logo_media_alt: { type: DataTypes.STRING, allowNull: true },
+      footer_logo_media_alt_ar: { type: DataTypes.STRING, allowNull: true },
+
       address: {
         type: DataTypes.TEXT,
         allowNull: false,

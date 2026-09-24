@@ -4,6 +4,7 @@ const validationRequestPost = [
     
     body('header_logo_media_path').notEmpty().withMessage('Header logo media path is required').isString().withMessage('Header logo media path must be a string'),
     body('footer_logo_media_path').notEmpty().withMessage('Footer logo media path is required').isString().withMessage('Footer logo media path must be a string'),
+    body(['header_logo_media_alt', 'header_logo_media_alt_ar', 'footer_logo_media_alt', 'footer_logo_media_alt_ar']).optional({ values: 'falsy' }).isString().withMessage('Logo alt text must be a string'),
     body('address').notEmpty().withMessage('Address is required').isString().withMessage('Address must be a string'),
     body('address_ar').notEmpty().withMessage('Address (Arabic) is required').isString().withMessage('Arabic address must be a string'),
     body('email').notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email format'),

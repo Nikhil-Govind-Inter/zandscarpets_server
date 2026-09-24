@@ -23,6 +23,8 @@ const fileFields = ["media_path"];
 
 // Public API responses are cached per language under this pattern
 const FRONTEND_CACHE_PATTERN = "frontend:cache:floating-icon:*";
+// Site settings response embeds the active floating icons as floating_buttons
+const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
 
 class FloatingIconController {
   static async list(req, res) {
@@ -102,6 +104,7 @@ class FloatingIconController {
 
       await invalidateCache(req, cacheKeys.floatingIconListPattern());
       await invalidateCache(req, FRONTEND_CACHE_PATTERN);
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, item, "Floating icon created successfully", 201);
     } catch (error) {
@@ -133,6 +136,7 @@ class FloatingIconController {
       await invalidateCache(req, cacheKeys.floatingIconItem(id));
       await invalidateCache(req, cacheKeys.floatingIconListPattern());
       await invalidateCache(req, FRONTEND_CACHE_PATTERN);
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, item, "Floating icon updated successfully");
     } catch (error) {
@@ -163,6 +167,7 @@ class FloatingIconController {
       await invalidateCache(req, cacheKeys.floatingIconItem(id));
       await invalidateCache(req, cacheKeys.floatingIconListPattern());
       await invalidateCache(req, FRONTEND_CACHE_PATTERN);
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, { id }, "Floating icon deleted successfully");
     } catch (error) {
