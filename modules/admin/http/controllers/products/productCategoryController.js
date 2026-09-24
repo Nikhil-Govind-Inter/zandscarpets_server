@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { sequelize, models } = require("../../../../../database/models");
 const {
   handleFileUploadUpdate,
@@ -121,7 +122,22 @@ class ProductCategoryController {
         );
       }
 
+      const where = {};
+      const parentId = parseInt(req.query.parent_id, 10);
+      const industryId = parseInt(req.query.industry_id, 10);
+      if (Number.isInteger(parentId) && parentId > 0) {
+        where.parent_id = parentId;
+      } else if (req.query.type === "category") {
+        where.parent_id = null;
+      } else if (req.query.type === "subcategory") {
+        where.parent_id = { [Op.ne]: null };
+      }
+      if (Number.isInteger(industryId) && industryId > 0) {
+        where.industry_id = industryId;
+      }
+
       const result = await paginate(dataModel, req, {
+        where,
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "title_ar"],
         include: [
