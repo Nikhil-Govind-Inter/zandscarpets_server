@@ -31,6 +31,9 @@ const defineConnections = require("./contact/connections");
 const defineProjects = require("./projects/projects");
 // enquiries
 const defineContactEnquiry = require("./enquiries/contactEnquiry");
+// products
+const defineProductCategories = require("./products/productCategory");
+const defineProductHighlights = require("./products/productHightlights");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
@@ -78,6 +81,10 @@ const models = {
   // PROJECTS
   Projects: defineProjects(sequelize),
   
+  // PRODUCTS
+  ProductCategories: defineProductCategories(sequelize),
+  ProductHighlights: defineProductHighlights(sequelize),
+
   // SERVICES
   Services: defineServices(sequelize),
   ServiceCms: defineServiceCms(sequelize),

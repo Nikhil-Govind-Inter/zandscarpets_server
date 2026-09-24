@@ -12,7 +12,6 @@ module.exports = (sequelize) => {
       parent_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        default: null,
       },
       industry_id: {
         type: DataTypes.INTEGER,
@@ -26,6 +25,18 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: "",
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      material_type: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       material_type_ar: {
         type: DataTypes.STRING,
@@ -54,6 +65,31 @@ module.exports = (sequelize) => {
       deletedAt: "deleted_at",
     },
   );
+
+  ProductCategories.associate = function (models) {
+    ProductCategories.belongsTo(models.Industry, {
+      foreignKey: "industry_id",
+      as: "industry",
+    });
+
+    // self-relation: unlimited-depth parent/child tree in the same table
+    ProductCategories.belongsTo(ProductCategories, {
+      foreignKey: "parent_id",
+      as: "parent",
+    });
+    ProductCategories.hasMany(ProductCategories, {
+      foreignKey: "parent_id",
+      as: "children",
+    });
+
+    // many-to-many with highlights via a join table managed by Sequelize
+    ProductCategories.belongsToMany(models.ProductHighlights, {
+      through: "product_category_highlights",
+      as: "highlights",
+      foreignKey: "category_id",
+      otherKey: "highlight_id",
+    });
+  };
 
   return ProductCategories;
 };

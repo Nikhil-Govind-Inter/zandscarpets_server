@@ -217,6 +217,17 @@ const cacheKeys = {
   projectsActivePattern: () => "admin:cache:projects:active:*",
   projectsItem: (id) => `admin:cache:projects:item:${id}`,
 
+  // PRODUCT HIGHLIGHTS
+  productHighlightsList: (req) => `admin:cache:producthighlights:list:${stableStringify(req.query)}`,
+  productHighlightsListPattern: () => "admin:cache:producthighlights:list:*",
+  productHighlightsItem: (id) => `admin:cache:producthighlights:item:${id}`,
+
+  // PRODUCT CATEGORIES
+  productCategoriesList: (req) => `admin:cache:productcategories:list:${stableStringify(req.query)}`,
+  productCategoriesListPattern: () => "admin:cache:productcategories:list:*",
+  productCategoriesItemPattern: () => "admin:cache:productcategories:item:*",
+  productCategoriesItem: (id) => `admin:cache:productcategories:item:${id}`,
+
   // SERVICE CMS
   serviceCms: () => "admin:cache:servicecms",
 

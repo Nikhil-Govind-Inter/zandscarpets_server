@@ -33,6 +33,13 @@ const cmsResources = {
   projects: { model: "Projects", cachePrefix: "projects" },
   services: { model: "Services", cachePrefix: "services" },
   "process-steps": { model: "ProcessSteps", cachePrefix: "processsteps" },
+  "product-categories": { model: "ProductCategories", cachePrefix: "productcategories" },
+  // category responses embed highlights, so highlight changes bust them too
+  "product-highlights": {
+    model: "ProductHighlights",
+    cachePrefix: "producthighlights",
+    frontend: ["admin:cache:productcategories:*"],
+  },
 };
 
 module.exports = { cmsResources };
