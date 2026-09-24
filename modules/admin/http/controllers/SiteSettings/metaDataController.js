@@ -18,6 +18,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/siteSettings/metaDataRequest");
@@ -133,6 +137,7 @@ class MetaDataController {
 
       await invalidateCache(req, cacheKeys.metaDataItem(id));
       await invalidateCache(req, cacheKeys.metaDataListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.metaTagsPattern());
 
       sendSuccessResponse(res, item, "Meta data item updated successfully");
     } catch (error) {

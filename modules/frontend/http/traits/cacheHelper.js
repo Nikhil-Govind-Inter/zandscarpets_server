@@ -69,6 +69,10 @@ const cacheKeys = {
   // SITE SETTINGS (header/footer/floating buttons)
   siteSettings: (lang) => `frontend:cache:site-settings:${lang}`,
   siteSettingsPattern: () => "frontend:cache:site-settings:*",
+
+  // META TAGS (per page slug + lang)
+  metaTags: (page, lang) => `frontend:cache:meta-tags:${page}:${lang}`,
+  metaTagsPattern: () => "frontend:cache:meta-tags:*",
 };
 
 module.exports = {

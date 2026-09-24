@@ -1,18 +1,20 @@
 const Mailer = require("../../../../../services/mailerServices");
-const repository = require("./ContactEnquiryRepository");
+const { models } = require("../../../../../database/models");
 const Logger = require("../../../../../config/logger");
 
 class ContactEnquiryService {
 
   static async create(payload, file) {
    
-    const isExisting = await repository.findByEmail(payload.email);
+    const isExisting = await models.ContactEnquiry.findOne({
+      where: { email: payload.email },
+    });
 
     if (isExisting) {
       throw new Error("Email already exists");
     }
     
-    const item = await repository.create({
+    const item = await models.ContactEnquiry.create({
       ...payload,
       file: file ? file.path.replace(/\\/g, "/") : null,
     });

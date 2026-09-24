@@ -16,7 +16,7 @@ class SiteSettingsSectionBuilder {
     };
   }
 
-  static buildFooter(cmsData, lang) {
+  static buildFooter(cmsData, lang, socialMedia = [], footerMedia = []) {
     return {
       logo: localizeMedia(
         singleMediaWithoutType(
@@ -31,6 +31,15 @@ class SiteSettingsSectionBuilder {
       email: cmsData?.email ?? "",
       phone: cmsData?.phone_number ?? "",
       whatsapp_number: cmsData?.whatsapp_number ?? "",
+
+      social_media: socialMedia.map((item) => ({
+        media: this.buildMedia(item, lang),
+        link: item?.link ?? "",
+      })),
+
+      footer_media: footerMedia.map((item) => ({
+        media: this.buildMedia(item, lang),
+      })),
     };
   }
 
@@ -42,6 +51,14 @@ class SiteSettingsSectionBuilder {
       ),
       link: item?.link ?? "",
     }));
+  }
+
+  static buildMedia(item, lang) {
+    const { path, alt } = localizeMedia(
+      singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
+      lang,
+    );
+    return { media_path: path, media_alt: alt };
   }
 }
 

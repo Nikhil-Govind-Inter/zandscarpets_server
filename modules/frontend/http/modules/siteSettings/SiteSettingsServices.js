@@ -16,17 +16,28 @@ class SiteSettingsService {
       throw new Error("No site settings found");
     }
 
-    const floatingIcons = await models.FloatingIcon.findAll({
+    const activeQuery = {
       where: { is_active: true },
       order: [
         ["sort_order", "ASC"],
         ["id", "ASC"],
       ],
-    });
+    };
+
+    const [floatingIcons, socialMedia, footerMedia] = await Promise.all([
+      models.FloatingIcon.findAll(activeQuery),
+      models.SocialMedia.findAll(activeQuery),
+      models.FooterMedia.findAll(activeQuery),
+    ]);
 
     const data = {
       header: SiteSettingsSectionBuilder.buildHeader(cmsData, normalizedLang),
-      footer: SiteSettingsSectionBuilder.buildFooter(cmsData, normalizedLang),
+      footer: SiteSettingsSectionBuilder.buildFooter(
+        cmsData,
+        normalizedLang,
+        socialMedia,
+        footerMedia,
+      ),
       floating_buttons: SiteSettingsSectionBuilder.buildFloatingButtons(
         floatingIcons,
         normalizedLang,

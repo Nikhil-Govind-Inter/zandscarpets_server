@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const MetaTagController = require("../http/modules/metaTag/MetaTagController");
+const Controller = require("../http/modules/metaTag/MetaTagController");
 
-router.get("/:type/:slug", (req, res) => {
-  MetaTagController.index(req, res);
-});
+router.get("/", Controller.index);
 
 module.exports = router;

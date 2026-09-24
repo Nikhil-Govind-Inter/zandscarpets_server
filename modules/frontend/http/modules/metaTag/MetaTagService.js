@@ -1,38 +1,42 @@
-const MetaTagRepository = require("./MetaTagRepository");
-
-const VALID_TYPES = ["blog", "news", "common-page"];
+const { models } = require("../../../../../database/models");
+const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
+const { t } = require("../../traits/localeHelper");
+const { HttpError } = require("../../traits/HttpError");
 
 class MetaTagService {
-  static async index(type, slug) {
-    if (!VALID_TYPES.includes(type)) {
-      return null;
-    }
+  static async index(req) {
+    const page = req?.query?.page;
+    const lang = req?.query?.lang === "ar" ? "ar" : "en";
+    const cacheKey = cacheKeys.metaTags(page, lang);
 
-    let data = await MetaTagRepository.findByTypeAndSlug(type, slug);
+    const cached = await getCache(req, cacheKey);
+    if (cached) return { data: cached, fromCache: true };
 
-    // fallback meta values
-    const defaultMeta = {
-      meta_title: "Go Ec",
-      meta_description:
-        "Welcome to Go Ec",
-      meta_keywords: "Go Ec",
-      targeted_keywords: "Go Ec",
-      other_meta_tags: "<meta name='author' content='Go Ec'>",
-      canonical_url: "/",
-    };
-
-    if (!data) {
-      return defaultMeta;
-    }
-
-    data = data.toJSON();
-    Object.keys(defaultMeta).forEach((key) => {
-      if (!data[key]) {
-        data[key] = defaultMeta[key];
-      }
+    const meta = await models.MetaData.findOne({
+      include: [
+        {
+          model: models.Page,
+          as: "page",
+          where: { page_slug: page, is_active: true },
+          attributes: ["page_slug"],
+        },
+      ],
     });
 
-    return data;
+    if (!meta) {
+      throw new HttpError("Meta data not found", 404, "NOT_FOUND");
+    }
+
+    const data = {
+      page: meta.page.page_slug,
+      meta_title: t(lang, meta.meta_title, meta.meta_title_ar),
+      meta_description: t(lang, meta.meta_description, meta.meta_description_ar),
+      meta_keywords: t(lang, meta.meta_keywords, meta.meta_keywords_ar),
+    };
+
+    await setCache(req, cacheKey, data);
+
+    return { data };
   }
 }
 

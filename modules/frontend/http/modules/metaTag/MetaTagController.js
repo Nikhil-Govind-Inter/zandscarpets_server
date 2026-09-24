@@ -4,21 +4,29 @@ const { ErrorHandler } = require("../../traits/errorHandler");
 const service = require("./MetaTagService");
 
 class MetaTagController {
+  /*
+   * @route   GET /api/frontend/meta-tags?page=home
+   * @desc    Get meta data for a page by its slug
+   * @access  Public
+   */
   static async index(req, res) {
     try {
-      const { slug, type } = req.params;
+      const page = typeof req.query.page === "string" ? req.query.page.trim() : "";
 
-      if (!slug || !type) {
+      if (!page) {
         return ApiResponse.error(res, {
-          message: "Type and slug are required",
+          message: "Query param `page` is required",
           status: HTTP_STATUS.BAD_REQUEST,
         });
       }
 
-      const data = await service.index(type, slug);
+      req.query.page = page;
+      const { data, fromCache = false } = await service.index(req);
 
       return ApiResponse.success(res, {
-        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        message: fromCache
+          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
+          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
         data,
         status: HTTP_STATUS.OK,
       });
@@ -26,7 +34,7 @@ class MetaTagController {
       return ErrorHandler.handleControllerError(
         error,
         res,
-        "MetaTagController.index"
+        "MetaTagController.index",
       );
     }
   }

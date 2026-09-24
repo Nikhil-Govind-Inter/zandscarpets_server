@@ -1,13 +1,15 @@
-const HomeRepository = require("./HomeRepository");
+const { models } = require("../../../../../database/models");
 const {
   mediaWithType,
   singleMediaWithoutType,
   button,
 } = require("../../traits/mediaButtonHelper");
 
+const orderedActive = { where: { status: true }, order: [["sort_order", "ASC"]] };
+
 class HomeService {
   static async index() {
-    const cmsData = await HomeRepository.findCms();
+    const cmsData = await models.HomeCms.findOne({});
     if (!cmsData) {
       throw new Error("No CMS data found for About page");
     }
@@ -22,15 +24,15 @@ class HomeService {
       news = [],
       blogs = [],
     ] = await Promise.all([
-      HomeRepository.findBanners(),
-      HomeRepository.findMilestones(),
-      HomeRepository.findMap(),
-      HomeRepository.findExploreOurExpertise(),
-      HomeRepository.findAppFeatures(),
-      HomeRepository.findInvestment(),
-      HomeRepository.findPartners(),
-      HomeRepository.findNews(),
-      HomeRepository.findBlogs(),
+      models.HomeBanner.findAll(orderedActive),
+      models.HomeMilestone.findAll(orderedActive),
+      models.HomeMap.findAll(orderedActive),
+      models.HomeExploreOurExpertise.findAll(orderedActive),
+      models.HomeAppFeatures.findAll(orderedActive),
+      models.HomeInvestment.findAll(orderedActive),
+      models.Partner.findAll(orderedActive),
+      models.News.findAll(orderedActive),
+      models.Blogs.findAll(orderedActive),
     ]);
 
 
