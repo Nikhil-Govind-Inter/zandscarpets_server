@@ -33,7 +33,7 @@ const { validationResult } = require("express-validator");
 const { Op } = require("sequelize");
 
 const dataModel = models.Banners;
-const fileFields = ["desktop_media_path", "mobile_media_path"];
+const fileFields = ["media_path"];
 
 class BannerController {
   static async list(req, res) {
@@ -199,8 +199,7 @@ class BannerController {
 
       await t.commit();
 
-      if (item.desktop_media_path) await deleteOldFile(item.desktop_media_path);
-      if (item.mobile_media_path) await deleteOldFile(item.mobile_media_path);
+      if (item.media_path) await deleteOldFile(item.media_path);
 
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());

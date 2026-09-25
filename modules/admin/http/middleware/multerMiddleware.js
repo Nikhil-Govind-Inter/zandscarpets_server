@@ -58,7 +58,7 @@ const createUploadMiddleware = (subfolder, fields) => {
       }
       cb(
         new CustomError(
-          "Only image files (jpeg, jpg, png, svg, webp) are allowed",
+          "Only image (jpeg, jpg, png, svg, webp) or video (mp4, mov, avi, mkv, webm) files are allowed",
           400,
           "INVALID_FILE_TYPE"
         )

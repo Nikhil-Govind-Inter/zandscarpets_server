@@ -1,8 +1,6 @@
 const { sequelize, models } = require("../../../../../database/models");
 const {
-  handleFileUploadUpdate,
   deleteOldFile,
-  handleFileUploadStore,
 } = require("../../middleware/multerMiddleware");
 const {
   sendSuccessResponse,

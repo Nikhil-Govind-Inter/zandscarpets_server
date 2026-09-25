@@ -18,7 +18,7 @@ class ServicesSectionBuilder {
       sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
       media: buildMedia(
         banner[0],
-        "desktop_media_path",
+        "media_path",
         "media_alt",
         "media_alt_ar",
         lang,

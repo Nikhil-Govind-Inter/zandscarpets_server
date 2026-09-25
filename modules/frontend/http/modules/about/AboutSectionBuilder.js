@@ -11,10 +11,9 @@ class AboutSectionBuilder {
       title: t(lang, banner[0]?.title, banner[0]?.title_ar),
       sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
       media: localizeMedia(
-        mediaWithoutType(
+        singleMediaWithoutType(
           banner[0],
-          "desktop_media_path",
-          "mobile_media_path",
+          "media_path",
           "media_alt",
           "media_alt_ar",
         ),
@@ -31,6 +30,13 @@ class AboutSectionBuilder {
         cmsData?.about_description,
         cmsData?.about_description_ar,
       ),
+
+      trust_title: t(lang, cmsData?.trust_title, cmsData?.trust_title_ar),
+      trust_description: t(
+        lang,
+        cmsData?.trust_description,
+        cmsData?.trust_description_ar,
+      ),
       media: localizeMedia(
         singleMediaWithoutType(
           cmsData,
@@ -41,7 +47,7 @@ class AboutSectionBuilder {
         lang,
       ),
 
-      misison: {
+      mission: {
         title: t(lang, cmsData?.mission_title, cmsData?.mission_title_ar),
         description: t(
           lang,

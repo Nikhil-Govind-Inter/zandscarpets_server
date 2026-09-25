@@ -16,7 +16,7 @@ class ContactService {
       throw new Error("No CMS data found for Contact page");
     }
 
-    const activeQuery = {
+    const whereCondition = {
       where: { is_active: true },
       order: [["sort_order", "ASC"]],
     };
@@ -33,8 +33,8 @@ class ContactService {
             },
           ],
         }),
-        models.Connections.findAll(activeQuery),
-        models.SocialMedia.findAll(activeQuery),
+        models.Connections.findAll(whereCondition),
+        models.SocialMedia.findAll(whereCondition),
       ]);
 
     const data = {

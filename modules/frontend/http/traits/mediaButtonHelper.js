@@ -1,7 +1,7 @@
 const { default: slugify } = require("slugify");
 const { BASE_URL } = require("../../../../constants");
 
-const backendUrl = `${BASE_URL}/` ?? "http://localhost:4000/";
+const backendUrl = `${BASE_URL}/` ?? "http://localhost:5000/";
 
 
 // Media object (desktop + mobile) WITH type

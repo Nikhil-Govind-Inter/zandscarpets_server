@@ -13,8 +13,8 @@ class ContactSectionBuilder {
       media: localizeMedia(
         mediaWithoutType(
           banner[0],
-          "desktop_media_path",
-          "mobile_media_path",
+          "media_path",
+          "media_path",
           "media_alt",
           "media_alt_ar",
         ),

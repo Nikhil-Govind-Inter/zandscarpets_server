@@ -25,7 +25,10 @@ class SiteSettingsService {
     };
 
     const [floatingIcons, socialMedia, footerMedia] = await Promise.all([
-      models.FloatingIcon.findAll(activeQuery),
+      models.FloatingIcon.findAll({
+        where: { is_active: true },
+        order: [["sort_order", "DESC"]],
+      }),
       models.SocialMedia.findAll(activeQuery),
       models.FooterMedia.findAll(activeQuery),
     ]);

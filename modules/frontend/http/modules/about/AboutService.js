@@ -16,6 +16,10 @@ class AboutService {
       throw new Error("No CMS data found for About page");
     }
 
+    const activeQuery = {
+      where: { is_active: true },
+      order: [["sort_order", "ASC"]],
+    };
 
     const [
       banner = [],
@@ -28,19 +32,21 @@ class AboutService {
       industries = [],
     ] = await Promise.all([
       models.Banners.findAll({
-        includes: [
+        include: [
           {
             model: models.Page,
             as: "page",
+            required: true,
+            attributes: [],
             where: { is_active: true, page_slug: "about" },
           },
         ],
       }),
-      models.Milestones.findAll({ where: { is_active: true } }),
-      models.CoreValues.findAll({ where: { is_active: true } }),
-      models.History.findAll({ where: { is_active: true } }),
+      models.Milestones.findAll(activeQuery),
+      models.CoreValues.findAll(activeQuery),
+      models.History.findAll(activeQuery),
       models.Messages.findAll({
-        where: { is_active: true },
+        ...activeQuery,
         attributes: {
           exclude: [
             "createdAt",
@@ -51,19 +57,19 @@ class AboutService {
           ],
         },
       }),
-      models.WorkPlan.findAll({ where: { is_active: true } }),
-      models.OurFeatures.findAll({
-        where: { is_active: true },
-        order: [["sort_order", "ASC"]],
-      }),
-      models.AboutIndustries.findAll({
-        where: { is_active: true },
-        order: [["sort_order", "ASC"]],
-      }),
+      models.WorkPlan.findAll(activeQuery),
+      models.OurFeatures.findAll(activeQuery),
+      models.AboutIndustries.findAll(activeQuery),
     ]);
 
     const data = {
-      banner_section: AboutSectionBuilder.buildBannerSection(banner, normalizedLang),
+
+      // cmsData,
+
+      banner_section: AboutSectionBuilder.buildBannerSection(
+        banner,
+        normalizedLang,
+      ),
       introduction_section: AboutSectionBuilder.buildIntroductionSection(
         cmsData,
         stats,

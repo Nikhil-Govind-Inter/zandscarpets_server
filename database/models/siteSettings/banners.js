@@ -14,13 +14,9 @@ module.exports = (sequelize) => {
         allowNull: false,
         unique: true,
       },
-      desktop_media_path: {
+      media_path: {
         type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      mobile_media_path: {
-        type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       media_alt: {
         type: DataTypes.STRING,
@@ -53,6 +49,7 @@ module.exports = (sequelize) => {
     {
       tableName: "banners",
       timestamps: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );

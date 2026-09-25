@@ -5,7 +5,7 @@ const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadFields = [{ name: "desktop_media_path" }, { name: "mobile_media_path" }];
+const uploadFields = [{ name: "media_path" }];
 const upload = createUploadMiddleware("banners", uploadFields);
 
 router.use(authMiddleware(["admin", "user"]));
