@@ -11,6 +11,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
 } = require("../../request/policies/privacyPolicyRequest");
@@ -24,7 +28,7 @@ class PrivacyPolicyController {
         return sendSuccessResponse(res, cached, "Privacy Policy retrieved successfully from cache");
       }
       const data = await models.PrivacyPolicy.findOne();
-      await setCache(req, cacheKeys.privacyPolicy(), data);
+      if (data) await setCache(req, cacheKeys.privacyPolicy(), data);
       sendSuccessResponse(res, data, "Privacy Policy retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -44,6 +48,7 @@ class PrivacyPolicyController {
         await privacyPolicy.update(req.body);
       }
       await invalidateCache(req, cacheKeys.privacyPolicy());
+      await invalidateFrontendCache(req, frontendCacheKeys.privacyPolicyPattern());
       sendSuccessResponse(res, privacyPolicy, "Privacy Policy updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

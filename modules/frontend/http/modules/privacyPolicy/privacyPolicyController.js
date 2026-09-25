@@ -5,7 +5,7 @@ const service = require("./PrivacyPolicyService");
 
 class PrivacyPolicyController {
   /*
-   * @route   GET /api/frontend/privacy
+   * @route   GET /api/frontend/privacy-policy
    * @desc    Get Privacy Page
    * @access  Public
    */

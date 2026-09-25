@@ -1,5 +1,7 @@
 const { models } = require("../../../../../database/models");
 const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
+const { ErrorHandler } = require("../../traits/errorHandler");
+const { HTTP_STATUS, ERROR_CODES } = require("../../traits/constants");
 const PrivacyPolicySectionBuilder = require("./PrivacyPolicySectionBuilder");
 
 class PrivacyPolicyService {
@@ -13,7 +15,11 @@ class PrivacyPolicyService {
     const cmsData = await models.PrivacyPolicy.findOne({});
 
     if (!cmsData) {
-      throw new Error("No CMS data found for Privacy Policy page");
+      throw ErrorHandler.createError(
+        "No CMS data found for Privacy Policy page",
+        HTTP_STATUS.NOT_FOUND,
+        ERROR_CODES.NOT_FOUND_ERROR,
+      );
     }
 
     const data = PrivacyPolicySectionBuilder.buildContentSection(

@@ -1,9 +1,4 @@
-const {
-  mediaWithoutType,
-  singleMediaWithoutType,
-} = require("../../traits/mediaButtonHelper");
-
-const { t,  } = require("../../traits/localeHelper");
+const { t } = require("../../traits/localeHelper");
 
 class PrivacyPolicySectionBuilder {
   static buildContentSection(cmsData, lang) {
