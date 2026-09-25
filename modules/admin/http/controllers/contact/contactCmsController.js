@@ -11,6 +11,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
 } = require("../../request/contact/contactCmsRequest");
@@ -44,6 +48,7 @@ class ContactCmsController {
         await contactCms.update(req.body);
       }
       await invalidateCache(req, cacheKeys.contactCms());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, contactCms, "Contact CMS updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

@@ -1,11 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Controller = require("../http/modules/blog/BlogController");
-
-
+const Controller = require("../http/modules/privacyPolicy/privacyPolicyController");
 
 router.get("/", Controller.index);
-router.get("/:slug", Controller.show); 
-
 
 module.exports = router;

@@ -62,6 +62,14 @@ const cacheKeys = {
   about: (lang) => `frontend:cache:about:${lang}`,
   aboutPattern: () => "frontend:cache:about:*",
 
+  // CONTACT PAGE
+  contact: (lang) => `frontend:cache:contact:${lang}`,
+  contactPattern: () => "frontend:cache:contact:*",
+
+  // PRIVACY POLICY
+  privacyPolicy: (lang) => `frontend:cache:privacy-policy:${lang}`,
+  privacyPolicyPattern: () => "frontend:cache:privacy-policy:*",
+
   // FLOATING ICONS
   floatingIcons: (lang) => `frontend:cache:floating-icon:${lang}`,
   floatingIconsPattern: () => "frontend:cache:floating-icon:*",

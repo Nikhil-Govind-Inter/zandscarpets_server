@@ -206,6 +206,9 @@ const cacheKeys = {
   // CONTACT CMS
   contactCms: () => "admin:cache:contactcms",
 
+  // PRIVACY POLICY
+  privacyPolicy: () => "admin:cache:privacypolicy",
+
   // CONNECTIONS
   connectionsList: (req) => `admin:cache:connections:list:${stableStringify(req.query)}`,
   connectionsListPattern: () => "admin:cache:connections:list:*",
