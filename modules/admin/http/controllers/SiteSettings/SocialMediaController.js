@@ -19,7 +19,7 @@ const {
 const { validationResult } = require("express-validator");
 
 const dataModel = models.SocialMedia;
-const fileFields = ["media_path"];
+const fileFields = ["media_path", "footer_media_path"];
 
 // Site settings response embeds social/footer media
 const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
@@ -167,8 +167,8 @@ class SocialMediaController {
         return sendNotFoundError(res, "Social media item");
       }
 
-      if (item.media_path) {
-        await deleteOldFile(item.media_path);
+      for (const field of fileFields) {
+        if (item[field]) await deleteOldFile(item[field]);
       }
 
       await item.destroy();

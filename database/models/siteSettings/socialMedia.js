@@ -14,6 +14,10 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      footer_media_path: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       media_alt: {
         type: DataTypes.STRING,
         allowNull: true,

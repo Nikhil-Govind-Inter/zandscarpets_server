@@ -7,7 +7,7 @@ const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadFields = [{ name: "media_path" }];
+const uploadFields = [{ name: "media_path" }, { name: "footer_media_path" }];
 
 const upload = createUploadMiddleware("social-media", uploadFields);
 

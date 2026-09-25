@@ -33,7 +33,7 @@ class SiteSettingsSectionBuilder {
       whatsapp_number: cmsData?.whatsapp_number ?? "",
 
       social_media: socialMedia.map((item) => ({
-        media: this.buildMedia(item, lang),
+        media: this.buildMedia(item, lang, "footer_media_path"),
         link: item?.link ?? "",
       })),
 
@@ -53,9 +53,10 @@ class SiteSettingsSectionBuilder {
     }));
   }
 
-  static buildMedia(item, lang) {
+  static buildMedia(item, lang, pathKey = "media_path", fallbackPathKey) {
+    const key = item?.[pathKey] || !fallbackPathKey ? pathKey : fallbackPathKey;
     const { path, alt } = localizeMedia(
-      singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
+      singleMediaWithoutType(item, key, "media_alt", "media_alt_ar"),
       lang,
     );
     return { media_path: path, media_alt: alt };

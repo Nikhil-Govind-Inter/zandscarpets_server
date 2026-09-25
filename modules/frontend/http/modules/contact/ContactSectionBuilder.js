@@ -1,5 +1,4 @@
 const {
-  mediaWithoutType,
   singleMediaWithoutType,
 } = require("../../traits/mediaButtonHelper");
 
@@ -11,9 +10,8 @@ class ContactSectionBuilder {
       title: t(lang, banner[0]?.title, banner[0]?.title_ar),
       sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
       media: localizeMedia(
-        mediaWithoutType(
+        singleMediaWithoutType(
           banner[0],
-          "media_path",
           "media_path",
           "media_alt",
           "media_alt_ar",
