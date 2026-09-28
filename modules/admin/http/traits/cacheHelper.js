@@ -249,6 +249,41 @@ const cacheKeys = {
   contactEnquiryListPattern: () => "admin:cache:contactenquiry:list:*",
   contactEnquiryItem: (id) => `admin:cache:contactenquiry:item:${id}`,
 
+  // COLORS
+  colorsList: (req) => `admin:cache:colors:list:${stableStringify(req.query)}`,
+  colorsListPattern: () => "admin:cache:colors:list:*",
+  colorsItem: (id) => `admin:cache:colors:item:${id}`,
+
+  // SIZE
+  sizesList: (req) => `admin:cache:sizes:list:${stableStringify(req.query)}`,
+  sizesListPattern: () => "admin:cache:sizes:list:*",
+  sizesItem: (id) => `admin:cache:sizes:item:${id}`,
+
+  // TAGS
+  tagsList: (req) => `admin:cache:tags:list:${stableStringify(req.query)}`,
+  tagsListPattern: () => "admin:cache:tags:list:*",
+  tagsItem: (id) => `admin:cache:tags:item:${id}`,
+  
+  // PRODUCT TAGS
+  productTagsList: (req) => `admin:cache:producttags:list:${stableStringify(req.query)}`,
+  productTagsListPattern: () => "admin:cache:producttags:list:*",
+  productTagsItem: (id) => `admin:cache:producttags:item:${id}`,
+
+  // PRODUCT FAQ
+  productFaqsList: (req) => `admin:cache:productfaqs:list:${stableStringify(req.query)}`,
+  productFaqsListPattern: () => "admin:cache:productfaqs:list:*",
+  productFaqsItem: (id) => `admin:cache:productfaqs:item:${id}`,
+
+  // PRODUCTS
+  productsList: (req) => `admin:cache:products:list:${stableStringify(req.query)}`,
+  productsListPattern: () => "admin:cache:products:list:*",
+  productsItem: (id) => `admin:cache:products:item:${id}`,
+
+  // PRODUCTS MEDIA
+  productMediaList: (req) => `admin:cache:productmedia:list:${stableStringify(req.query)}`,
+  productMediaListPattern: () => "admin:cache:productmedia:list:*",
+  productMediaItem: (id) => `admin:cache:productmedia:item:${id}`,
+  
 };
 
 module.exports = {

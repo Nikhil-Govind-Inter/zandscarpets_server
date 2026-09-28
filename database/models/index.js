@@ -36,11 +36,20 @@ const defineContactEnquiry = require("./enquiries/contactEnquiry");
 // products
 const defineProductCategories = require("./products/productCategory");
 const defineProductHighlights = require("./products/productHightlights");
+const defineProducts = require("./products/products");
+const defineColors = require("./products/colors");
+const defineSizes = require("./products/size");
+const defineProductTags = require("./products/productTags");
+const defineProductFaq = require("./products/productFaq");
+const defineProductMedia = require("./products/productMedia");
+const defineTags = require("./products/tags");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
 const defineServiceCms = require("./services/serviceCms");
 
+
+// product masters
 const models = {
   AdminUser: defineAdminUser(sequelize),
   AdminRefreshToken: defineAdminRefreshToken(sequelize),
@@ -89,6 +98,13 @@ const models = {
   // PRODUCTS
   ProductCategories: defineProductCategories(sequelize),
   ProductHighlights: defineProductHighlights(sequelize),
+  Products: defineProducts(sequelize),
+  Colors: defineColors(sequelize),
+  Size: defineSizes(sequelize),
+  ProductTags: defineProductTags(sequelize),
+  ProductFaq: defineProductFaq(sequelize),  
+  ProductMedia: defineProductMedia(sequelize),
+  Tags: defineTags(sequelize),
 
   // SERVICES
   Services: defineServices(sequelize),

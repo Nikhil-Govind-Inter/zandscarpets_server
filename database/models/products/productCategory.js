@@ -72,6 +72,11 @@ module.exports = (sequelize) => {
       as: "industry",
     });
 
+    ProductCategories.hasMany(models.Products, {
+      foreignKey: "product_category_id",
+      as: "products",
+    });
+
     // self-relation: unlimited-depth parent/child tree in the same table
     ProductCategories.belongsTo(ProductCategories, {
       foreignKey: "parent_id",
