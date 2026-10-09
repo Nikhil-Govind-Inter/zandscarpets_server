@@ -23,6 +23,21 @@ const dataModel = models.ProductTags;
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.productTagsItem(id));
   await invalidateCache(req, cacheKeys.productTagsListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
+};
+
+// A global tag is linked to every product; un-globalling it unlinks it everywhere.
+const syncGlobalLinks = async (item, wasGlobal, t) => {
+  if (item.is_global) {
+    const products = await models.Products.findAll({
+      attributes: ["id"],
+      transaction: t,
+    });
+    await item.setProducts(products, { transaction: t });
+  } else if (wasGlobal) {
+    await item.setProducts([], { transaction: t });
+  }
 };
 
 class ProductTagController {
@@ -105,11 +120,16 @@ class ProductTagController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
+    const t = await sequelize.transaction();
     try {
-      const item = await dataModel.create(req.body);
+      const item = await dataModel.create(req.body, { transaction: t });
+      await syncGlobalLinks(item, false, t);
+      await t.commit();
+
       await invalidateAll(req);
       sendSuccessResponse(res, item, "Product tag created successfully", 201);
     } catch (error) {
+      await t.rollback();
       return sendErrorResponse(res, error);
     }
   }
@@ -121,12 +141,19 @@ class ProductTagController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
+    const t = await sequelize.transaction();
     try {
       const { id } = req.params;
-      const item = await dataModel.findByPk(id);
-      if (!item) return sendNotFoundError(res, "Product tag");
+      const item = await dataModel.findByPk(id, { transaction: t });
+      if (!item) {
+        await t.rollback();
+        return sendNotFoundError(res, "Product tag");
+      }
 
-      await item.update(req.body);
+      const wasGlobal = item.is_global;
+      await item.update(req.body, { transaction: t });
+      await syncGlobalLinks(item, wasGlobal, t);
+      await t.commit();
 
       await invalidateAll(req, id);
       const updated = await dataModel.findByPk(id);

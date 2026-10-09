@@ -23,6 +23,8 @@ const dataModel = models.Tags;
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.tagsItem(id));
   await invalidateCache(req, cacheKeys.tagsListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
 };
 
 class TagController {

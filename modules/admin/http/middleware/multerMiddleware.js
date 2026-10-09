@@ -43,11 +43,18 @@ const extractFilePathFromUrl = (url, subfolder) => {
   return match ? match[1].replace(/\\/g, "/") : null;
 };
 
-const createUploadMiddleware = (subfolder, fields) => {
+// options.allowPdf also accepts PDF documents (e.g. product data sheets).
+const createUploadMiddleware = (subfolder, fields, options = {}) => {
+  const allowedTypes = options.allowPdf
+    ? /jpeg|jpg|png|svg|webp|mp4|mov|avi|mkv|webm|pdf/
+    : /jpeg|jpg|png|svg|webp|mp4|mov|avi|mkv|webm/;
+  const typeError = options.allowPdf
+    ? "Only image (jpeg, jpg, png, svg, webp), video (mp4, mov, avi, mkv, webm) or PDF files are allowed"
+    : "Only image (jpeg, jpg, png, svg, webp) or video (mp4, mov, avi, mkv, webm) files are allowed";
+
   const upload = multer({
     storage: getStorage(subfolder),
     fileFilter: (req, file, cb) => {
-      const allowedTypes = /jpeg|jpg|png|svg|webp|mp4|mov|avi|mkv|webm/;
       const extname = allowedTypes.test(
         path.extname(file.originalname).toLowerCase()
       );
@@ -58,7 +65,7 @@ const createUploadMiddleware = (subfolder, fields) => {
       }
       cb(
         new CustomError(
-          "Only image (jpeg, jpg, png, svg, webp) or video (mp4, mov, avi, mkv, webm) files are allowed",
+          typeError,
           400,
           "INVALID_FILE_TYPE"
         )

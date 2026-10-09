@@ -29,6 +29,8 @@ const fileFields = ["media_path"];
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.colorsItem(id));
   await invalidateCache(req, cacheKeys.colorsListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
 };
 
 class ColorController {

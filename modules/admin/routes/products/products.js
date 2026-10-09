@@ -5,10 +5,11 @@ const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
-const upload = createUploadMiddleware("products", [
-  { name: "media_path" },
-  { name: "data_sheet" },
-]);
+const upload = createUploadMiddleware(
+  "products",
+  [{ name: "media_path" }, { name: "data_sheet" }],
+  { allowPdf: true },
+);
 
 router.use(authMiddleware(["admin", "user"]));
 router.get("/active", Controller.getActive);

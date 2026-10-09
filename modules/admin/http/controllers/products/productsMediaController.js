@@ -25,7 +25,7 @@ const {
 const { validationResult } = require("express-validator");
 
 const dataModel = models.ProductMedia;
-const fileFields = ["media_path"];
+const fileFields = ["media_path", "thumbnail"];
 
 const productInclude = [
   { model: models.Products, as: "product", attributes: ["id", "title"] },
@@ -35,6 +35,8 @@ const productInclude = [
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.productMediaItem(id));
   await invalidateCache(req, cacheKeys.productMediaListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
 };
 
 class ProductMediaController {
@@ -121,6 +123,8 @@ class ProductMediaController {
       }
 
       handleFileUploadStore(req, fileFields);
+      // Only videos carry a thumbnail.
+      if (req.body.media_type !== "video") req.body.thumbnail = null;
 
       const item = await dataModel.create(req.body);
       await invalidateAll(req);
@@ -158,7 +162,14 @@ class ProductMediaController {
         ]);
       }
 
-      await handleFileUploadUpdate(req, item, fileFields);
+      // Only videos carry a thumbnail, so drop it when switching to an image.
+      if (req.body.media_type !== "video") {
+        if (item.thumbnail) await deleteOldFile(item.thumbnail);
+        req.body.thumbnail = null;
+        await handleFileUploadUpdate(req, item, ["media_path"]);
+      } else {
+        await handleFileUploadUpdate(req, item, fileFields);
+      }
 
       await item.update(req.body);
       await invalidateAll(req, id);

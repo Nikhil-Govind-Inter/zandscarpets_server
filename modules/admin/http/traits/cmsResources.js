@@ -3,6 +3,7 @@ const SITE_SETTINGS = "frontend:cache:site-settings:*";
 const FLOATING = "frontend:cache:floating-icon:*";
 const META_TAGS = "frontend:cache:meta-tags:*";
 const SERVICES = "frontend:cache:services:*";
+const PRODUCTS = "admin:cache:products:*";
 
 const cmsResources = {
   "social-media": {
@@ -70,6 +71,38 @@ const cmsResources = {
     cachePrefix: "producthighlights",
     frontend: ["admin:cache:productcategories:*"],
   },
+  // product responses embed these, so changes bust cached products too
+  sizes: {
+    model: "Size",
+    cachePrefix: "sizes",
+    frontend: [PRODUCTS],
+  },
+  colors: {
+    model: "Colors",
+    cachePrefix: "colors",
+    frontend: [PRODUCTS],
+  },
+  tags: {
+    model: "Tags",
+    cachePrefix: "tags",
+    frontend: [PRODUCTS],
+  },
+  "product-tags": {
+    model: "ProductTags",
+    cachePrefix: "producttags",
+    frontend: [PRODUCTS],
+  },
+  "product-faq": {
+    model: "ProductFaq",
+    cachePrefix: "productfaqs",
+    frontend: [PRODUCTS],
+  },
+  "product-media": {
+    model: "ProductMedia",
+    cachePrefix: "productmedia",
+    frontend: [PRODUCTS],
+  },
+  products: { model: "Products", cachePrefix: "products" },
 };
 
 module.exports = { cmsResources };

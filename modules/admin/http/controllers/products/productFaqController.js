@@ -27,6 +27,8 @@ const productInclude = [
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.productFaqsItem(id));
   await invalidateCache(req, cacheKeys.productFaqsListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
 };
 
 class ProductFaqController {
@@ -51,7 +53,7 @@ class ProductFaqController {
       const result = await paginate(dataModel, req, {
         where,
         order: [["sort_order", "ASC"]],
-        searchFields: ["question", "question_ar"],
+        searchFields: ["question"],
         include: productInclude,
       });
 

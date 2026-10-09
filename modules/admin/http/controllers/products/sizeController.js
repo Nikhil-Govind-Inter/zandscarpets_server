@@ -23,6 +23,8 @@ const dataModel = models.Size;
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.sizesItem(id));
   await invalidateCache(req, cacheKeys.sizesListPattern());
+  // Product responses embed this resource, so drop cached products too.
+  await invalidateCache(req, "admin:cache:products:*");
 };
 
 class SizeController {

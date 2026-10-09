@@ -229,8 +229,21 @@ const syncLinks = async (item, ids, t) => {
     await item.setColors(ids.color_ids, { transaction: t });
   if (ids.size_ids !== null)
     await item.setSizes(ids.size_ids, { transaction: t });
-  if (ids.hash_tag_ids !== null)
-    await item.setHash_tags(ids.hash_tag_ids, { transaction: t });
+  // Global tags are always attached to every product, whatever was sent.
+  const globalTagIds = (
+    await models.ProductTags.findAll({
+      where: { is_global: true },
+      attributes: ["id"],
+      transaction: t,
+    })
+  ).map((tag) => tag.id);
+  if (ids.hash_tag_ids !== null) {
+    await item.setHash_tags([...new Set([...ids.hash_tag_ids, ...globalTagIds])], {
+      transaction: t,
+    });
+  } else if (globalTagIds.length) {
+    await item.addHash_tags(globalTagIds, { transaction: t });
+  }
   if (ids.related_product_ids !== null)
     await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
 };

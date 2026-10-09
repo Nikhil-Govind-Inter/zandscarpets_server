@@ -7,7 +7,7 @@ const {
 
 const router = express.Router();
 
-const uploadFields = [{ name: "media_path" }];
+const uploadFields = [{ name: "media_path" }, { name: "thumbnail" }];
 
 const upload = createUploadMiddleware("products-media", uploadFields);
 

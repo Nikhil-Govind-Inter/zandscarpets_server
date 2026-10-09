@@ -17,6 +17,10 @@ const validationRequestPost = [
     .optional({ nullable: true })
     .isString()
     .withMessage("Media path must be a string"),
+  body("thumbnail")
+    .optional({ nullable: true })
+    .isString()
+    .withMessage("Thumbnail must be a string"),
   body("media_alt")
     .optional({ nullable: true })
     .isString()
