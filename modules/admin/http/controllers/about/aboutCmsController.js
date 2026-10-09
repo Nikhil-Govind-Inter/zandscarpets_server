@@ -12,12 +12,16 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
 } = require("../../request/about/aboutCmsRequest");
 const { validationResult } = require("express-validator");
 
-const fileFields = ["media_path", "about_code_media_path", "industry_media_path"];
+const fileFields = ["media_path", "about_code_media_path", "industry_media_path", "work_media_path"];
 
 class AboutCmsController {
   static async get(req, res) {
@@ -48,6 +52,7 @@ class AboutCmsController {
         await aboutCms.update(req.body);
       }
       await invalidateCache(req, cacheKeys.aboutCms());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, aboutCms, "About CMS updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

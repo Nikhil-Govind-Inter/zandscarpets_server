@@ -12,6 +12,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
 } = require("../../request/siteSettings/siteSettingsRequest");
@@ -62,6 +66,7 @@ class SiteSettingsController {
         await siteSettings.update(req.body);
       }
       await invalidateCache(req, cacheKeys.siteSettings());
+      await invalidateFrontendCache(req, frontendCacheKeys.siteSettingsPattern());
 
       sendSuccessResponse(
         res,

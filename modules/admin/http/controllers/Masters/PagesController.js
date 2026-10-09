@@ -13,6 +13,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/pagesRequest");
@@ -153,6 +157,7 @@ class PagesController {
       await invalidateCache(req, cacheKeys.pagesListPattern());
       await invalidateCache(req, cacheKeys.bannersListPattern());
       await invalidateCache(req, cacheKeys.metaDataListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.metaTagsPattern());
 
       sendSuccessResponse(res, item, "Page item updated successfully");
     } catch (error) {
@@ -171,6 +176,7 @@ class PagesController {
       if (!item) return sendNotFoundError(res, "Page item");
 
       await item.destroy();
+      await invalidateFrontendCache(req, frontendCacheKeys.metaTagsPattern());
 
       await invalidateCache(req, cacheKeys.pagesItem(id));
       await invalidateCache(req, cacheKeys.pagesListPattern());

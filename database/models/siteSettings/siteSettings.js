@@ -10,45 +10,55 @@ module.exports = (sequelize) => {
         autoIncrement: true,
       },
 
-      header_logo_media_path:{
+      header_logo_media_path: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      footer_logo_media_path:{
+      footer_logo_media_path: {
         type: DataTypes.STRING,
         allowNull: false,
       },
 
-      address:{
+      header_logo_media_alt: { type: DataTypes.STRING, allowNull: true },
+      header_logo_media_alt_ar: { type: DataTypes.STRING, allowNull: true },
+      footer_logo_media_alt: { type: DataTypes.STRING, allowNull: true },
+      footer_logo_media_alt_ar: { type: DataTypes.STRING, allowNull: true },
+
+      address: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
 
-      email:{
+      address_ar: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+
+      email: {
         type: DataTypes.STRING,
         allowNull: false,
       },
 
-      phone_number:{
+      phone_number: {
         type: DataTypes.STRING,
         allowNull: false,
       },
 
-      whatsapp_number:{
+      whatsapp_number: {
         type: DataTypes.STRING,
         allowNull: false,
       },
 
-      admin_email:{
+      admin_email: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: "admin@intersmart.in",
-      }
+      },
     },
     {
       tableName: "site_settings",
       timestamps: true,
-paranoid: true,
+      paranoid: true,
     },
   );
 

@@ -30,6 +30,7 @@ const GALLERY_SUBFOLDER = "projects";
 
 const relatedInclude = [
   { model: models.Industry, as: "category", attributes: ["id", "title"] },
+  { model: models.Materials, as: "material", attributes: ["id", "title"] },
   {
     model: dataModel,
     as: "relatedProjects",

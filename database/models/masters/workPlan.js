@@ -9,24 +9,20 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      title:{
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       short_description: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      media_type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      media_path: {
+      short_description_ar: {
         type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      media_alt: {
-        type: DataTypes.STRING,
         allowNull: true,
       },
       sort_order: {
@@ -44,11 +40,10 @@ module.exports = (sequelize) => {
     {
       tableName: "work_plan",
       timestamps: true,
-paranoid: true,
+      paranoid: true,
       deletedAt: "deleted_at",
     },
   );
-
 
   return WorkPlan;
 };

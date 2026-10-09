@@ -1,8 +1,6 @@
 const { sequelize, models } = require("../../../../../database/models");
 const {
-  handleFileUploadUpdate,
   deleteOldFile,
-  handleFileUploadStore,
 } = require("../../middleware/multerMiddleware");
 const {
   sendSuccessResponse,
@@ -17,6 +15,10 @@ const {
   invalidateCache,
   cacheKeys,
 } = require("../../traits/cacheHelper");
+const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -79,6 +81,8 @@ class ServiceController {
       await t.commit();
 
       await invalidateCache(req, cacheKeys.serviceListPattern());
+
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Service created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -106,6 +110,7 @@ class ServiceController {
 
       await invalidateCache(req, cacheKeys.serviceItem(id));
       await invalidateCache(req, cacheKeys.serviceListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Service updated successfully");
     } catch (error) {
@@ -136,6 +141,7 @@ class ServiceController {
 
       await invalidateCache(req, cacheKeys.serviceItem(id));
       await invalidateCache(req, cacheKeys.serviceListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, { id: id }, "Service deleted successfully");
     } catch (error) {

@@ -9,6 +9,7 @@ const uploadFields = [
   { name: 'media_path' },
   { name: 'about_code_media_path' },
   { name: 'industry_media_path' },
+  { name: 'work_media_path' },
 ];
 const upload = createUploadMiddleware('about-cms', uploadFields);
 

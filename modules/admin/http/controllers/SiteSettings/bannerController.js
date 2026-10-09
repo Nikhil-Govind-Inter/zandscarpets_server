@@ -17,6 +17,14 @@ const {
   invalidateCache,
   cacheKeys,
 } = require("../../traits/cacheHelper");
+// Banners is shared across every page (home, about, services, contact, ...), so a
+// write here can't cheaply tell which frontend page cache it affects without an
+// extra Page lookup. Busting the (currently only) About frontend cache unconditionally
+// is a deliberate over-invalidation rather than risking stale content.
+const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -25,7 +33,7 @@ const { validationResult } = require("express-validator");
 const { Op } = require("sequelize");
 
 const dataModel = models.Banners;
-const fileFields = ["desktop_media_path", "mobile_media_path"];
+const fileFields = ["media_path"];
 
 class BannerController {
   static async list(req, res) {
@@ -105,6 +113,9 @@ class BannerController {
       await t.commit();
 
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
 
       sendSuccessResponse(res, item, "Banner item created successfully", 201);
     } catch (error) {
@@ -159,6 +170,9 @@ class BannerController {
 
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
 
       sendSuccessResponse(res, item, "Banner item updated successfully");
     } catch (error) {
@@ -185,11 +199,13 @@ class BannerController {
 
       await t.commit();
 
-      if (item.desktop_media_path) await deleteOldFile(item.desktop_media_path);
-      if (item.mobile_media_path) await deleteOldFile(item.mobile_media_path);
+      if (item.media_path) await deleteOldFile(item.media_path);
 
       await invalidateCache(req, cacheKeys.bannersItem(id));
       await invalidateCache(req, cacheKeys.bannersListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
 
       sendSuccessResponse(res, { id: id }, "Banner item deleted successfully");
     } catch (error) {

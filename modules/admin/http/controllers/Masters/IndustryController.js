@@ -13,6 +13,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/industryRequest");
@@ -114,6 +118,8 @@ class IndustryController {
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.industryListPattern());
+
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Industry item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -145,6 +151,7 @@ class IndustryController {
 
       await invalidateCache(req, cacheKeys.industryItem(id));
       await invalidateCache(req, cacheKeys.industryListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
       sendSuccessResponse(res, item, "Industry item updated successfully");
@@ -167,6 +174,7 @@ class IndustryController {
 
       await invalidateCache(req, cacheKeys.industryItem(id));
       await invalidateCache(req, cacheKeys.industryListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(
         res,

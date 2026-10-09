@@ -11,9 +11,13 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validateId,
   validationRequestPost,
-} = require("../../request/services/serviceCms.js");
+} = require("../../request/services/serviceCmsRequest.js");
 const { validationResult } = require("express-validator");
 
 
@@ -60,6 +64,7 @@ class ServiceCmsController {
         await serviceCms.update(req.body);
       }
       await invalidateCache(req, cacheKeys.serviceCms());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, serviceCms, "Service CMS updated successfully");
     } catch (error) {

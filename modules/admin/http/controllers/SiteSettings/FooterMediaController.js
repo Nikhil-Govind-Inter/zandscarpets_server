@@ -21,6 +21,9 @@ const { validationResult } = require("express-validator");
 const dataModel = models.FooterMedia;
 const fileFields = ["media_path"];
 
+// Site settings response embeds social/footer media
+const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
+
 class FooterMediaController {
   static async list(req, res) {
     try {
@@ -102,6 +105,7 @@ class FooterMediaController {
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.footerMediaListPattern());
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(
         res,
@@ -137,6 +141,7 @@ class FooterMediaController {
 
       await invalidateCache(req, cacheKeys.footerMediaItem(id));
       await invalidateCache(req, cacheKeys.footerMediaListPattern());
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, item, "Footer media item updated successfully");
     } catch (error) {
@@ -166,6 +171,7 @@ class FooterMediaController {
 
       await invalidateCache(req, cacheKeys.footerMediaItem(id));
       await invalidateCache(req, cacheKeys.footerMediaListPattern());
+      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, {
         id: id,

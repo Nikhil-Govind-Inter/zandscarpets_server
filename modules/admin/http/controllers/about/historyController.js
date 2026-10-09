@@ -13,6 +13,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/about/historyRequest");
@@ -72,6 +76,7 @@ class HistoryController {
       const item = await dataModel.create(req.body);
 
       await invalidateCache(req, cacheKeys.historyListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, item, "History item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -94,6 +99,7 @@ class HistoryController {
 
       await invalidateCache(req, cacheKeys.historyItem(id));
       await invalidateCache(req, cacheKeys.historyListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, item, "History item updated successfully");
     } catch (error) {
@@ -115,6 +121,7 @@ class HistoryController {
 
       await invalidateCache(req, cacheKeys.historyItem(id));
       await invalidateCache(req, cacheKeys.historyListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "History item deleted successfully");
     } catch (error) {

@@ -18,6 +18,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/services/processStepRequest");
@@ -81,6 +85,8 @@ class ProcessStepController {
       await t.commit();
 
       await invalidateCache(req, cacheKeys.processStepsListPattern());
+
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Process step created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -109,6 +115,7 @@ class ProcessStepController {
 
       await invalidateCache(req, cacheKeys.processStepsItem(id));
       await invalidateCache(req, cacheKeys.processStepsListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Process step updated successfully");
     } catch (error) {
@@ -139,6 +146,7 @@ class ProcessStepController {
 
       await invalidateCache(req, cacheKeys.processStepsItem(id));
       await invalidateCache(req, cacheKeys.processStepsListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, { id: id }, "Process step deleted successfully");
     } catch (error) {

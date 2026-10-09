@@ -2,9 +2,13 @@ const { body, param } = require('express-validator');
 
 const validationRequestPost = [
     body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be a string'),
+    body('title_ar').notEmpty().withMessage('Arabic title is required').isString().withMessage('Arabic title must be a string'),
     body('description').notEmpty().withMessage('Description is required').isString().withMessage('Description must be a string'),
+    body('description_ar').notEmpty().withMessage('Arabic description is required').isString().withMessage('Arabic description must be a string'),
     body('form_title').notEmpty().withMessage('Form title is required').isString().withMessage('Form title must be a string'),
+    body('form_title_ar').notEmpty().withMessage('Arabic form title is required').isString().withMessage('Arabic form title must be a string'),
     body('social_media_title').notEmpty().withMessage('Social media title is required').isString().withMessage('Social media title must be a string'),
+    body('social_media_title_ar').notEmpty().withMessage('Arabic social media title is required').isString().withMessage('Arabic social media title must be a string'),
     body('map_url').notEmpty().withMessage('Map URL is required').isString().withMessage('Map URL must be a string'),
 ]
 

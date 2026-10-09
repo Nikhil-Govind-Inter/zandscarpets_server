@@ -93,6 +93,11 @@ const cacheKeys = {
   socialMediaList: (req) => `admin:cache:socialmedia:list:${stableStringify(req.query)}`,
   socialMediaListPattern: () => "admin:cache:socialmedia:list:*",
   socialMediaItem: (id) => `admin:cache:socialmedia:item:${id}`,
+
+  // FLOATING ICONS
+  floatingIconList: (req) => `admin:cache:floatingicon:list:${stableStringify(req.query)}`,
+  floatingIconListPattern: () => "admin:cache:floatingicon:list:*",
+  floatingIconItem: (id) => `admin:cache:floatingicon:item:${id}`,
  
 //  USERS
   userList: (req) => `admin:cache:user:list:${stableStringify(req.query)}`,
@@ -135,6 +140,11 @@ const cacheKeys = {
   industryListPattern: () => "admin:cache:industry:list:*",
   industryItem: (id) => `admin:cache:industry:item:${id}`,
   
+  // MATERIALS
+  materialsList: (req) => `admin:cache:materials:list:${stableStringify(req.query)}`,
+  materialsListPattern: () => "admin:cache:materials:list:*",
+  materialsItem: (id) => `admin:cache:materials:item:${id}`,
+
   // OUR FEATURES
   ourFeaturesList: (req) => `admin:cache:ourfeatures:list:${stableStringify(req.query)}`,
   ourFeaturesListPattern: () => "admin:cache:ourfeatures:list:*",
@@ -178,13 +188,26 @@ const cacheKeys = {
   historyListPattern: () => "admin:cache:history:list:*",
   historyItem: (id) => `admin:cache:history:item:${id}`,
 
+  // ABOUT INDUSTRIES
+  aboutIndustriesList: (req) => `admin:cache:aboutindustries:list:${stableStringify(req.query)}`,
+  aboutIndustriesListPattern: () => "admin:cache:aboutindustries:list:*",
+  aboutIndustriesItem: (id) => `admin:cache:aboutindustries:item:${id}`,
+
   // MESSAGES
   messagesList: (req) => `admin:cache:messages:list:${stableStringify(req.query)}`,
   messagesListPattern: () => "admin:cache:messages:list:*",
   messagesItem: (id) => `admin:cache:messages:item:${id}`,
 
+  // MILESTONES
+  milestonesList: (req) => `admin:cache:milestones:list:${stableStringify(req.query)}`,
+  milestonesListPattern: () => "admin:cache:milestones:list:*",
+  milestonesItem: (id) => `admin:cache:milestones:item:${id}`,
+
   // CONTACT CMS
   contactCms: () => "admin:cache:contactcms",
+
+  // PRIVACY POLICY
+  privacyPolicy: () => "admin:cache:privacypolicy",
 
   // CONNECTIONS
   connectionsList: (req) => `admin:cache:connections:list:${stableStringify(req.query)}`,
@@ -196,6 +219,17 @@ const cacheKeys = {
   projectsListPattern: () => "admin:cache:projects:list:*",
   projectsActivePattern: () => "admin:cache:projects:active:*",
   projectsItem: (id) => `admin:cache:projects:item:${id}`,
+
+  // PRODUCT HIGHLIGHTS
+  productHighlightsList: (req) => `admin:cache:producthighlights:list:${stableStringify(req.query)}`,
+  productHighlightsListPattern: () => "admin:cache:producthighlights:list:*",
+  productHighlightsItem: (id) => `admin:cache:producthighlights:item:${id}`,
+
+  // PRODUCT CATEGORIES
+  productCategoriesList: (req) => `admin:cache:productcategories:list:${stableStringify(req.query)}`,
+  productCategoriesListPattern: () => "admin:cache:productcategories:list:*",
+  productCategoriesItemPattern: () => "admin:cache:productcategories:item:*",
+  productCategoriesItem: (id) => `admin:cache:productcategories:item:${id}`,
 
   // SERVICE CMS
   serviceCms: () => "admin:cache:servicecms",
@@ -210,7 +244,46 @@ const cacheKeys = {
   processStepsListPattern: () => "admin:cache:processsteps:list:*",
   processStepsItem: (id) => `admin:cache:processsteps:item:${id}`,
 
+  // CONTACT ENQUIRIES
+  contactEnquiryList: (req) => `admin:cache:contactenquiry:list:${stableStringify(req.query)}`,
+  contactEnquiryListPattern: () => "admin:cache:contactenquiry:list:*",
+  contactEnquiryItem: (id) => `admin:cache:contactenquiry:item:${id}`,
 
+  // COLORS
+  colorsList: (req) => `admin:cache:colors:list:${stableStringify(req.query)}`,
+  colorsListPattern: () => "admin:cache:colors:list:*",
+  colorsItem: (id) => `admin:cache:colors:item:${id}`,
+
+  // SIZE
+  sizesList: (req) => `admin:cache:sizes:list:${stableStringify(req.query)}`,
+  sizesListPattern: () => "admin:cache:sizes:list:*",
+  sizesItem: (id) => `admin:cache:sizes:item:${id}`,
+
+  // TAGS
+  tagsList: (req) => `admin:cache:tags:list:${stableStringify(req.query)}`,
+  tagsListPattern: () => "admin:cache:tags:list:*",
+  tagsItem: (id) => `admin:cache:tags:item:${id}`,
+  
+  // PRODUCT TAGS
+  productTagsList: (req) => `admin:cache:producttags:list:${stableStringify(req.query)}`,
+  productTagsListPattern: () => "admin:cache:producttags:list:*",
+  productTagsItem: (id) => `admin:cache:producttags:item:${id}`,
+
+  // PRODUCT FAQ
+  productFaqsList: (req) => `admin:cache:productfaqs:list:${stableStringify(req.query)}`,
+  productFaqsListPattern: () => "admin:cache:productfaqs:list:*",
+  productFaqsItem: (id) => `admin:cache:productfaqs:item:${id}`,
+
+  // PRODUCTS
+  productsList: (req) => `admin:cache:products:list:${stableStringify(req.query)}`,
+  productsListPattern: () => "admin:cache:products:list:*",
+  productsItem: (id) => `admin:cache:products:item:${id}`,
+
+  // PRODUCTS MEDIA
+  productMediaList: (req) => `admin:cache:productmedia:list:${stableStringify(req.query)}`,
+  productMediaListPattern: () => "admin:cache:productmedia:list:*",
+  productMediaItem: (id) => `admin:cache:productmedia:item:${id}`,
+  
 };
 
 module.exports = {

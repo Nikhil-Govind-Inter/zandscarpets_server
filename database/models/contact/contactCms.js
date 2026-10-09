@@ -14,7 +14,15 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       description: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      description_ar: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
@@ -22,7 +30,15 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      form_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       social_media_title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      social_media_title_ar: {
         type: DataTypes.STRING,
         allowNull: false,
       },

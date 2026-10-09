@@ -44,8 +44,7 @@ function loadRoutes(dirPath, baseRoute = "", depth = 0) {
     if (stat.isDirectory()) {
       const dirName = file.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
       const newBaseRoute = path.posix.join(baseRoute, dirName);
-
-      console.log(`${indent}${colors.cyan(`📁 ${dirName}/`)}`);
+      console.log(`\n${indent}${colors.cyan(`📁 ${dirName}/`)}`);
       const subRouter = loadRoutes(fullPath, newBaseRoute, depth + 1);
       router.use(`/${dirName}`, subRouter);
     } else if (file !== "index.js" && file.endsWith(".js")) {

@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       slug: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -21,6 +25,10 @@ module.exports = (sequelize) => {
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       link: {
         type: DataTypes.TEXT,
@@ -50,6 +58,13 @@ module.exports = (sequelize) => {
     industry.hasOne(models.HomeBanner, {
       foreignKey: "industry_id",
       as: "homeBanner",
+    });
+
+
+    // hasmany with prod categry
+    industry.hasMany(models.ProductCategories, {
+      foreignKey: "industry_id",
+      as: "productCategories",
     });
 
     // hasMany with projects (one industry/category -> many projects)

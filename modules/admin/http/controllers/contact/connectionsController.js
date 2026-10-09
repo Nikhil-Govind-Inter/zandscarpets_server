@@ -17,6 +17,10 @@ const {
   cacheKeys,
 } = require("../../traits/cacheHelper");
 const {
+  invalidateCache: invalidateFrontendCache,
+  cacheKeys: frontendCacheKeys,
+} = require("../../../../frontend/http/traits/cacheHelper");
+const {
   validationRequestPost,
   validateId,
 } = require("../../request/contact/connectionsRequest");
@@ -74,6 +78,7 @@ class ConnectionsController {
       const item = await dataModel.create(req.body, { transaction: t });
       await t.commit();
       await invalidateCache(req, cacheKeys.connectionsListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, item, "Connection created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -96,6 +101,7 @@ class ConnectionsController {
       await t.commit();
       await invalidateCache(req, cacheKeys.connectionsItem(id));
       await invalidateCache(req, cacheKeys.connectionsListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, item, "Connection updated successfully");
     } catch (error) {
       await t.rollback();
@@ -118,6 +124,7 @@ class ConnectionsController {
       if (item.icon_media_path) await deleteOldFile(item.icon_media_path);
       await invalidateCache(req, cacheKeys.connectionsItem(id));
       await invalidateCache(req, cacheKeys.connectionsListPattern());
+      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, { id: id }, "Connection deleted successfully");
     } catch (error) {
       await t.rollback();
