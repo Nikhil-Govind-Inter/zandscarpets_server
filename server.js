@@ -27,7 +27,7 @@ const allowedOrigins = [
   "http://localhost:8080",
   "https://admin-zandcarpets.netlify.app",
   "https://admin-zandscarpets.vercel.app",
-  "https://zandcarpets-admin-dashboard.pages.dev"
+  "https://zandcarpets-admin-dashboard.pages.dev",
 ];
 
 app.use(
@@ -36,10 +36,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(
-        new Error(`CORS policy does not allow access from: ${origin}`),
-        false,
-      );
+      return callback(new Error(`CORS policy does not allow access from: ${origin}`), false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -59,7 +56,7 @@ redisClient
     app.set("redisClient", redisClient);
 
     await invalidateAllCache(app);
-    
+
     Logger.info("🧹 Cache flushed on startup");
   })
   .catch((err) => Logger.error("❌ Redis connection failed:", err.message));
@@ -95,7 +92,7 @@ const startServer = async () => {
     }
 
     // await sequelize.sync({ alter: true });
-    // await createAdminUser();
+    await createAdminUser();
     // await policyData();
     // await seedPages();
     // await seedMetaTags();

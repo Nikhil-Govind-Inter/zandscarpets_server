@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+const { generateSlug } = require("../../../utils/slugHelper");
 
 module.exports = (sequelize) => {
   const industry = sequelize.define(
@@ -20,7 +21,6 @@ module.exports = (sequelize) => {
       slug: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
       description: {
         type: DataTypes.TEXT,
@@ -49,9 +49,23 @@ module.exports = (sequelize) => {
     {
       tableName: "industry",
       timestamps: true,
+      paranoid: true,
       deletedAt: "deleted_at",
+      indexes: [
+        {
+          name: "industry_slug_active_unique",
+          unique: true,
+          fields: [sequelize.fn("lower", sequelize.col("slug"))],
+          where: { deleted_at: null },
+        },
+      ],
     },
   );
+
+  industry.beforeValidate((instance) => {
+    const source = instance.slug || instance.title;
+    if (source) instance.slug = generateSlug(source);
+  });
 
   industry.associate = function (models) {
     // hasMany with homeBanner
@@ -59,7 +73,6 @@ module.exports = (sequelize) => {
       foreignKey: "industry_id",
       as: "homeBanner",
     });
-
 
     // hasmany with prod categry
     industry.hasMany(models.ProductCategories, {

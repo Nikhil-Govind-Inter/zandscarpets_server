@@ -20,6 +20,10 @@ const validationRequestPost = [
     .withMessage("Title (Arabic) is required")
     .isString()
     .withMessage("Title (Arabic) must be a string"),
+  body("slug")
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage("Slug must be a string"),
   body("description")
     .optional({ checkFalsy: true })
     .isString()

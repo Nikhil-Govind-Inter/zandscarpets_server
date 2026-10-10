@@ -269,6 +269,16 @@ const cacheKeys = {
   productTagsListPattern: () => "admin:cache:producttags:list:*",
   productTagsItem: (id) => `admin:cache:producttags:item:${id}`,
 
+  // ATTRIBUTES
+  attributesList: (req) => `admin:cache:attributes:list:${stableStringify(req.query)}`,
+  attributesListPattern: () => "admin:cache:attributes:list:*",
+  attributesItem: (id) => `admin:cache:attributes:item:${id}`,
+
+  // ATTRIBUTE VALUES
+  attributeValuesList: (req) => `admin:cache:attribute-values:list:${stableStringify(req.query)}`,
+  attributeValuesListPattern: () => "admin:cache:attribute-values:list:*",
+  attributeValuesItem: (id) => `admin:cache:attribute-values:item:${id}`,
+
   // PRODUCT FAQ
   productFaqsList: (req) => `admin:cache:productfaqs:list:${stableStringify(req.query)}`,
   productFaqsListPattern: () => "admin:cache:productfaqs:list:*",

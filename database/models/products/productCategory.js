@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+const { generateSlug } = require("../../../utils/slugHelper");
 
 module.exports = (sequelize) => {
   const ProductCategories = sequelize.define(
@@ -25,6 +26,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: "",
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       description: {
         type: DataTypes.TEXT,
@@ -63,8 +68,25 @@ module.exports = (sequelize) => {
       timestamps: true,
       paranoid: true,
       deletedAt: "deleted_at",
+      indexes: [
+        {
+          name: "product_categories_slug_active_unique",
+          unique: true,
+          fields: [sequelize.fn("lower", sequelize.col("slug"))],
+          where: { deleted_at: null },
+        },
+      ],
     },
   );
+
+  // Uniform slug generation: always derive from title (or normalize a given
+  // slug) before validation. Titles that cannot be slugified keep slug NULL,
+  // which the partial unique index ignores.
+  ProductCategories.beforeValidate((instance) => {
+    const source = instance.slug || instance.title;
+    const slug = source ? generateSlug(source) : "";
+    instance.slug = slug || null;
+  });
 
   ProductCategories.associate = function (models) {
     ProductCategories.belongsTo(models.Industry, {

@@ -1,6 +1,11 @@
 const { Op } = require("sequelize");
 const { sequelize, models } = require("../../../../../database/models");
 const {
+  generateSlug,
+  generateUniqueSlug,
+  assertNoDuplicate,
+} = require("../../../../../utils/slugHelper");
+const {
   handleFileUploadUpdate,
   handleFileUploadStore,
   deleteOldFile,
@@ -139,7 +144,7 @@ class ProductCategoryController {
       const result = await paginate(dataModel, req, {
         where,
         order: [["sort_order", "ASC"]],
-        searchFields: ["title", "title_ar"],
+        searchFields: ["title", "title_ar", "slug"],
         include: [
           { model: models.Industry, as: "industry", attributes: ["id", "title"] },
           { model: dataModel, as: "parent", attributes: ["id", "title"] },
@@ -241,6 +246,20 @@ class ProductCategoryController {
       const highlightIds = parseHighlightIds(req.body.highlight_ids);
       delete req.body.highlight_ids;
 
+      const slug = req.body.slug;
+      if (!slug || !String(slug).trim()) {
+        req.body.slug = await generateUniqueSlug(dataModel, req.body.title, {
+          transaction: t,
+        });
+      } else {
+        req.body.slug = generateSlug(slug);
+        await assertNoDuplicate(dataModel, {
+          field: "slug",
+          value: req.body.slug,
+          transaction: t,
+        });
+      }
+
       const item = await dataModel.create(req.body, { transaction: t });
 
       if (highlightIds?.length) {
@@ -309,6 +328,25 @@ class ProductCategoryController {
 
       const highlightIds = parseHighlightIds(req.body.highlight_ids);
       delete req.body.highlight_ids;
+
+      const nextSlug = req.body.slug;
+      if (!nextSlug || !String(nextSlug).trim()) {
+        req.body.slug = await generateUniqueSlug(
+          dataModel,
+          req.body.title || item.title,
+          { excludeId: id, transaction: t },
+        );
+      } else {
+        req.body.slug = generateSlug(nextSlug);
+        if (item.slug !== req.body.slug) {
+          await assertNoDuplicate(dataModel, {
+            field: "slug",
+            value: req.body.slug,
+            excludeId: id,
+            transaction: t,
+          });
+        }
+      }
 
       await item.update(req.body, { transaction: t });
 

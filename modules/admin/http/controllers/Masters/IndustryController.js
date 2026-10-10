@@ -5,6 +5,11 @@ const {
   sendNotFoundError,
   sendValidationError,
 } = require("../../traits/responseHandler");
+const {
+  generateSlug,
+  generateUniqueSlug,
+  assertNoDuplicate,
+} = require("../../../../../utils/slugHelper");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
   getCache,
@@ -108,12 +113,15 @@ class IndustryController {
 
       const { slug } = req.body;
 
-      const isItemExist = await dataModel.findOne({
-        where: { slug: slug },
-        attrubutes: ["slug"],
-      });
-      if (isItemExist)
-        return sendErrorResponse(res, `${req.body.title} already exist`);
+      if (!slug || !String(slug).trim()) {
+        req.body.slug = await generateUniqueSlug(dataModel, req.body.title);
+      } else {
+        req.body.slug = generateSlug(slug);
+        await assertNoDuplicate(dataModel, {
+          field: "slug",
+          value: req.body.slug,
+        });
+      }
 
       const item = await dataModel.create(req.body);
 
@@ -138,13 +146,20 @@ class IndustryController {
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Industry item");
 
-      if (item.slug !== req.body.slug) {
-        const isItemExist = await dataModel.findOne({
-          where: { slug: req.body.slug },
-          attrubutes: ["slug"],
+      const nextSlug = req.body.slug;
+      if (!nextSlug || !String(nextSlug).trim()) {
+        req.body.slug = await generateUniqueSlug(dataModel, req.body.title || item.title, {
+          excludeId: id,
         });
-        if (isItemExist)
-          return sendErrorResponse(res, `${req.body.title} already exist`);
+      } else {
+        req.body.slug = generateSlug(nextSlug);
+        if (item.slug !== req.body.slug) {
+          await assertNoDuplicate(dataModel, {
+            field: "slug",
+            value: req.body.slug,
+            excludeId: id,
+          });
+        }
       }
 
       await item.update(req.body);
@@ -175,6 +190,7 @@ class IndustryController {
       await invalidateCache(req, cacheKeys.industryItem(id));
       await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
+      await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
       sendSuccessResponse(
         res,
