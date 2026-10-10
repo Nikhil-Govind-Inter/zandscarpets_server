@@ -2,7 +2,6 @@ const { sequelize, models } = require("../../../../../database/models");
 const { generateSlug, generateUniqueSlug, assertNoDuplicate } = require("../../../../../utils/slugHelper");
 const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const { validationRequestPost, validateId } = require("../../request/products/productLabelsRequest");
 const { validationResult } = require("express-validator");
 
@@ -38,25 +37,9 @@ const normalizeSlug = async (req, item, { excludeId, transaction } = {}) => {
   }
 };
 
-const invalidateAll = async (req, id) => {
-  if (id) {
-    await invalidateCache(req, cacheKeys.productLabelsItem(id));
-  }
-
-  await invalidateCache(req, cacheKeys.productLabelsListPattern());
-  await invalidateCache(req, "admin:cache:products:*");
-};
-
 class ProductLabelController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.productLabelsList(req);
-      const cached = await getCache(req, listCacheKey);
-
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Product label list retrieved successfully from cache");
-      }
-
       const where = {};
       const type = labelType(req.query.type);
       if (type) where.type = type;
@@ -66,8 +49,6 @@ class ProductLabelController {
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "title_ar", "slug"],
       });
-
-      await setCache(req, listCacheKey, result);
 
       return sendSuccessResponse(res, result, "Product label list retrieved successfully");
     } catch (error) {
@@ -104,20 +85,11 @@ class ProductLabelController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.productLabelsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Product label retrieved successfully");
-      }
-
       const item = await dataModel.findByPk(id);
 
       if (!item) {
         return sendNotFoundError(res, "Product label");
       }
-
-      await setCache(req, itemCacheKey, item);
 
       return sendSuccessResponse(res, item, "Product label retrieved successfully");
     } catch (error) {
@@ -149,8 +121,6 @@ class ProductLabelController {
       });
 
       await t.commit();
-
-      await invalidateAll(req);
 
       return sendSuccessResponse(res, item, "Product label created successfully", 201);
     } catch (error) {
@@ -196,8 +166,6 @@ class ProductLabelController {
 
       await t.commit();
 
-      await invalidateAll(req, id);
-
       const updated = await dataModel.findByPk(id);
 
       return sendSuccessResponse(res, updated, "Product label updated successfully");
@@ -237,8 +205,6 @@ class ProductLabelController {
       });
 
       await t.commit();
-
-      await invalidateAll(req, id);
 
       return sendSuccessResponse(res, { id }, "Product label deleted successfully");
     } catch (error) {
