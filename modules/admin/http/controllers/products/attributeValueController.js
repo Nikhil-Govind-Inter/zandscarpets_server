@@ -18,12 +18,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/products/attributeValueRequest");
@@ -33,39 +27,60 @@ const dataModel = models.AttributeValues;
 const fileFields = ["media_path"];
 
 // Which fields a value must carry for each attribute type.
-// - text:  name + arabic name
-// - icon:  icon image
-// - color: a color bar (color_code) OR an uploaded color photo (media_path)
+// - text:  value + arabic value
+// - icon:  icon image + alt text (en/ar)
+// - color: name (en/ar) plus either a color bar (color_code) or an uploaded
+//          color photo (media_path) with its alt text (en/ar)
 const isEmpty = (value) =>
   value === undefined || value === null || String(value).trim() === "";
 
 // Returns the validation errors (path + message) required for the attribute's
 // type, or [] when the body satisfies it.
 const missingForType = (attribute, body) => {
+  const errors = [];
+  const require = (path, msg, missing) => {
+    if (missing) errors.push({ path, msg });
+  };
+
   switch (attribute.type) {
     case "text":
-      return [
-        ["value", "Value is required"],
-        ["value_ar", "Value (Arabic) is required"],
-      ]
-        .filter(([field]) => isEmpty(body[field]))
-        .map(([path, msg]) => ({ path, msg }));
+      require("value", "Value is required", isEmpty(body.value));
+      require("value_ar", "Value (Arabic) is required", isEmpty(body.value_ar));
+      break;
     case "icon":
-      return isEmpty(body.media_path)
-        ? [{ path: "media_path", msg: "Icon image is required" }]
-        : [];
+      require("media_path", "Icon image is required", isEmpty(body.media_path));
+      require("media_alt", "Image alt is required", isEmpty(body.media_alt));
+      require(
+        "media_alt_ar",
+        "Image alt (Arabic) is required",
+        isEmpty(body.media_alt_ar),
+      );
+      break;
     case "color":
-      return isEmpty(body.color_code) && isEmpty(body.media_path)
-        ? [
-            {
-              path: "color_code",
-              msg: "Provide a color (color bar) or upload a color photo",
-            },
-          ]
-        : [];
+      require("value", "Name is required", isEmpty(body.value));
+      require("value_ar", "Name (Arabic) is required", isEmpty(body.value_ar));
+      if (!isEmpty(body.media_path)) {
+        // Photo mode — the image needs alt text.
+        require("media_alt", "Image alt is required", isEmpty(body.media_alt));
+        require(
+          "media_alt_ar",
+          "Image alt (Arabic) is required",
+          isEmpty(body.media_alt_ar),
+        );
+      } else {
+        // Color bar mode — a hex color is required.
+        require(
+          "color_code",
+          "Provide a color (color bar) or upload a color photo",
+          isEmpty(body.color_code),
+        );
+      }
+      break;
     default:
-      return [];
+      break;
   }
+
+  return errors;
 };
 
 const attributeInclude = {
@@ -74,30 +89,35 @@ const attributeInclude = {
   attributes: ["id", "title", "title_ar", "type", "slug"],
 };
 
-const invalidateAll = async (req, id) => {
-  if (id) await invalidateCache(req, cacheKeys.attributeValuesItem(id));
-  await invalidateCache(req, cacheKeys.attributeValuesListPattern());
-  // Attribute responses embed this resource, so drop cached attributes too.
-  await invalidateCache(req, cacheKeys.attributesListPattern());
-};
-
 const normalizeSlug = async (req, item, { excludeId, transaction } = {}) => {
   const slug = req.body.slug;
   const source = req.body.value || item?.value;
+  // Attribute values are unique per attribute, so scope slug lookups to the
+  // parent attribute (the DB index is (attribute_id, lower(slug))).
+  const attributeId =
+    Number(req.body.attribute_id) || item?.attribute_id || null;
+  const scope = attributeId ? { attribute_id: attributeId } : undefined;
+
   if (!slug || !String(slug).trim()) {
     req.body.slug = await generateUniqueSlug(dataModel, source, {
       excludeId,
       transaction,
+      scope,
     });
     return;
   }
   req.body.slug = generateSlug(slug);
-  if (!item || item.slug !== req.body.slug) {
+  if (
+    !item ||
+    item.slug !== req.body.slug ||
+    item.attribute_id !== attributeId
+  ) {
     await assertNoDuplicate(dataModel, {
       field: "slug",
       value: req.body.slug,
       excludeId,
       transaction,
+      scope,
     });
   }
 };
@@ -105,16 +125,6 @@ const normalizeSlug = async (req, item, { excludeId, transaction } = {}) => {
 class AttributeValueController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.attributeValuesList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Attribute values list retrieved successfully from cache",
-        );
-      }
-
       const where = {};
       const attributeId = parseInt(req.query.attribute_id, 10);
       if (Number.isInteger(attributeId) && attributeId > 0) {
@@ -128,7 +138,6 @@ class AttributeValueController {
         include: [attributeInclude],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(
         res,
         result,
@@ -178,20 +187,9 @@ class AttributeValueController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.attributeValuesItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Attribute value retrieved successfully",
-        );
-      }
-
       const item = await dataModel.findByPk(id, { include: [attributeInclude] });
       if (!item) return sendNotFoundError(res, "Attribute value");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Attribute value retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -227,11 +225,15 @@ class AttributeValueController {
         return sendValidationError(res, missing);
       }
 
+      await assertNoDuplicate(dataModel, {
+        field: "value",
+        value: req.body.value,
+        scope: { attribute_id: req.body.attribute_id },
+      });
       await normalizeSlug(req);
 
       const item = await dataModel.create(req.body);
 
-      await invalidateAll(req);
       const created = await dataModel.findByPk(item.id, {
         include: [attributeInclude],
       });
@@ -269,18 +271,29 @@ class AttributeValueController {
       const incomingMedia = req.files?.media_path?.[0]?.path;
       const bodyForType = {
         ...req.body,
-        media_path: req.body.media_path || incomingMedia || item.media_path,
+        // Honor an explicit media_path (including "" when switching a color
+        // value from photo to bar); only fall back when it wasn't sent.
+        media_path:
+          req.body.media_path !== undefined
+            ? req.body.media_path
+            : incomingMedia || item.media_path,
       };
       const missing = missingForType(attribute, bodyForType);
       if (missing.length) {
         return sendValidationError(res, missing);
       }
 
+      await assertNoDuplicate(dataModel, {
+        field: "value",
+        value: req.body.value,
+        excludeId: id,
+        scope: { attribute_id: attributeId },
+      });
+
       await handleFileUploadUpdate(req, item, fileFields);
       await normalizeSlug(req, item, { excludeId: id });
       await item.update(req.body);
 
-      await invalidateAll(req, id);
       const updated = await dataModel.findByPk(id, {
         include: [attributeInclude],
       });
@@ -302,7 +315,6 @@ class AttributeValueController {
 
       await item.destroy();
       await deleteOldFile(item.media_path);
-      await invalidateAll(req, id);
 
       sendSuccessResponse(res, { id }, "Attribute value deleted successfully");
     } catch (error) {

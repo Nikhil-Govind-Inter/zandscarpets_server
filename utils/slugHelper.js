@@ -13,9 +13,18 @@ const generateSlug = (text, { maxLength = DEFAULT_MAX_LENGTH } = {}) => {
 
 // Case-insensitive lookup. Soft-deleted rows are excluded by default via
 // the model's paranoid scope; pass `withDeleted: true` to include them.
+// `scope` adds extra WHERE conditions (e.g. `{ attribute_id: 5 }`) so
+// uniqueness can be limited to a parent record instead of being global.
 const findDuplicate = async (
   Model,
-  { field = "slug", value, excludeId, transaction, withDeleted = false } = {},
+  {
+    field = "slug",
+    value,
+    excludeId,
+    transaction,
+    withDeleted = false,
+    scope,
+  } = {},
 ) => {
   const clean = value === undefined || value === null ? "" : String(value).trim();
   if (!clean) return null;
@@ -26,6 +35,9 @@ const findDuplicate = async (
   ];
   if (excludeId !== undefined && excludeId !== null) {
     conditions.push({ id: { [Op.ne]: Number(excludeId) } });
+  }
+  if (scope && Object.keys(scope).length > 0) {
+    conditions.push(scope);
   }
 
   return Model.findOne({
@@ -53,7 +65,13 @@ const assertNoDuplicate = async (Model, options = {}) => {
 const generateUniqueSlug = async (
   Model,
   sourceText,
-  { field = "slug", excludeId, transaction, maxTries = DEFAULT_MAX_TRIES } = {},
+  {
+    field = "slug",
+    excludeId,
+    transaction,
+    maxTries = DEFAULT_MAX_TRIES,
+    scope,
+  } = {},
 ) => {
   const base = generateSlug(sourceText);
   if (!base) return "";
@@ -66,6 +84,7 @@ const generateUniqueSlug = async (
       value: candidate,
       excludeId,
       transaction,
+      scope,
     });
     if (!exists) return candidate;
     suffix += 1;

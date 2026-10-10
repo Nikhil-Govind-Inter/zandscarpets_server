@@ -25,6 +25,10 @@ module.exports = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      is_product_badge: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       sort_order: {
         type: DataTypes.SMALLINT,
         defaultValue: 0,

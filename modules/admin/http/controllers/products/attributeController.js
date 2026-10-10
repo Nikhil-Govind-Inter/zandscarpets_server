@@ -1,26 +1,8 @@
 const { sequelize, models } = require("../../../../../database/models");
-const {
-  generateSlug,
-  generateUniqueSlug,
-  assertNoDuplicate,
-} = require("../../../../../utils/slugHelper");
-const {
-  sendSuccessResponse,
-  sendErrorResponse,
-  sendNotFoundError,
-  sendValidationError,
-} = require("../../traits/responseHandler");
+const { generateSlug, generateUniqueSlug, assertNoDuplicate } = require("../../../../../utils/slugHelper");
+const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  validationRequestPost,
-  validateId,
-} = require("../../request/products/attributeRequest");
+const { validationRequestPost, validateId } = require("../../request/products/attributeRequest");
 const { validationResult } = require("express-validator");
 
 const dataModel = models.Attributes;
@@ -28,26 +10,8 @@ const dataModel = models.Attributes;
 const valuesInclude = {
   model: models.AttributeValues,
   as: "attributeValues",
-  attributes: [
-    "id",
-    "value",
-    "value_ar",
-    "slug",
-    "media_path",
-    "media_alt",
-    "media_alt_ar",
-    "color_code",
-    "is_active",
-    "sort_order",
-  ],
+  attributes: ["id", "value", "value_ar", "slug", "media_path", "media_alt", "media_alt_ar", "color_code", "is_active", "sort_order"],
   required: false,
-};
-
-const invalidateAll = async (req, id) => {
-  if (id) await invalidateCache(req, cacheKeys.attributesItem(id));
-  await invalidateCache(req, cacheKeys.attributesListPattern());
-  // Attribute responses embed their values; bust value caches too.
-  await invalidateCache(req, cacheKeys.attributeValuesListPattern());
 };
 
 const normalizeSlug = async (req, item, { excludeId, transaction } = {}) => {
@@ -74,16 +38,6 @@ const normalizeSlug = async (req, item, { excludeId, transaction } = {}) => {
 class AttributeController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.attributesList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Attribute list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         where: {},
         order: [["sort_order", "ASC"]],
@@ -91,7 +45,6 @@ class AttributeController {
         include: [valuesInclude],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Attribute list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -102,7 +55,7 @@ class AttributeController {
   static async getActive(req, res) {
     try {
       const result = await dataModel.findAll({
-        where: { is_active: true },
+        // where: { is_active: true },
         order: [["sort_order", "ASC"]],
         attributes: ["id", "title", "title_ar", "type", "slug"],
       });
@@ -119,23 +72,12 @@ class AttributeController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.attributesItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Attribute retrieved successfully",
-        );
-      }
-
       const item = await dataModel.findByPk(id, {
         include: [valuesInclude],
         order: [[{ model: models.AttributeValues, as: "attributeValues" }, "sort_order", "ASC"]],
       });
       if (!item) return sendNotFoundError(res, "Attribute");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Attribute retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -148,10 +90,13 @@ class AttributeController {
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
     try {
+      await assertNoDuplicate(dataModel, {
+        field: "title",
+        value: req.body.title,
+      });
       await normalizeSlug(req);
       const item = await dataModel.create(req.body);
 
-      await invalidateAll(req);
       const created = await dataModel.findByPk(item.id, {
         include: [valuesInclude],
       });
@@ -162,9 +107,7 @@ class AttributeController {
   }
 
   static async update(req, res) {
-    await Promise.all(
-      [...validateId, ...validationRequestPost].map((v) => v.run(req)),
-    );
+    await Promise.all([...validateId, ...validationRequestPost].map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
@@ -173,10 +116,14 @@ class AttributeController {
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Attribute");
 
+      await assertNoDuplicate(dataModel, {
+        field: "title",
+        value: req.body.title,
+        excludeId: id,
+      });
       await normalizeSlug(req, item, { excludeId: id });
       await item.update(req.body);
 
-      await invalidateAll(req, id);
       const updated = await dataModel.findByPk(id, { include: [valuesInclude] });
       sendSuccessResponse(res, updated, "Attribute updated successfully");
     } catch (error) {
@@ -206,7 +153,6 @@ class AttributeController {
       await item.destroy({ transaction: t });
       await t.commit();
 
-      await invalidateAll(req, id);
       sendSuccessResponse(res, { id }, "Attribute deleted successfully");
     } catch (error) {
       await t.rollback();
