@@ -37,6 +37,15 @@ const labelsInclude = {
   required: false,
 };
 
+// Attributes the product uses to build variants (Size, Color, ...).
+const attributesInclude = {
+  model: models.Attributes,
+  as: "attributes",
+  attributes: ["id", "title", "title_ar", "slug", "type"],
+  through: { attributes: ["sort_order"] },
+  required: false,
+};
+
 const listInclude = [
   {
     model: models.ProductCategories,
@@ -53,6 +62,7 @@ const detailInclude = [
     attributes: ["id", "title", "title_ar"],
   },
   labelsInclude,
+  attributesInclude,
   {
     model: dataModel,
     as: "relatedProducts",
@@ -111,7 +121,7 @@ const invalidateAll = async (req, id) => {
 
 // Runs the checks shared by create and update. Returns an error array or null.
 const validateRelations = async (req, ids, ignoreId, t) => {
-  const { label_ids, related_product_ids } = ids;
+  const { label_ids, related_product_ids, attribute_ids } = ids;
 
   if (await slugTaken(req.body.slug, ignoreId, t)) {
     return [{ path: "slug", msg: "Slug is already in use" }];
@@ -127,6 +137,10 @@ const validateRelations = async (req, ids, ignoreId, t) => {
 
   if (!(await allExist(models.ProductLabels, label_ids, t))) {
     return [{ path: "label_ids", msg: "One or more labels not found" }];
+  }
+
+  if (!(await allExist(models.Attributes, attribute_ids, t))) {
+    return [{ path: "attribute_ids", msg: "One or more attributes not found" }];
   }
 
   // A product cannot be related to itself.
@@ -154,9 +168,11 @@ const readIds = (req) => {
   const ids = {
     label_ids: parseIds(req.body.label_ids),
     related_product_ids: parseIds(req.body.related_product_ids),
+    attribute_ids: parseIds(req.body.attribute_ids),
   };
   delete req.body.label_ids;
   delete req.body.related_product_ids;
+  delete req.body.attribute_ids;
   return ids;
 };
 
@@ -166,6 +182,8 @@ const syncLinks = async (item, ids, t) => {
     await item.setLabels(ids.label_ids, { transaction: t });
   if (ids.related_product_ids !== null)
     await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
+  if (ids.attribute_ids !== null)
+    await item.setAttributes(ids.attribute_ids, { transaction: t });
 };
 
 // Cache cleanup must never turn a saved change into a failed request.
@@ -346,11 +364,30 @@ class ProductController {
       // Paranoid delete keeps the row, so clear links and soft-delete children.
       await item.setLabels([], { transaction: t });
       await item.setRelatedProducts([], { transaction: t });
+      await item.setAttributes([], { transaction: t });
 
       // Also remove rows where OTHER products list this one as related.
       const RelatedThrough = dataModel.associations.relatedProducts.through.model;
       await RelatedThrough.destroy({
         where: { related_product_id: id },
+        transaction: t,
+      });
+
+      // Variants are soft-deleted; their value links are hard-deleted.
+      const variants = await models.ProductVariants.findAll({
+        where: { product_id: id },
+        attributes: ["id"],
+        transaction: t,
+      });
+      const variantIds = variants.map((v) => v.id);
+      if (variantIds.length) {
+        await models.VariantAttributeValues.destroy({
+          where: { variant_id: variantIds },
+          transaction: t,
+        });
+      }
+      await models.ProductVariants.destroy({
+        where: { product_id: id },
         transaction: t,
       });
 

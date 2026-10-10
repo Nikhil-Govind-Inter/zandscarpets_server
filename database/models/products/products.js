@@ -115,6 +115,19 @@ module.exports = (sequelize) => {
       otherKey: "related_product_id",
       as: "relatedProducts",
     });
+
+    // Attributes the product uses to build variants (Size, Color, ...).
+    Products.belongsToMany(models.Attributes, {
+      through: models.ProductAttributes,
+      foreignKey: "product_id",
+      otherKey: "attribute_id",
+      as: "attributes",
+    });
+
+    Products.hasMany(models.ProductVariants, {
+      foreignKey: "product_id",
+      as: "variants",
+    });
   };
   return Products;
 };

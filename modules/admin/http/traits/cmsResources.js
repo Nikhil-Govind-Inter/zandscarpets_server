@@ -99,6 +99,12 @@ const cmsResources = {
     cachePrefix: "productmedia",
     frontend: [PRODUCTS],
   },
+  // product responses embed variants, so variant changes bust products too
+  "product-variants": {
+    model: "ProductVariants",
+    cachePrefix: "productvariants",
+    frontend: [PRODUCTS],
+  },
   products: { model: "Products", cachePrefix: "products" },
 };
 

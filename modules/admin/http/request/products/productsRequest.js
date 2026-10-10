@@ -61,6 +61,7 @@ const validationRequestPost = [
 
   optionalJsonArray("label_ids", "Label ids"),
   optionalJsonArray("related_product_ids", "Related product ids"),
+  optionalJsonArray("attribute_ids", "Attribute ids"),
 
   body("sort_order")
     .notEmpty()

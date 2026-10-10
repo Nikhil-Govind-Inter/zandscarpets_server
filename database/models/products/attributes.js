@@ -70,6 +70,14 @@ module.exports = (sequelize) => {
       foreignKey: "attribute_id",
       as: "attributeValues",
     });
+
+    // Products that use this attribute to build variants.
+    Attributes.belongsToMany(models.Products, {
+      through: models.ProductAttributes,
+      foreignKey: "attribute_id",
+      otherKey: "product_id",
+      as: "products",
+    });
   };
 
   return Attributes;

@@ -42,6 +42,9 @@ const defineProductFaq = require("./products/productFaq");
 const defineProductMedia = require("./products/productMedia");
 const defineAttributes = require("./products/attributes");
 const defineAttributeValues = require("./products/attributeValues");
+const defineProductAttributes = require("./products/productAttributes");
+const defineProductVariants = require("./products/productVariants");
+const defineVariantAttributeValues = require("./products/variantAttributeValues");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
@@ -104,6 +107,11 @@ const models = {
   // ATTRIBUTES
   Attributes: defineAttributes(sequelize),
   AttributeValues: defineAttributeValues(sequelize),
+
+  // VARIANTS
+  ProductAttributes: defineProductAttributes(sequelize),
+  ProductVariants: defineProductVariants(sequelize),
+  VariantAttributeValues: defineVariantAttributeValues(sequelize),
 
   // SERVICES
   Services: defineServices(sequelize),
