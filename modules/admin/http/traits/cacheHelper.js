@@ -249,25 +249,10 @@ const cacheKeys = {
   contactEnquiryListPattern: () => "admin:cache:contactenquiry:list:*",
   contactEnquiryItem: (id) => `admin:cache:contactenquiry:item:${id}`,
 
-  // COLORS
-  colorsList: (req) => `admin:cache:colors:list:${stableStringify(req.query)}`,
-  colorsListPattern: () => "admin:cache:colors:list:*",
-  colorsItem: (id) => `admin:cache:colors:item:${id}`,
-
-  // SIZE
-  sizesList: (req) => `admin:cache:sizes:list:${stableStringify(req.query)}`,
-  sizesListPattern: () => "admin:cache:sizes:list:*",
-  sizesItem: (id) => `admin:cache:sizes:item:${id}`,
-
-  // TAGS
-  tagsList: (req) => `admin:cache:tags:list:${stableStringify(req.query)}`,
-  tagsListPattern: () => "admin:cache:tags:list:*",
-  tagsItem: (id) => `admin:cache:tags:item:${id}`,
-  
-  // PRODUCT TAGS
-  productTagsList: (req) => `admin:cache:producttags:list:${stableStringify(req.query)}`,
-  productTagsListPattern: () => "admin:cache:producttags:list:*",
-  productTagsItem: (id) => `admin:cache:producttags:item:${id}`,
+  // PRODUCT LABELS (features / tags / specifications)
+  productLabelsList: (req) => `admin:cache:productlabels:list:${stableStringify(req.query)}`,
+  productLabelsListPattern: () => "admin:cache:productlabels:list:*",
+  productLabelsItem: (id) => `admin:cache:productlabels:item:${id}`,
 
   // ATTRIBUTES
   attributesList: (req) => `admin:cache:attributes:list:${stableStringify(req.query)}`,

@@ -71,25 +71,11 @@ const cmsResources = {
     cachePrefix: "producthighlights",
     frontend: ["admin:cache:productcategories:*"],
   },
-  // product responses embed these, so changes bust cached products too
-  sizes: {
-    model: "Size",
-    cachePrefix: "sizes",
-    frontend: [PRODUCTS],
-  },
-  colors: {
-    model: "Colors",
-    cachePrefix: "colors",
-    frontend: [PRODUCTS],
-  },
-  tags: {
-    model: "Tags",
-    cachePrefix: "tags",
-    frontend: [PRODUCTS],
-  },
-  "product-tags": {
-    model: "ProductTags",
-    cachePrefix: "producttags",
+  // product responses embed labels (features / tags / specifications),
+  // so label changes bust cached products too
+  "product-labels": {
+    model: "ProductLabels",
+    cachePrefix: "productlabels",
     frontend: [PRODUCTS],
   },
   "product-faq": {

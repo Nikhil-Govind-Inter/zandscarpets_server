@@ -5,8 +5,8 @@ const defineAdminRefreshToken = require("./admin/adminRefreshToken");
 const defineSiteSettings = require("./siteSettings/siteSettings");
 const defineSocialMedia = require("./siteSettings/socialMedia");
 const defineFloatingIcon = require("./siteSettings/floatingIcon");
-const defineMetaData  = require("./siteSettings/metaData");
-const defineFooterMedia = require("./siteSettings/footerMedia")
+const defineMetaData = require("./siteSettings/metaData");
+const defineFooterMedia = require("./siteSettings/footerMedia");
 const definePage = require("./masters/page");
 const defineBanners = require("./siteSettings/banners");
 const defineAdsBanner = require("./masters/AdsBanner");
@@ -37,19 +37,15 @@ const defineContactEnquiry = require("./enquiries/contactEnquiry");
 const defineProductCategories = require("./products/productCategory");
 const defineProductHighlights = require("./products/productHightlights");
 const defineProducts = require("./products/products");
-const defineColors = require("./products/colors");
-const defineSizes = require("./products/size");
-const defineProductTags = require("./products/productTags");
+const defineProductLabels = require("./products/productLabels");
 const defineProductFaq = require("./products/productFaq");
 const defineProductMedia = require("./products/productMedia");
-const defineTags = require("./products/tags");
 const defineAttributes = require("./products/attributes");
 const defineAttributeValues = require("./products/attributeValues");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
 const defineServiceCms = require("./services/serviceCms");
-
 
 // product masters
 const models = {
@@ -61,13 +57,13 @@ const models = {
   FloatingIcon: defineFloatingIcon(sequelize),
 
   // SITE SETTINGS
-  MetaData:  defineMetaData(sequelize),
+  MetaData: defineMetaData(sequelize),
   Page: definePage(sequelize),
   Banners: defineBanners(sequelize),
   AdsBanner: defineAdsBanner(sequelize),
   Faqs: defineFaqs(sequelize),
   Industry: defineIndustry(sequelize),
-  
+
   // HOME
   OurFeatures: defineOurFeatures(sequelize),
   Materials: defineMaterials(sequelize),
@@ -77,7 +73,7 @@ const models = {
   HomeMilestones: defineHomeMilestones(sequelize),
   HomeBrands: defineHomeBrands(sequelize),
   HomeTestimonials: defineHomeTestimonials(sequelize),
-  
+
   // ABOUT
   AboutCms: defineAboutCms(sequelize),
   CoreValues: defineCoreValues(sequelize),
@@ -85,7 +81,7 @@ const models = {
   AboutIndustries: defineAboutIndustries(sequelize),
   Messages: defineMessages(sequelize),
   Milestones: defineMilestones(sequelize),
-  
+
   // CONTACT
   ContactCms: defineContactCms(sequelize),
   Connections: defineConnections(sequelize),
@@ -93,20 +89,17 @@ const models = {
 
   // POLICIES
   PrivacyPolicy: definePrivacyPolicy(sequelize),
- 
+
   // PROJECTS
   Projects: defineProjects(sequelize),
-  
+
   // PRODUCTS
   ProductCategories: defineProductCategories(sequelize),
   ProductHighlights: defineProductHighlights(sequelize),
   Products: defineProducts(sequelize),
-  Colors: defineColors(sequelize),
-  Size: defineSizes(sequelize),
-  ProductTags: defineProductTags(sequelize),
-  ProductFaq: defineProductFaq(sequelize),  
+  ProductLabels: defineProductLabels(sequelize),
+  ProductFaq: defineProductFaq(sequelize),
   ProductMedia: defineProductMedia(sequelize),
-  Tags: defineTags(sequelize),
 
   // ATTRIBUTES
   Attributes: defineAttributes(sequelize),
@@ -117,8 +110,6 @@ const models = {
   ServiceCms: defineServiceCms(sequelize),
   ProcessSteps: defineProcessSteps(sequelize),
 };
-
-
 
 Object.keys(models).forEach((modelName) => {
   if ("associate" in models[modelName]) {

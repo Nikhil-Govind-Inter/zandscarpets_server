@@ -25,7 +25,17 @@ const {
 const { validationResult } = require("express-validator");
 
 const dataModel = models.Products;
-const fileFields = ["media_path", "data_sheet"];
+const fileFields = ["main_media_path", "list_media_path"];
+
+// Product labels (features / tags / specifications) are one master table
+// discriminated by `type`; they are all attached through the same join.
+const labelsInclude = {
+  model: models.ProductLabels,
+  as: "labels",
+  attributes: ["id", "title", "title_ar", "slug", "type", "is_product_badge"],
+  through: { attributes: [] },
+  required: false,
+};
 
 const listInclude = [
   {
@@ -33,7 +43,7 @@ const listInclude = [
     as: "category",
     attributes: ["id", "title"],
   },
-  { model: models.Tags, as: "tag", attributes: ["id", "title", "title_ar"] },
+  labelsInclude,
 ];
 
 const detailInclude = [
@@ -42,38 +52,13 @@ const detailInclude = [
     as: "category",
     attributes: ["id", "title", "title_ar"],
   },
-  { model: models.Tags, as: "tag", attributes: ["id", "title", "title_ar"] },
-  {
-    model: models.Colors,
-    as: "colors",
-    attributes: ["id", "title", "title_ar", "media_path"],
-    through: { attributes: [] },
-  },
-  {
-    model: models.Size,
-    as: "sizes",
-    attributes: ["id", "title", "title_ar"],
-    through: { attributes: [] },
-  },
-  {
-    model: models.ProductTags,
-    as: "hash_tags",
-    attributes: ["id", "title", "title_ar"],
-    through: { attributes: [] },
-  },
+  labelsInclude,
   {
     model: dataModel,
     as: "relatedProducts",
-    attributes: ["id", "title", "title_ar", "slug", "media_path", "price"],
+    attributes: ["id", "title", "title_ar", "slug", "main_media_path", "price"],
     through: { attributes: [] },
   },
-  { model: models.ProductFaq, as: "productFaq", required: false },
-  { model: models.ProductMedia, as: "productMedia", required: false },
-];
-
-const detailOrder = [
-  [{ model: models.ProductFaq, as: "productFaq" }, "sort_order", "ASC"],
-  [{ model: models.ProductMedia, as: "productMedia" }, "sort_order", "ASC"],
 ];
 
 // Only rolls back if the transaction is still open.
@@ -119,23 +104,6 @@ const slugTaken = async (slug, ignoreId, transaction) => {
   return !!(await dataModel.findOne({ where, transaction }));
 };
 
-// FormData sends an empty tag as "" and arrays as JSON strings.
-const normalizeBody = (req, { isCreate }) => {
-  const raw = req.body.tag_id;
-  req.body.tag_id =
-    raw === undefined || raw === null || raw === "" || raw === "null"
-      ? null
-      : Number(raw);
-
-  ["specification", "specification_ar"].forEach((field) => {
-    if (req.body[field] !== undefined) {
-      req.body[field] = parseJsonArray(req.body[field]);
-    } else if (isCreate) {
-      req.body[field] = [];
-    }
-  });
-};
-
 const invalidateAll = async (req, id) => {
   if (id) await invalidateCache(req, cacheKeys.productsItem(id));
   await invalidateCache(req, cacheKeys.productsListPattern());
@@ -143,7 +111,7 @@ const invalidateAll = async (req, id) => {
 
 // Runs the checks shared by create and update. Returns an error array or null.
 const validateRelations = async (req, ids, ignoreId, t) => {
-  const { color_ids, size_ids, hash_tag_ids, related_product_ids } = ids;
+  const { label_ids, related_product_ids } = ids;
 
   if (await slugTaken(req.body.slug, ignoreId, t)) {
     return [{ path: "slug", msg: "Slug is already in use" }];
@@ -157,21 +125,8 @@ const validateRelations = async (req, ids, ignoreId, t) => {
     return [{ path: "product_category_id", msg: "Category not found" }];
   }
 
-  if (
-    req.body.tag_id &&
-    !(await models.Tags.findByPk(req.body.tag_id, { transaction: t }))
-  ) {
-    return [{ path: "tag_id", msg: "Tag not found" }];
-  }
-
-  if (!(await allExist(models.Colors, color_ids, t))) {
-    return [{ path: "color_ids", msg: "One or more colors not found" }];
-  }
-  if (!(await allExist(models.Size, size_ids, t))) {
-    return [{ path: "size_ids", msg: "One or more sizes not found" }];
-  }
-  if (!(await allExist(models.ProductTags, hash_tag_ids, t))) {
-    return [{ path: "hash_tag_ids", msg: "One or more hash tags not found" }];
+  if (!(await allExist(models.ProductLabels, label_ids, t))) {
+    return [{ path: "label_ids", msg: "One or more labels not found" }];
   }
 
   // A product cannot be related to itself.
@@ -192,58 +147,23 @@ const validateRelations = async (req, ids, ignoreId, t) => {
     ];
   }
 
-  const { specification, specification_ar } = req.body;
-  if (
-    Array.isArray(specification) &&
-    Array.isArray(specification_ar) &&
-    specification.length !== specification_ar.length
-  ) {
-    return [
-      {
-        path: "specification_ar",
-        msg: "Specification and Arabic specification must have the same number of items",
-      },
-    ];
-  }
-
   return null;
 };
 
 const readIds = (req) => {
   const ids = {
-    color_ids: parseIds(req.body.color_ids),
-    size_ids: parseIds(req.body.size_ids),
-    hash_tag_ids: parseIds(req.body.hash_tag_ids),
+    label_ids: parseIds(req.body.label_ids),
     related_product_ids: parseIds(req.body.related_product_ids),
   };
-  delete req.body.color_ids;
-  delete req.body.size_ids;
-  delete req.body.hash_tag_ids;
+  delete req.body.label_ids;
   delete req.body.related_product_ids;
   return ids;
 };
 
 // null = not sent, so leave existing links alone
 const syncLinks = async (item, ids, t) => {
-  if (ids.color_ids !== null)
-    await item.setColors(ids.color_ids, { transaction: t });
-  if (ids.size_ids !== null)
-    await item.setSizes(ids.size_ids, { transaction: t });
-  // Global tags are always attached to every product, whatever was sent.
-  const globalTagIds = (
-    await models.ProductTags.findAll({
-      where: { is_global: true },
-      attributes: ["id"],
-      transaction: t,
-    })
-  ).map((tag) => tag.id);
-  if (ids.hash_tag_ids !== null) {
-    await item.setHash_tags([...new Set([...ids.hash_tag_ids, ...globalTagIds])], {
-      transaction: t,
-    });
-  } else if (globalTagIds.length) {
-    await item.addHash_tags(globalTagIds, { transaction: t });
-  }
+  if (ids.label_ids !== null)
+    await item.setLabels(ids.label_ids, { transaction: t });
   if (ids.related_product_ids !== null)
     await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
 };
@@ -260,23 +180,11 @@ const safeInvalidate = async (req, id) => {
 class ProductController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.productsList(req);
-      const cached = await getCache(req, listCacheKey);
-      // if (cached) {
-      //   return sendSuccessResponse(
-      //     res,
-      //     cached,
-      //     "Product list retrieved successfully from cache",
-      //   );
-      // }
-
       const where = {};
       const categoryId = parseInt(req.query.product_category_id, 10);
-      const tagId = parseInt(req.query.tag_id, 10);
       if (Number.isInteger(categoryId) && categoryId > 0) {
         where.product_category_id = categoryId;
       }
-      if (Number.isInteger(tagId) && tagId > 0) where.tag_id = tagId;
 
       const result = await paginate(dataModel, req, {
         where,
@@ -285,7 +193,6 @@ class ProductController {
         include: listInclude,
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Product list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -303,7 +210,14 @@ class ProductController {
       const result = await dataModel.findAll({
         where,
         order: [["sort_order", "ASC"]],
-        attributes: ["id", "title", "title_ar", "slug", "media_path", "price"],
+        attributes: [
+          "id",
+          "title",
+          "title_ar",
+          "slug",
+          "main_media_path",
+          "price",
+        ],
       });
       sendSuccessResponse(res, result, "Product list retrieved successfully");
     } catch (error) {
@@ -330,7 +244,6 @@ class ProductController {
 
       const item = await dataModel.findByPk(id, {
         include: detailInclude,
-        order: detailOrder,
       });
       if (!item) return sendNotFoundError(res, "Product");
 
@@ -349,7 +262,6 @@ class ProductController {
     const t = await sequelize.transaction();
     try {
       handleFileUploadStore(req, fileFields);
-      normalizeBody(req, { isCreate: true });
       const ids = readIds(req);
 
       const relationErrors = await validateRelations(req, ids, null, t);
@@ -366,7 +278,6 @@ class ProductController {
 
       const created = await dataModel.findByPk(item.id, {
         include: detailInclude,
-        order: detailOrder,
       });
       sendSuccessResponse(res, created, "Product created successfully", 201);
     } catch (error) {
@@ -392,7 +303,6 @@ class ProductController {
         return sendNotFoundError(res, "Product");
       }
 
-      normalizeBody(req, { isCreate: false });
       const ids = readIds(req);
 
       const relationErrors = await validateRelations(req, ids, id, t);
@@ -410,7 +320,6 @@ class ProductController {
 
       const updated = await dataModel.findByPk(id, {
         include: detailInclude,
-        order: detailOrder,
       });
       sendSuccessResponse(res, updated, "Product updated successfully");
     } catch (error) {
@@ -435,9 +344,7 @@ class ProductController {
       }
 
       // Paranoid delete keeps the row, so clear links and soft-delete children.
-      await item.setColors([], { transaction: t });
-      await item.setSizes([], { transaction: t });
-      await item.setHash_tags([], { transaction: t });
+      await item.setLabels([], { transaction: t });
       await item.setRelatedProducts([], { transaction: t });
 
       // Also remove rows where OTHER products list this one as related.
@@ -459,8 +366,8 @@ class ProductController {
 
       await t.commit();
 
-      await deleteOldFile(item.media_path);
-      await deleteOldFile(item.data_sheet);
+      await deleteOldFile(item.main_media_path);
+      await deleteOldFile(item.list_media_path);
       await safeInvalidate(req, id);
 
       sendSuccessResponse(res, { id }, "Product deleted successfully");

@@ -36,10 +36,6 @@ const validationRequestPost = [
     .withMessage("Category is required")
     .isInt({ min: 1 })
     .withMessage("Category must be a valid ID"),
-  body("tag_id")
-    .optional({ checkFalsy: true })
-    .isInt({ min: 1 })
-    .withMessage("Tag must be a valid ID"),
 
   requiredString("title", "Title"),
   requiredString("title_ar", "Title (Arabic)"),
@@ -49,46 +45,21 @@ const validationRequestPost = [
   requiredString("product_description", "Product description"),
   requiredString("product_description_ar", "Product description (Arabic)"),
 
-  body("specification")
-    .optional({ checkFalsy: true })
-    .custom(isJsonArray)
-    .withMessage("Specification must be a JSON array"),
-  body("specification_ar")
-    .optional({ checkFalsy: true })
-    .custom(isJsonArray)
-    .withMessage("Specification (Arabic) must be a JSON array"),
-
-  requiredString("data_sheet", "Data sheet"),
-  requiredString("test_reports_description", "Test reports description"),
-  requiredString(
-    "test_reports_description_ar",
-    "Test reports description (Arabic)",
-  ),
-  requiredString("installation_instruction", "Installation instruction"),
-  requiredString(
-    "installation_instruction_ar",
-    "Installation instruction (Arabic)",
-  ),
-  requiredString("maintenance", "Maintenance"),
-  requiredString("maintenance_ar", "Maintenance (Arabic)"),
-  requiredString("packing_and_shipping", "Packing and shipping"),
-  requiredString("packing_and_shipping_ar", "Packing and shipping (Arabic)"),
-  requiredString("media_path", "Media path"),
-  requiredString("media_alt", "Media alt"),
-  requiredString("media_alt_ar", "Media alt (Arabic)"),
-  requiredString("related_accessories", "Related accessories"),
+  optionalString("main_media_path", "Main media"),
+  optionalString("media_alt", "Main media alt"),
+  optionalString("media_alt_ar", "Main media alt (Arabic)"),
+  optionalString("list_media_path", "List media"),
+  optionalString("list_media_alt", "List media alt"),
+  optionalString("list_media_alt_ar", "List media alt (Arabic)"),
 
   body("price")
-    .notEmpty()
-    .withMessage("Price is required")
+    .optional({ checkFalsy: true })
     .isDecimal({ decimal_digits: "0,2" })
     .withMessage("Price must be a number with up to 2 decimals")
     .custom((v) => Number(v) >= 0)
     .withMessage("Price cannot be negative"),
 
-  optionalJsonArray("color_ids", "Color ids"),
-  optionalJsonArray("size_ids", "Size ids"),
-  optionalJsonArray("hash_tag_ids", "Hash tag ids"),
+  optionalJsonArray("label_ids", "Label ids"),
   optionalJsonArray("related_product_ids", "Related product ids"),
 
   body("sort_order")
@@ -101,6 +72,10 @@ const validationRequestPost = [
     .withMessage("Is active is required")
     .isBoolean()
     .withMessage("Is active must be a boolean"),
+  body("list_in_navbar")
+    .optional({ checkFalsy: true })
+    .isBoolean()
+    .withMessage("List in navbar must be a boolean"),
 ];
 
 const validateId = [
