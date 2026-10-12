@@ -7,5 +7,6 @@ const router = express.Router();
 router.use(authMiddleware(["admin", "user"]));
 router.patch("/:resource/:id/status", Controller.updateStatus);
 router.patch("/:resource/:id/sort-order", Controller.updateSortOrder);
+router.patch("/:resource/:id/navbar", Controller.updateNavbar);
 
 module.exports = router;

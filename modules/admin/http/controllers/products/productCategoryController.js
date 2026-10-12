@@ -108,10 +108,16 @@ class ProductCategoryController {
       const parentId = parseInt(req.query.parent_id, 10);
       const industryId = parseInt(req.query.industry_id, 10);
       const status = req.query.status;
+      const showInNavbar = req.query.show_in_navbar;
       if (status === "active") {
         where.is_active = true;
       } else if (status === "inactive") {
         where.is_active = false;
+      }
+      if (showInNavbar === "true") {
+        where.show_in_navbar = true;
+      } else if (showInNavbar === "false") {
+        where.show_in_navbar = false;
       }
       if (Number.isInteger(parentId) && parentId > 0) {
         where.parent_id = parentId;

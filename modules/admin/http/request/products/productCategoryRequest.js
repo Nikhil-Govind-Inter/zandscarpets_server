@@ -54,6 +54,10 @@ const validationRequestPost = [
     .withMessage("Is active is required")
     .isBoolean()
     .withMessage("Is active must be a boolean"),
+  body("show_in_navbar")
+    .optional()
+    .isBoolean()
+    .withMessage("Show in navbar must be a boolean"),
 ];
 
 const validateId = [

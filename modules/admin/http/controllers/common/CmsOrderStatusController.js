@@ -58,7 +58,13 @@ const updateField = (validators, field, label) => async (req, res) => {
   }
 };
 
+const navbarValidators = [
+  ...baseValidators,
+  body("show_in_navbar").isBoolean({ strict: true }).withMessage("show_in_navbar must be a boolean"),
+];
+
 module.exports = {
   updateStatus: updateField(statusValidators, "is_active", "Status"),
   updateSortOrder: updateField(sortOrderValidators, "sort_order", "Sort order"),
+  updateNavbar: updateField(navbarValidators, "show_in_navbar", "Navbar visibility"),
 };

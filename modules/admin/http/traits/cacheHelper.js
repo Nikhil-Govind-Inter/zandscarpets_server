@@ -278,7 +278,7 @@ const cacheKeys = {
   productMediaList: (req) => `admin:cache:productmedia:list:${stableStringify(req.query)}`,
   productMediaListPattern: () => "admin:cache:productmedia:list:*",
   productMediaItem: (id) => `admin:cache:productmedia:item:${id}`,
-  
+
 };
 
 module.exports = {

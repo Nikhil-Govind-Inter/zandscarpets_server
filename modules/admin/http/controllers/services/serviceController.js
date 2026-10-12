@@ -48,6 +48,20 @@ class ServiceController {
     }
   }
 
+  static async getActive(req, res) {
+    try {
+      const result = await dataModel.findAll({
+        where: { is_active: true },
+        order: [["sort_order", "ASC"]],
+        attributes: ["id", "title"],
+      });
+
+      sendSuccessResponse(res, result, "Services retrieved successfully");
+    } catch (error) {
+      return sendErrorResponse(res, error);
+    }
+  }
+
   static async getById(req, res) {
     await Promise.all(validateId.map((validation) => validation.run(req)));
     const errors = validationResult(req);

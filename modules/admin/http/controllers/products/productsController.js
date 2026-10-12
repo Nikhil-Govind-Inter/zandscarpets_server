@@ -2,7 +2,6 @@ const { Op, QueryTypes } = require("sequelize");
 const { sequelize, models } = require("../../../../../database/models");
 const { handleFileUploadUpdate, handleFileUploadStore, deleteOldFile } = require("../../middleware/multerMiddleware");
 const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const { validationRequestPost, validateId } = require("../../request/products/productsRequest");
 const { validationResult } = require("express-validator");
 
@@ -109,11 +108,6 @@ const slugTaken = async (slug, ignoreId, transaction) => {
   return !!(await dataModel.findOne({ where, transaction }));
 };
 
-const invalidateAll = async (req, id) => {
-  if (id) await invalidateCache(req, cacheKeys.productsItem(id));
-  await invalidateCache(req, cacheKeys.productsListPattern());
-};
-
 // Runs the checks shared by create and update. Returns an error array or null.
 const validateRelations = async (req, ids, ignoreId, t) => {
   const { label_ids, related_product_ids, attribute_ids } = ids;
@@ -173,15 +167,6 @@ const syncLinks = async (item, ids, t) => {
   if (ids.label_ids !== null) await item.setLabels(ids.label_ids, { transaction: t });
   if (ids.related_product_ids !== null) await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
   if (ids.attribute_ids !== null) await item.setAttributes(ids.attribute_ids, { transaction: t });
-};
-
-// Cache cleanup must never turn a saved change into a failed request.
-const safeInvalidate = async (req, id) => {
-  try {
-    await invalidateAll(req, id);
-  } catch (e) {
-    console.error("Cache invalidation failed:", e);
-  }
 };
 
 class ProductController {
@@ -284,18 +269,12 @@ class ProductController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.productsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Product retrieved successfully");
-      }
 
       const item = await dataModel.findByPk(id, {
         include: detailInclude,
       });
       if (!item) return sendNotFoundError(res, "Product");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Product retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -322,7 +301,6 @@ class ProductController {
       await syncLinks(item, ids, t);
 
       await t.commit();
-      await safeInvalidate(req);
 
       const created = await dataModel.findByPk(item.id, {
         include: detailInclude,
@@ -362,7 +340,6 @@ class ProductController {
       await syncLinks(item, ids, t);
 
       await t.commit();
-      await safeInvalidate(req, id);
 
       const updated = await dataModel.findByPk(id, {
         include: detailInclude,
@@ -433,7 +410,6 @@ class ProductController {
 
       await deleteOldFile(item.main_media_path);
       await deleteOldFile(item.list_media_path);
-      await safeInvalidate(req, id);
 
       sendSuccessResponse(res, { id }, "Product deleted successfully");
     } catch (error) {
