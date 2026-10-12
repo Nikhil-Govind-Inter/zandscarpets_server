@@ -5,10 +5,7 @@ const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
-const upload = createUploadMiddleware("products", [
-  { name: "main_media_path" },
-  { name: "list_media_path" },
-]);
+const upload = createUploadMiddleware("products", [{ name: "main_media_path" }, { name: "list_media_path" }]);
 
 router.use(authMiddleware(["admin", "user"]));
 router.get("/active", Controller.getActive);

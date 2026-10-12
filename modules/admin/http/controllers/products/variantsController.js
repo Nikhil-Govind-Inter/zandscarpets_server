@@ -253,6 +253,12 @@ class VariantsController {
       if (Number.isInteger(productId) && productId > 0) {
         where.product_id = productId;
       }
+      const status = req.query.status;
+      if (status === "active") {
+        where.is_active = true;
+      } else if (status === "inactive") {
+        where.is_active = false;
+      }
 
       const result = await paginate(dataModel, req, {
         where,

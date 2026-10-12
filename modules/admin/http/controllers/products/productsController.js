@@ -1,27 +1,9 @@
-const { Op } = require("sequelize");
+const { Op, QueryTypes } = require("sequelize");
 const { sequelize, models } = require("../../../../../database/models");
-const {
-  handleFileUploadUpdate,
-  handleFileUploadStore,
-  deleteOldFile,
-} = require("../../middleware/multerMiddleware");
-const {
-  sendSuccessResponse,
-  sendErrorResponse,
-  sendNotFoundError,
-  sendValidationError,
-} = require("../../traits/responseHandler");
-const { paginate } = require("../../traits/datatablePaginationHelper");
-const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  validationRequestPost,
-  validateId,
-} = require("../../request/products/productsRequest");
+const { handleFileUploadUpdate, handleFileUploadStore, deleteOldFile } = require("../../middleware/multerMiddleware");
+const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
+const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
+const { validationRequestPost, validateId } = require("../../request/products/productsRequest");
 const { validationResult } = require("express-validator");
 
 const dataModel = models.Products;
@@ -46,15 +28,6 @@ const attributesInclude = {
   required: false,
 };
 
-const listInclude = [
-  {
-    model: models.ProductCategories,
-    as: "category",
-    attributes: ["id", "title"],
-  },
-  labelsInclude,
-];
-
 const detailInclude = [
   {
     model: models.ProductCategories,
@@ -70,6 +43,28 @@ const detailInclude = [
     through: { attributes: [] },
   },
 ];
+
+// Raw column list for the product list. The list only needs the product's own
+// columns, one category, its labels, and a variant count — built with correlated
+// subqueries so a single row per product comes back (no join multiplication /
+// DISTINCT counting).
+const listSelectColumns = `
+  p.id, p.title, p.title_ar, p.slug, p.price,
+  p.main_media_path, p.media_alt,
+  p.sort_order, p.is_active, p.product_category_id,
+  c.id AS category_id, c.title AS category_title,
+  COALESCE((
+    SELECT json_agg(json_build_object(
+      'id', l.id, 'title', l.title, 'title_ar', l.title_ar,
+      'slug', l.slug, 'type', l.type, 'is_product_badge', l.is_product_badge
+    ) ORDER BY l.id)
+    FROM product_label_map plm
+    JOIN product_labels l ON l.id = plm.label_id AND l.deleted_at IS NULL
+    WHERE plm.product_id = p.id
+  ), '[]'::json) AS labels,
+  (SELECT COUNT(*) FROM product_variants v
+    WHERE v.product_id = p.id AND v.deleted_at IS NULL) AS variant_count
+`;
 
 // Only rolls back if the transaction is still open.
 const safeRollback = async (t) => {
@@ -127,10 +122,7 @@ const validateRelations = async (req, ids, ignoreId, t) => {
     return [{ path: "slug", msg: "Slug is already in use" }];
   }
 
-  const category = await models.ProductCategories.findByPk(
-    req.body.product_category_id,
-    { transaction: t },
-  );
+  const category = await models.ProductCategories.findByPk(req.body.product_category_id, { transaction: t });
   if (!category) {
     return [{ path: "product_category_id", msg: "Category not found" }];
   }
@@ -178,12 +170,9 @@ const readIds = (req) => {
 
 // null = not sent, so leave existing links alone
 const syncLinks = async (item, ids, t) => {
-  if (ids.label_ids !== null)
-    await item.setLabels(ids.label_ids, { transaction: t });
-  if (ids.related_product_ids !== null)
-    await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
-  if (ids.attribute_ids !== null)
-    await item.setAttributes(ids.attribute_ids, { transaction: t });
+  if (ids.label_ids !== null) await item.setLabels(ids.label_ids, { transaction: t });
+  if (ids.related_product_ids !== null) await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
+  if (ids.attribute_ids !== null) await item.setAttributes(ids.attribute_ids, { transaction: t });
 };
 
 // Cache cleanup must never turn a saved change into a failed request.
@@ -198,20 +187,72 @@ const safeInvalidate = async (req, id) => {
 class ProductController {
   static async list(req, res) {
     try {
-      const where = {};
+      const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+      const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const offset = (page - 1) * limit;
+      const search = String(req.query.search || req.query.keyword || "").trim();
       const categoryId = parseInt(req.query.product_category_id, 10);
-      if (Number.isInteger(categoryId) && categoryId > 0) {
-        where.product_category_id = categoryId;
-      }
 
-      const result = await paginate(dataModel, req, {
-        where,
-        order: [["sort_order", "ASC"]],
-        searchFields: ["title", "title_ar", "slug"],
-        include: listInclude,
+      const where = ["p.deleted_at IS NULL"];
+      const replacements = { limit, offset };
+
+      if (Number.isInteger(categoryId) && categoryId > 0) {
+        where.push("p.product_category_id = :categoryId");
+        replacements.categoryId = categoryId;
+      }
+      const status = req.query.status;
+      if (status === "active") {
+        where.push("p.is_active = TRUE");
+      } else if (status === "inactive") {
+        where.push("p.is_active = FALSE");
+      }
+      if (search) {
+        where.push("(p.title ILIKE :pattern OR p.title_ar ILIKE :pattern OR p.slug ILIKE :pattern)");
+        replacements.pattern = `%${search}%`;
+      }
+      const whereClause = `WHERE ${where.join(" AND ")}`;
+
+      const dataSql = `
+        SELECT ${listSelectColumns}
+        FROM products p
+        LEFT JOIN product_categories c
+          ON c.id = p.product_category_id AND c.deleted_at IS NULL
+        ${whereClause}
+        ORDER BY p.sort_order ASC, p.id ASC
+        LIMIT :limit OFFSET :offset
+      `;
+      const countSql = `SELECT COUNT(*)::int AS count FROM products p ${whereClause}`;
+
+      const [rows, countRows] = await Promise.all([
+        sequelize.query(dataSql, { replacements, type: QueryTypes.SELECT }),
+        sequelize.query(countSql, { replacements, type: QueryTypes.SELECT }),
+      ]);
+
+      const totalCount = countRows[0]?.count ?? 0;
+      const data = rows.map((row) => {
+        const { category_id, category_title, variant_count, ...rest } = row;
+        return {
+          ...rest,
+          category: category_id ? { id: category_id, title: category_title } : null,
+          variant_count: Number(variant_count) || 0,
+        };
       });
 
-      sendSuccessResponse(res, result, "Product list retrieved successfully");
+      sendSuccessResponse(
+        res,
+        {
+          data,
+          pagination: {
+            totalCount,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            currentPage: page,
+            limit,
+            isSearchApplied: Boolean(search),
+            searchTerm: search || null,
+          },
+        },
+        "Product  successfully",
+      );
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -228,14 +269,7 @@ class ProductController {
       const result = await dataModel.findAll({
         where,
         order: [["sort_order", "ASC"]],
-        attributes: [
-          "id",
-          "title",
-          "title_ar",
-          "slug",
-          "main_media_path",
-          "price",
-        ],
+        attributes: ["id", "title", "title_ar", "slug", "main_media_path", "price"],
       });
       sendSuccessResponse(res, result, "Product list retrieved successfully");
     } catch (error) {
@@ -253,11 +287,7 @@ class ProductController {
       const itemCacheKey = cacheKeys.productsItem(id);
       const cached = await getCache(req, itemCacheKey);
       if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Product retrieved successfully",
-        );
+        return sendSuccessResponse(res, cached, "Product retrieved successfully");
       }
 
       const item = await dataModel.findByPk(id, {
@@ -306,9 +336,7 @@ class ProductController {
   }
 
   static async update(req, res) {
-    await Promise.all(
-      [...validateId, ...validationRequestPost].map((v) => v.run(req)),
-    );
+    await Promise.all([...validateId, ...validationRequestPost].map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 

@@ -18,12 +18,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/products/productCategoryRequest");
@@ -107,29 +101,18 @@ const normalizeParentId = (req) => {
       : Number(raw);
 };
 
-const invalidateAll = async (req, id) => {
-  if (id) await invalidateCache(req, cacheKeys.productCategoriesItem(id));
-  // Parent/child data is embedded in other categories' items, so bust them all.
-  await invalidateCache(req, cacheKeys.productCategoriesItemPattern());
-  await invalidateCache(req, cacheKeys.productCategoriesListPattern());
-};
-
 class ProductCategoryController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.productCategoriesList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Product category list retrieved successfully from cache",
-        );
-      }
-
       const where = {};
       const parentId = parseInt(req.query.parent_id, 10);
       const industryId = parseInt(req.query.industry_id, 10);
+      const status = req.query.status;
+      if (status === "active") {
+        where.is_active = true;
+      } else if (status === "inactive") {
+        where.is_active = false;
+      }
       if (Number.isInteger(parentId) && parentId > 0) {
         where.parent_id = parentId;
       } else if (req.query.type === "category") {
@@ -157,7 +140,6 @@ class ProductCategoryController {
         ],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(
         res,
         result,
@@ -202,19 +184,9 @@ class ProductCategoryController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.productCategoriesItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Product category retrieved successfully",
-        );
-
       const item = await dataModel.findByPk(id, { include: relatedInclude });
       if (!item) return sendNotFoundError(res, "Product category");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Product category retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -267,7 +239,6 @@ class ProductCategoryController {
       }
 
       await t.commit();
-      await invalidateAll(req);
 
       const created = await dataModel.findByPk(item.id, {
         include: relatedInclude,
@@ -355,7 +326,6 @@ class ProductCategoryController {
       }
 
       await t.commit();
-      await invalidateAll(req, id);
 
       const updated = await dataModel.findByPk(id, { include: relatedInclude });
       sendSuccessResponse(res, updated, "Product category updated successfully");
@@ -400,7 +370,6 @@ class ProductCategoryController {
       await t.commit();
 
       await deleteOldFile(item.media_path);
-      await invalidateAll(req, id);
 
       sendSuccessResponse(
         res,

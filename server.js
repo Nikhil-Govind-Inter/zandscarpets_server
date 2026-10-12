@@ -92,7 +92,7 @@ const startServer = async () => {
     }
 
     // await sequelize.sync({ alter: true });
-    await createAdminUser();
+    // await createAdminUser();
     // await policyData();
     // await seedPages();
     // await seedMetaTags();
