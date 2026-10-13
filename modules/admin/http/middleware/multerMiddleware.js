@@ -44,6 +44,9 @@ const extractFilePathFromUrl = (url, subfolder) => {
 };
 
 // options.allowPdf also accepts PDF documents (e.g. product data sheets).
+// options.maxFileSizeBytes overrides the default 5MB ceiling for this
+// instance only (e.g. detail-media raises it to fit a 10MB video, while
+// every other caller keeps the original 5MB default).
 const createUploadMiddleware = (subfolder, fields, options = {}) => {
   const allowedTypes = options.allowPdf
     ? /jpeg|jpg|png|svg|webp|mp4|mov|avi|mkv|webm|pdf/
@@ -72,7 +75,7 @@ const createUploadMiddleware = (subfolder, fields, options = {}) => {
       );
     },
     limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB max size
+      fileSize: options.maxFileSizeBytes ?? 5 * 1024 * 1024, // 5MB default
     },
   });
 

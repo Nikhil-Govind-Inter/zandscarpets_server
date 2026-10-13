@@ -95,6 +95,17 @@ module.exports = (sequelize) => {
       foreignKey: "variant_id",
       as: "valueLinks",
     });
+
+    // This variant's own dynamic detail overrides/hides (see
+    // detailsResolverService.js for how these combine with the product's).
+    ProductVariants.hasMany(models.DetailMappings, {
+      foreignKey: "variant_id",
+      as: "detailMappings",
+    });
+    ProductVariants.hasMany(models.DetailItemExclusions, {
+      foreignKey: "variant_id",
+      as: "detailItemExclusions",
+    });
   };
 
   return ProductVariants;

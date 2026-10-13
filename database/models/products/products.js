@@ -128,6 +128,13 @@ module.exports = (sequelize) => {
       foreignKey: "product_id",
       as: "variants",
     });
+
+    // Product-level dynamic detail content (description/guide/gallery/video
+    // blocks), inherited by variants that don't override them.
+    Products.hasMany(models.DetailMappings, {
+      foreignKey: "product_id",
+      as: "detailMappings",
+    });
   };
   return Products;
 };

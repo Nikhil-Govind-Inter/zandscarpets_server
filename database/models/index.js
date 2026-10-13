@@ -45,6 +45,12 @@ const defineAttributeValues = require("./products/attributeValues");
 const defineProductAttributes = require("./products/productAttributes");
 const defineProductVariants = require("./products/productVariants");
 const defineVariantAttributeValues = require("./products/variantAttributeValues");
+// details
+const defineDetailFields = require("./details/detailFields");
+const defineMedia = require("./details/media");
+const defineDetailMappings = require("./details/detailMappings");
+const defineDetailItems = require("./details/detailItems");
+const defineDetailItemExclusions = require("./details/detailItemExclusions");
 // services
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
@@ -112,6 +118,13 @@ const models = {
   ProductAttributes: defineProductAttributes(sequelize),
   ProductVariants: defineProductVariants(sequelize),
   VariantAttributeValues: defineVariantAttributeValues(sequelize),
+
+  // DETAILS
+  DetailFields: defineDetailFields(sequelize),
+  Media: defineMedia(sequelize),
+  DetailMappings: defineDetailMappings(sequelize),
+  DetailItems: defineDetailItems(sequelize),
+  DetailItemExclusions: defineDetailItemExclusions(sequelize),
 
   // SERVICES
   Services: defineServices(sequelize),

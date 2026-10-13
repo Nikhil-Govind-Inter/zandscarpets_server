@@ -106,6 +106,7 @@ const cmsResources = {
     frontend: [PRODUCTS],
   },
   products: { model: "Products", cachePrefix: "products" },
+  "detail-fields": { model: "DetailFields", cachePrefix: "detailfields" },
 };
 
 module.exports = { cmsResources };

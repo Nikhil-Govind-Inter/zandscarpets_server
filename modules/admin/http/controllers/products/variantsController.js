@@ -449,6 +449,17 @@ class VariantsController {
         where: { variant_id: item.id },
         transaction: t,
       });
+      // The variant is only soft-deleted, so the FK's ON DELETE CASCADE on
+      // detail_mappings.variant_id never fires — clean these up explicitly
+      // (items cascade via the real DB FK once the mapping row is gone).
+      await models.DetailItemExclusions.destroy({
+        where: { variant_id: item.id },
+        transaction: t,
+      });
+      await models.DetailMappings.destroy({
+        where: { variant_id: item.id },
+        transaction: t,
+      });
       const mediaPath = item.media_path;
       await item.destroy({ transaction: t });
 

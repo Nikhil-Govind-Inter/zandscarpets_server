@@ -390,8 +390,26 @@ class ProductController {
           where: { variant_id: variantIds },
           transaction: t,
         });
+        // Variants are only soft-deleted, so the FK's ON DELETE CASCADE on
+        // detail_mappings.variant_id never fires — clean these up explicitly,
+        // same as the value links above.
+        await models.DetailItemExclusions.destroy({
+          where: { variant_id: variantIds },
+          transaction: t,
+        });
+        await models.DetailMappings.destroy({
+          where: { variant_id: variantIds },
+          transaction: t,
+        });
       }
       await models.ProductVariants.destroy({
+        where: { product_id: id },
+        transaction: t,
+      });
+
+      // Product is only soft-deleted too; hard-delete its own detail
+      // mappings (items/exclusions cascade via the real DB FK).
+      await models.DetailMappings.destroy({
         where: { product_id: id },
         transaction: t,
       });
