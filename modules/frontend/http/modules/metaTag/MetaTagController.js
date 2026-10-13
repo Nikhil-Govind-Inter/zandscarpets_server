@@ -38,6 +38,48 @@ class MetaTagController {
       );
     }
   }
+
+  /*
+   * @route   GET /api/frontend/meta-data?page=about
+   * @route   GET /api/frontend/meta-data?product_id=5
+   * @route   GET /api/frontend/meta-data?variant_id=3
+   * @route   GET /api/frontend/meta-data?blog_id=outdoor-flooring-dubai
+   * @desc    Get meta data for a page, product, variant or blog (exactly one target)
+   * @access  Public
+   */
+  static async common(req, res) {
+    try {
+      const provided = ["page", "product_id", "variant_id", "blog_id"].filter(
+        (key) =>
+          req.query[key] !== undefined &&
+          req.query[key] !== null &&
+          String(req.query[key]).trim() !== "",
+      );
+
+      if (provided.length !== 1) {
+        return ApiResponse.error(res, {
+          message: "Provide exactly one of `page`, `product_id`, `variant_id` or `blog_id`",
+          status: HTTP_STATUS.BAD_REQUEST,
+        });
+      }
+
+      const { data, fromCache = false } = await service.byTarget(req);
+
+      return ApiResponse.success(res, {
+        message: fromCache
+          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
+          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        data,
+        status: HTTP_STATUS.OK,
+      });
+    } catch (error) {
+      return ErrorHandler.handleControllerError(
+        error,
+        res,
+        "MetaTagController.common",
+      );
+    }
+  }
 }
 
 module.exports = MetaTagController;

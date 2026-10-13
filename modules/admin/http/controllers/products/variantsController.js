@@ -246,6 +246,29 @@ const normalizeSelections = (raw) => {
 };
 
 class VariantsController {
+  static async getActive(req, res) {
+    try {
+      const result = await dataModel.findAll({
+        where: { is_active: true },
+        order: [
+          ["sort_order", "ASC"],
+          ["id", "ASC"],
+        ],
+        attributes: ["id", "label", "product_id"],
+        include: [
+          {
+            model: models.Products,
+            as: "product",
+            attributes: ["id", "title"],
+          },
+        ],
+      });
+      return sendSuccessResponse(res, result, "Active product variants retrieved successfully");
+    } catch (error) {
+      return sendErrorResponse(res, error);
+    }
+  }
+
   static async list(req, res) {
     try {
       const where = {};

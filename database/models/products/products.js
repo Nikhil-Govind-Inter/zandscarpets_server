@@ -135,6 +135,12 @@ module.exports = (sequelize) => {
       foreignKey: "product_id",
       as: "detailMappings",
     });
+
+    // One SEO meta per product (see MetaData metaData.js — discriminated by type).
+    Products.hasOne(models.MetaData, {
+      foreignKey: "product_id",
+      as: "metaData",
+    });
   };
   return Products;
 };

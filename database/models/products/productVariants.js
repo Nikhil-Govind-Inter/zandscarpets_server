@@ -106,6 +106,12 @@ module.exports = (sequelize) => {
       foreignKey: "variant_id",
       as: "detailItemExclusions",
     });
+
+    // One SEO meta per variant (see MetaData metaData.js — discriminated by type).
+    ProductVariants.hasOne(models.MetaData, {
+      foreignKey: "variant_id",
+      as: "metaData",
+    });
   };
 
   return ProductVariants;

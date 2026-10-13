@@ -14,6 +14,7 @@ router.use(authMiddleware(["admin", "user"]));
 // Fixed paths must be declared before "/:id".
 router.post("/generate", Controller.generate);
 router.get("/match", Controller.match);
+router.get("/active", Controller.getActive);
 
 router.get("/", Controller.list);
 router.get("/:id", Controller.getById);

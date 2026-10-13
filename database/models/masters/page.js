@@ -35,7 +35,6 @@ module.exports = (sequelize) => {
 
   Page.associate = (models) => {
     Page.hasOne(models.Banners, { foreignKey: "page_id", as: "banner" });
-    Page.hasOne(models.MetaData, { foreignKey: "page_id", as: "metaData" });
   };
 
   return Page;

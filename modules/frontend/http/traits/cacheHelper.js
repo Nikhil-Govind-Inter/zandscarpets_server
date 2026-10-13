@@ -85,6 +85,11 @@ const cacheKeys = {
   // META TAGS (per page slug + lang)
   metaTags: (page, lang) => `frontend:cache:meta-tags:${page}:${lang}`,
   metaTagsPattern: () => "frontend:cache:meta-tags:*",
+
+  // META TAGS for the common /meta-data endpoint, keyed by target
+  // (`page:about`, `product:5`, `variant:3`) — shares the meta-tags pattern so
+  // the same invalidation wipes it.
+  metaTarget: (target, lang) => `frontend:cache:meta-tags:${target}:${lang}`,
 };
 
 module.exports = {
