@@ -1,18 +1,16 @@
 module.exports = {
   entity: "products",
   sheetName: "Products",
-  templateVersion: 1,
+  templateVersion: 2, // v2: dropped the manual `slug` column (auto-generated now, matching Categories/Attributes/Attribute Values) and the `price` column
   model: "Products",
   columns: [
     { key: "title", header: "title", required: true, type: "text", example: "Standing Desk Pro" },
     { key: "title_ar", header: "title_ar", required: true, type: "text", example: "" },
-    { key: "slug", header: "slug", required: false, type: "slug", example: "standing-desk-pro", notes: "Auto-generated from title if blank" },
     { key: "category_slug", header: "category_slug", required: true, type: "ref", example: "office-furniture" },
     { key: "short_description", header: "short_description", required: true, type: "text", example: "" },
     { key: "short_description_ar", header: "short_description_ar", required: true, type: "text", example: "" },
     { key: "product_description", header: "product_description", required: true, type: "text", example: "" },
     { key: "product_description_ar", header: "product_description_ar", required: true, type: "text", example: "" },
-    { key: "price", header: "price", required: false, type: "text", example: "199.99", notes: "Up to 2 decimals" },
     { key: "attribute_titles", header: "attribute_titles", required: false, type: "text", example: "Size,Color", notes: "Comma-separated, no spaces. Which attributes this product uses" },
     { key: "main_image", header: "main_image", required: true, type: "text", example: "products/abc.webp", notes: "Stored path from the Media bulk-upload step" },
     { key: "list_image", header: "list_image", required: false, type: "text", example: "", notes: "Falls back to main_image if blank" },

@@ -46,6 +46,9 @@ const messages = {
 
   LIST_IMAGE_FALLBACK: () => `list_image is blank, main_image will be used instead`,
 
+  ATTRIBUTES_IGNORED_ON_UPDATE: () =>
+    `attribute_titles is ignored when updating an existing product — attributes aren't changed via bulk upload; edit them from the product's screen instead`,
+
   ATTRIBUTE_VALUE_REF_FORMAT: ({ value }) =>
     `${quote(value)} must be in the form Attribute=Value, e.g. Size=120cm`,
 

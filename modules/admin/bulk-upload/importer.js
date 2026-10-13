@@ -137,38 +137,55 @@ async function importAttributeValues(normalizedRows, { models, transaction }) {
 }
 
 async function importProducts(normalizedRows, { models, transaction }) {
-  for (const row of normalizedRows) {
-    const created = await models.Products.create(
-      {
-        title: row.title,
-        title_ar: row.title_ar,
-        slug: row.slug,
-        product_category_id: row.product_category_id,
-        short_description: row.short_description,
-        short_description_ar: row.short_description_ar,
-        product_description: row.product_description,
-        product_description_ar: row.product_description_ar,
-        price: row.price,
-        main_media_path: row.main_media_path,
-        list_media_path: row.list_media_path,
-        sort_order: row.sort_order,
-        is_active: row.is_active,
-      },
-      { transaction },
-    );
+  let created = 0;
+  let updated = 0;
 
-    if (row.attribute_ids.length) {
-      await models.ProductAttributes.bulkCreate(
-        row.attribute_ids.map((attributeId, index) => ({
-          product_id: created.id,
-          attribute_id: attributeId,
-          sort_order: index,
-        })),
-        { transaction },
-      );
+  for (const row of normalizedRows) {
+    const fields = {
+      title: row.title,
+      title_ar: row.title_ar,
+      product_category_id: row.product_category_id,
+      short_description: row.short_description,
+      short_description_ar: row.short_description_ar,
+      product_description: row.product_description,
+      product_description_ar: row.product_description_ar,
+      main_media_path: row.main_media_path,
+      list_media_path: row.list_media_path,
+      sort_order: row.sort_order,
+      is_active: row.is_active,
+    };
+
+    if (row.mode === "update") {
+      // Attribute links are never touched on update — mirrors the manual
+      // controller's syncLinks(), which only touches product_attributes
+      // when the field is explicitly processed (see productsValidator.js).
+      // Slug is still regenerated for consistency with Categories/
+      // Attributes/Attribute Values, even though title (part of the match
+      // key) can't have changed for a matched row, so this is a no-op in
+      // practice — `excludeId` means it resolves back to the same slug.
+      fields.slug = await generateUniqueSlug(models.Products, row.title, { excludeId: row.existingId, transaction });
+      const item = await models.Products.findByPk(row.existingId, { transaction });
+      await item.update(fields, { transaction });
+      updated += 1;
+    } else {
+      fields.slug = await generateUniqueSlug(models.Products, row.title, { transaction });
+      const createdRow = await models.Products.create(fields, { transaction });
+
+      if (row.attribute_ids.length) {
+        await models.ProductAttributes.bulkCreate(
+          row.attribute_ids.map((attributeId, index) => ({
+            product_id: createdRow.id,
+            attribute_id: attributeId,
+            sort_order: index,
+          })),
+          { transaction },
+        );
+      }
+      created += 1;
     }
   }
-  return { created: normalizedRows.length, skipped: 0 };
+
+  return { created, updated, skipped: 0 };
 }
 
 async function importProductVariants(normalizedRows, { models, transaction }) {

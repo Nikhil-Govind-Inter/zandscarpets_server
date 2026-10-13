@@ -4,6 +4,7 @@ const { handleFileUploadUpdate, handleFileUploadStore, deleteOldFile } = require
 const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
 const { validationRequestPost, validateId } = require("../../request/products/productsRequest");
 const { validationResult } = require("express-validator");
+const { generateUniqueSlug } = require("../../../../../utils/slugHelper");
 
 const dataModel = models.Products;
 const fileFields = ["main_media_path", "list_media_path"];
@@ -102,19 +103,11 @@ const allExist = async (model, ids, transaction) => {
   return count === ids.length;
 };
 
-const slugTaken = async (slug, ignoreId, transaction) => {
-  const where = { slug };
-  if (ignoreId) where.id = { [Op.ne]: Number(ignoreId) };
-  return !!(await dataModel.findOne({ where, transaction }));
-};
-
 // Runs the checks shared by create and update. Returns an error array or null.
+// Slug is never read from req.body here — it's always server-generated (see
+// create()/update()), so there's nothing to check it against.
 const validateRelations = async (req, ids, ignoreId, t) => {
   const { label_ids, related_product_ids, attribute_ids } = ids;
-
-  if (await slugTaken(req.body.slug, ignoreId, t)) {
-    return [{ path: "slug", msg: "Slug is already in use" }];
-  }
 
   const category = await models.ProductCategories.findByPk(req.body.product_category_id, { transaction: t });
   if (!category) {
@@ -297,6 +290,9 @@ class ProductController {
         return sendValidationError(res, relationErrors);
       }
 
+      // Always server-generated — there is no slug field in the admin form.
+      req.body.slug = await generateUniqueSlug(dataModel, req.body.title, { transaction: t });
+
       const item = await dataModel.create(req.body, { transaction: t });
       await syncLinks(item, ids, t);
 
@@ -336,6 +332,12 @@ class ProductController {
       }
 
       await handleFileUploadUpdate(req, item, fileFields);
+
+      // Regenerated from the (possibly changed) title every time — an
+      // unchanged title keeps its current slug since `excludeId` skips the
+      // item's own row when checking for a collision.
+      req.body.slug = await generateUniqueSlug(dataModel, req.body.title, { excludeId: id, transaction: t });
+
       await item.update(req.body, { transaction: t });
       await syncLinks(item, ids, t);
 

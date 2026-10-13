@@ -1,10 +1,29 @@
-// Products sheet. Slug uniqueness is GLOBAL (confirmed: no scope in
-// productsController.js's style, mirroring productCategoryController.js /
-// attributeController.js's unscoped pattern applied to Products). No
-// label_slugs column at all — labels/tags/badges are explicitly out of
-// scope for bulk upload.
+// Products sheet — create-or-update (upsert), same pattern as
+// Categories/Attributes/Attribute Values.
+//
+// Match key is (category_id, title) — title alone isn't unique for
+// Products (only slug is, and slug isn't part of the identity here),
+// mirroring Categories' need for a composite key. As elsewhere, changing a
+// row's title (or category_slug) creates a new product rather than
+// updating the old one.
+//
+// No slug column, no price column. Slug is always server-generated via
+// generateUniqueSlug (see importer.js) — the manual Products admin form
+// was updated to do the same (it used to require an explicit slug; now it
+// doesn't have a slug field at all), so bulk upload now matches it exactly,
+// the same way Categories/Attributes/Attribute Values already did. Price
+// was dropped from the sheet entirely at the user's request.
+//
+// attribute_titles: confirmed against productsController.js's syncLinks()
+// that the manual flow already treats this exactly this way — attribute
+// links are only touched when the field is explicitly sent; otherwise
+// existing links are left alone, with no variant-safety check either way.
+// Bulk upload mirrors this directly: attribute_titles is applied on
+// create only. An update never touches product_attributes (and, by
+// extension, never risks orphaning existing Product Variants that
+// reference those attributes) — a non-blank attribute_titles on an update
+// row is flagged as an ignored warning, not applied.
 
-const { generateSlug } = require("../../../../utils/slugHelper");
 const { resolveMediaPath } = require("../resolvers");
 const { messages } = require("../messages");
 const {
@@ -13,7 +32,6 @@ const {
   trimOrUndefined,
   parseBoolean,
   parseInteger,
-  parseDecimal,
   lookupKey,
 } = require("./shared");
 const config = require("../config/products.config");
@@ -44,14 +62,17 @@ async function validateProducts(rows, { models, transaction }) {
   const attributes = await models.Attributes.findAll({ attributes: ["id", "title"], transaction });
   const attributeByTitleKey = new Map(attributes.map((a) => [lookupKey(a.title), a]));
 
-  const existingProducts = await models.Products.findAll({ attributes: ["id", "slug"], transaction });
-  const existingSlugKeys = new Set(existingProducts.map((p) => lookupKey(p.slug)));
+  const existingProducts = await models.Products.findAll({ attributes: ["id", "title", "product_category_id"], transaction });
+  const existingByIdentityKey = new Map(); // `${category_id}:${titleKey}` -> id
+  existingProducts.forEach((p) => {
+    existingByIdentityKey.set(`${p.product_category_id}:${lookupKey(p.title)}`, p.id);
+  });
 
   const liveRows = rows.filter(
     (row) => !isExampleRow(row, config.columns[0].key) && !isBlankRow(row, config.columns),
   );
 
-  const seenSlugKeys = new Map(); // slugKey -> rowNumber
+  const seenIdentityKeys = new Map(); // identityKey -> rowNumber
 
   liveRows.forEach((row) => {
     const rowNumber = row.__rowNumber;
@@ -76,33 +97,6 @@ async function validateProducts(rows, { models, transaction }) {
     const productDescriptionAr = trimOrUndefined(row.product_description_ar);
     if (!productDescriptionAr) rowErrors.push(err(rowNumber, "product_description_ar", "REQUIRED_FIELD", { column: "product_description_ar" }));
 
-    // Slug: an explicit slug must be globally unique (error if taken,
-    // matching the manual admin screen). A blank slug is auto-generated
-    // from the title with an auto "-2"/"-3" suffix if the base is taken —
-    // mirroring generateUniqueSlug()'s behavior, just resolved in-memory
-    // against the DB snapshot + rows already claimed earlier in this file,
-    // since no writes happen until commit.
-    const slugInput = trimOrUndefined(row.slug);
-    let slug;
-    const isTaken = (key) => seenSlugKeys.has(key) || existingSlugKeys.has(key);
-    if (slugInput) {
-      slug = generateSlug(slugInput);
-      const key = lookupKey(slug);
-      if (seenSlugKeys.has(key)) {
-        rowErrors.push(err(rowNumber, "slug", "DUPLICATE_IN_FILE", { column: "slug", value: slug, otherRow: seenSlugKeys.get(key) }));
-      } else if (existingSlugKeys.has(key)) {
-        rowErrors.push(err(rowNumber, "slug", "DUPLICATE_IN_DB", { column: "slug", value: slug }));
-      }
-    } else if (title) {
-      const base = generateSlug(title);
-      slug = base;
-      let suffix = 1;
-      while (isTaken(lookupKey(slug))) {
-        suffix += 1;
-        slug = `${base}-${suffix}`;
-      }
-    }
-
     const categorySlugInput = trimOrUndefined(row.category_slug);
     let categoryId;
     if (!categorySlugInput) {
@@ -112,28 +106,6 @@ async function validateProducts(rows, { models, transaction }) {
       if (!categoryId) {
         rowErrors.push(err(rowNumber, "category_slug", "REF_NOT_FOUND", { column: "category_slug", value: categorySlugInput }));
       }
-    }
-
-    const priceResult = parseDecimal(row.price, { defaultValue: null, min: 0, maxDecimals: 2 });
-    if (!priceResult.ok) rowErrors.push(err(rowNumber, "price", "INVALID_NUMBER", { column: "price", value: row.price }));
-
-    // attribute_titles: comma-separated, each must resolve to a known
-    // attribute. Order here fixes which attributes the product uses (for
-    // product_attributes rows); it has no positional meaning for Variants,
-    // which use explicit Attribute=Value pairs instead.
-    const attributeTitlesInput = trimOrUndefined(row.attribute_titles);
-    const attributeIds = [];
-    if (attributeTitlesInput) {
-      attributeTitlesInput.split(",").forEach((rawTitle) => {
-        const t = rawTitle.trim();
-        if (!t) return;
-        const attribute = attributeByTitleKey.get(lookupKey(t));
-        if (!attribute) {
-          rowErrors.push(err(rowNumber, "attribute_titles", "REF_NOT_FOUND", { column: "attribute_titles", value: t }));
-        } else {
-          attributeIds.push(attribute.id);
-        }
-      });
     }
 
     const mainImage = trimOrUndefined(row.main_image);
@@ -158,25 +130,64 @@ async function validateProducts(rows, { models, transaction }) {
     const isActiveResult = parseBoolean(row.is_active, true);
     if (!isActiveResult.ok) rowErrors.push(err(rowNumber, "is_active", "INVALID_BOOLEAN", { column: "is_active", value: row.is_active }));
 
+    // Match key: (category_id, title). Only resolvable once category and
+    // title themselves resolved.
+    let mode;
+    let existingId = null;
+    if (categoryId !== undefined && title) {
+      const key = `${categoryId}:${lookupKey(title)}`;
+      if (seenIdentityKeys.has(key)) {
+        rowErrors.push(
+          err(rowNumber, "title", "DUPLICATE_IN_FILE", { column: "title", value: title, otherRow: seenIdentityKeys.get(key) }),
+        );
+      } else {
+        seenIdentityKeys.set(key, rowNumber);
+        existingId = existingByIdentityKey.get(key) ?? null;
+        mode = existingId ? "update" : "create";
+      }
+    }
+
+    // attribute_titles only applies on create (mirrors the manual
+    // controller's syncLinks(): links are only touched when explicitly
+    // processed, and an update here never processes them at all, so
+    // existing Product Variants that depend on them are never at risk).
+    const attributeTitlesInput = trimOrUndefined(row.attribute_titles);
+    const attributeIds = [];
+    if (mode === "update") {
+      if (attributeTitlesInput) {
+        rowWarnings.push(warn(rowNumber, "attribute_titles", "ATTRIBUTES_IGNORED_ON_UPDATE"));
+      }
+    } else if (attributeTitlesInput) {
+      attributeTitlesInput.split(",").forEach((rawTitle) => {
+        const t = rawTitle.trim();
+        if (!t) return;
+        const attribute = attributeByTitleKey.get(lookupKey(t));
+        if (!attribute) {
+          rowErrors.push(err(rowNumber, "attribute_titles", "REF_NOT_FOUND", { column: "attribute_titles", value: t }));
+        } else {
+          attributeIds.push(attribute.id);
+        }
+      });
+    }
+
     if (rowErrors.length) {
       errors.push(...rowErrors);
       return;
     }
 
-    if (slug) seenSlugKeys.set(lookupKey(slug), rowNumber);
     warnings.push(...rowWarnings);
 
     normalizedRows.push({
       rowNumber,
+      mode,
+      existingId,
       title,
       title_ar: titleAr,
-      slug,
       product_category_id: categoryId,
       short_description: shortDescription,
       short_description_ar: shortDescriptionAr,
       product_description: productDescription,
       product_description_ar: productDescriptionAr,
-      price: priceResult.value,
       attribute_ids: attributeIds,
       main_media_path: mainImage,
       list_media_path: listImage || mainImage,

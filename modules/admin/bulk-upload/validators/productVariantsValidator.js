@@ -52,11 +52,11 @@ async function validateProductVariants(rows, { models, transaction }) {
     ]),
   );
 
-  const attributeValues = await models.AttributeValues.findAll({ attributes: ["id", "attribute_id", "value"], transaction });
+  const attributeValues = await models.AttributeValues.findAll({ attributes: ["id", "attribute_id", "value", "value_ar"], transaction });
   const valuesByAttributeId = new Map();
   attributeValues.forEach((v) => {
     const map = valuesByAttributeId.get(v.attribute_id) || new Map();
-    map.set(lookupKey(v.value), { id: v.id, value: v.value });
+    map.set(lookupKey(v.value), { id: v.id, value: v.value, value_ar: v.value_ar });
     valuesByAttributeId.set(v.attribute_id, map);
   });
 
@@ -132,7 +132,13 @@ async function validateProductVariants(rows, { models, transaction }) {
           return;
         }
 
-        resolvedValues.push({ attributeId: attribute.id, attributeTitle: attrTitle, valueId: value.id, valueText: value.value });
+        resolvedValues.push({
+          attributeId: attribute.id,
+          attributeTitle: attrTitle,
+          valueId: value.id,
+          valueText: value.value,
+          valueTextAr: value.value_ar,
+        });
       });
 
       if (!rowErrors.length && resolvedValues.length !== product.attributeTitles.length) {
@@ -197,8 +203,17 @@ async function validateProductVariants(rows, { models, transaction }) {
     if (skuInput) seenSkuKeysInFile.set(lookupKey(skuInput), rowNumber);
     seenCombinationKeysInFile.set(`${product.id}:${combinationKey}`, rowNumber);
 
-    const label = trimOrUndefined(row.label) || resolvedValues.map((v) => v.valueText).join(" / ");
-    const labelAr = trimOrUndefined(row.label_ar) || "";
+    // Matches buildLabel() in variantsController.js exactly — same filter
+    // (drop blank/missing values) and the same " / " join — so a
+    // bulk-created variant's auto-label looks identical to a manually
+    // created one.
+    const buildLabel = (field) =>
+      resolvedValues
+        .map((v) => v[field])
+        .filter((v) => v && String(v).trim())
+        .join(" / ");
+    const label = trimOrUndefined(row.label) || buildLabel("valueText");
+    const labelAr = trimOrUndefined(row.label_ar) || buildLabel("valueTextAr");
 
     normalizedRows.push({
       rowNumber,

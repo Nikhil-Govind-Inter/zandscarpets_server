@@ -39,7 +39,6 @@ const validationRequestPost = [
 
   requiredString("title", "Title"),
   requiredString("title_ar", "Title (Arabic)"),
-  requiredString("slug", "Slug"),
   requiredString("short_description", "Short description"),
   requiredString("short_description_ar", "Short description (Arabic)"),
   requiredString("product_description", "Product description"),
