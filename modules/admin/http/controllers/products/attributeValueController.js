@@ -323,4 +323,8 @@ class AttributeValueController {
   }
 }
 
+// Exposed so the bulk-upload Attribute Values validator can reuse the exact
+// same per-type requirement rules instead of re-deriving them.
+AttributeValueController.missingForType = missingForType;
+
 module.exports = AttributeValueController;

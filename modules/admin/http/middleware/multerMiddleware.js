@@ -220,6 +220,7 @@ async function handleFileUploadUpdate(req, data, fileFields = []) {
 
 module.exports = {
   createUploadMiddleware,
+  getStorage,
   getRelativeFilePath,
   deleteOldFiles,
   deleteOldFile,
