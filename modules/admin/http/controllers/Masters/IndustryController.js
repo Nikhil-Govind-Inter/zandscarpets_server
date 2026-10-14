@@ -12,12 +12,6 @@ const {
 } = require("../../../../../utils/slugHelper");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   invalidateCache: invalidateFrontendCache,
   cacheKeys: frontendCacheKeys,
 } = require("../../../../frontend/http/traits/cacheHelper");
@@ -32,22 +26,20 @@ const dataModel = models.Industry;
 class IndustryController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.industryList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Industry list retrieved successfully from cache",
-        );
+      const where = {};
+      const status = req.query.status;
+      if (status === "active") {
+        where.is_active = true;
+      } else if (status === "inactive") {
+        where.is_active = false;
       }
 
       const result = await paginate(dataModel, req, {
+        where,
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "slug"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Industry list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -56,23 +48,12 @@ class IndustryController {
 
   static async getActiveIndustries(req, res) {
     try {
-      const listCacheKey = cacheKeys.industryList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Industry list retrieved successfully from cache",
-        );
-      }
-
       const result = await dataModel.findAll({
         where: { is_active: true },
         order: [["sort_order", "ASC"]],
         attributes: ["id", "title", "slug"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Industry list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -86,19 +67,9 @@ class IndustryController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.industryItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Industry item retrieved successfully",
-        );
-
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Industry item");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Industry item retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -124,8 +95,6 @@ class IndustryController {
       }
 
       const item = await dataModel.create(req.body);
-
-      await invalidateCache(req, cacheKeys.industryListPattern());
 
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Industry item created successfully", 201);
@@ -164,10 +133,7 @@ class IndustryController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-      await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
       sendSuccessResponse(res, item, "Industry item updated successfully");
     } catch (error) {
@@ -187,10 +153,7 @@ class IndustryController {
 
       await item.destroy();
 
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-      await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
       sendSuccessResponse(
         res,
