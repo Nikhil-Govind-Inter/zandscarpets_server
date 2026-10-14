@@ -4,9 +4,9 @@
 // manual ProductCategories admin screen uses for a blank slug.
 //
 // This sheet is create-OR-UPDATE (upsert), evaluated here on Categories
-// only: a row identifies an existing category by the triplet
-// (industry_id, parent_id, title) — not slug, which doesn't exist until
-// creation, and not title alone, since title isn't unique in this schema.
+// only: a row identifies an existing category by the pair
+// (parent_id, title) — not slug, which doesn't exist until creation, and
+// not title alone, since title isn't unique in this schema.
 // Matching is order-dependent because parent_title can point at another
 // row in the same file: whether a row is a create or an update can depend
 // on whether its parent (resolved earlier in this same pass) was itself a
@@ -32,7 +32,7 @@ const err = (rowNumber, column, code, params) => ({
   message: messages[code](params || {}),
 });
 
-const identityKey = (industryId, parentId, title) => `${industryId}:${parentId ?? "null"}:${lookupKey(title)}`;
+const identityKey = (parentId, title) => `${parentId ?? "null"}:${lookupKey(title)}`;
 
 // Every id below `rootId` in the EXISTING DB tree (children, grandchildren,
 // ...), used to block a bulk-update from re-parenting a category under its
@@ -59,14 +59,8 @@ async function validateCategories(rows, { models, transaction }) {
   const warnings = [];
   const normalizedRows = [];
 
-  const industries = await models.Industry.findAll({
-    attributes: ["id", "slug"],
-    transaction,
-  });
-  const industryBySlug = new Map(industries.map((i) => [lookupKey(i.slug), i.id]));
-
   const existingCategories = await models.ProductCategories.findAll({
-    attributes: ["id", "title", "industry_id", "parent_id"],
+    attributes: ["id", "title", "parent_id"],
     transaction,
   });
 
@@ -85,7 +79,7 @@ async function validateCategories(rows, { models, transaction }) {
     titleKeyEntry.id = titleKeyEntry.id ?? c.id;
     existingByTitleKey.set(lookupKey(c.title), titleKeyEntry);
 
-    existingByIdentityKey.set(identityKey(c.industry_id, c.parent_id, c.title), c.id);
+    existingByIdentityKey.set(identityKey(c.parent_id, c.title), c.id);
 
     if (c.parent_id != null) {
       const list = existingByParentId.get(c.parent_id) || [];
@@ -108,17 +102,6 @@ async function validateCategories(rows, { models, transaction }) {
 
     const title = trimOrUndefined(row.title);
     if (!title) rowErrors.push(err(rowNumber, "title", "REQUIRED_FIELD", { column: "title" }));
-
-    const industrySlugInput = trimOrUndefined(row.industry_slug);
-    let industryId;
-    if (!industrySlugInput) {
-      rowErrors.push(err(rowNumber, "industry_slug", "REQUIRED_FIELD", { column: "industry_slug" }));
-    } else {
-      industryId = industryBySlug.get(lookupKey(industrySlugInput));
-      if (!industryId) {
-        rowErrors.push(err(rowNumber, "industry_slug", "REF_NOT_FOUND", { column: "industry_slug", value: industrySlugInput }));
-      }
-    }
 
     const parentTitleInput = trimOrUndefined(row.parent_title);
 
@@ -143,7 +126,6 @@ async function validateCategories(rows, { models, transaction }) {
       rowErrors,
       title,
       title_ar: title,
-      industry_id: industryId,
       parent_title_input: parentTitleInput,
       parent_title_key: parentTitleInput ? lookupKey(parentTitleInput) : null,
       description,
@@ -233,7 +215,7 @@ async function validateCategories(rows, { models, transaction }) {
 
     if (record.title) seenTitleKeys.add(lookupKey(record.title));
 
-    if (!record.rowErrors.length && record.industry_id !== undefined) {
+    if (!record.rowErrors.length) {
       if (parentPending) {
         // Parent doesn't exist yet in the DB, so this row can't possibly
         // match an existing category — it must be a create.
@@ -241,7 +223,7 @@ async function validateCategories(rows, { models, transaction }) {
         record.existingId = null;
         record.resolved_parent_id = null; // filled in for real by the importer once the parent is actually created
       } else {
-        const key = identityKey(record.industry_id, resolvedParentId, record.title);
+        const key = identityKey(resolvedParentId, record.title);
         if (seenIdentityKeys.has(key)) {
           record.rowErrors.push(
             err(record.rowNumber, "title", "DUPLICATE_IN_FILE", {

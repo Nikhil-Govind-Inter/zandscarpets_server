@@ -17,14 +17,16 @@
 // names (the shared ProductLabels master table, discriminated by type),
 // auto-created if missing, attached on create only. See
 // productMainValidator.js/importer.js.
+//
+// v10: dropped industry_slug — categories are no longer tied to an industry,
+// so the category chain is resolved by title/parent only.
 
 module.exports = {
   entity: "product-main",
   sheetName: "Product Main",
-  templateVersion: 9,
+  templateVersion: 10,
   model: "Products",
   columns: [
-    { key: "industry_slug", header: "industry_slug", required: true, type: "ref", example: "home-interiors" },
     {
       key: "category",
       header: "Category",

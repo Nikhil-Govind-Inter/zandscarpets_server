@@ -14,10 +14,6 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      industry_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -93,11 +89,6 @@ module.exports = (sequelize) => {
   });
 
   ProductCategories.associate = function (models) {
-    ProductCategories.belongsTo(models.Industry, {
-      foreignKey: "industry_id",
-      as: "industry",
-    });
-
     ProductCategories.hasMany(models.Products, {
       foreignKey: "product_category_id",
       as: "products",
@@ -119,6 +110,14 @@ module.exports = (sequelize) => {
       as: "highlights",
       foreignKey: "category_id",
       otherKey: "highlight_id",
+    });
+
+    // many-to-many with industries via a join table managed by Sequelize
+    ProductCategories.belongsToMany(models.Industry, {
+      through: "industry_categories",
+      as: "industries",
+      foreignKey: "category_id",
+      otherKey: "industry_id",
     });
   };
 

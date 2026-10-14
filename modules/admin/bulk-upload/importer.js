@@ -30,7 +30,6 @@ async function importCategories(normalizedRows, { models, transaction }) {
     const fields = {
       title: row.title,
       title_ar: row.title_ar,
-      industry_id: row.industry_id,
       parent_id: parentId,
       description: row.description,
       description_ar: row.description_ar,
@@ -234,22 +233,22 @@ async function importProductMain(normalizedRows, { models, transaction }) {
   let variantsCreated = 0;
   let labelsCreated = 0;
 
-  const categoryByKey = new Map(); // `${industry_id}:${parent_id|"null"}:${titleKey}` -> id
+  const categoryByKey = new Map(); // `${parent_id|"null"}:${titleKey}` -> id
   const attributeByTitleKey = new Map(); // titleKey -> { id, type }
   const valueByKey = new Map(); // `${attributeTitleKey}:${valueKey}` -> id
   const valueDetailsById = new Map(); // id -> { value, value_ar }, for building variant labels
   const labelByKey = new Map(); // `${type}:${titleKey}` -> id
 
-  const resolveCategoryChain = async (industryId, segments) => {
+  const resolveCategoryChain = async (segments) => {
     let parentId = null;
     for (const segment of segments) {
-      const key = `${industryId}:${parentId ?? "null"}:${lookupKey(segment)}`;
+      const key = `${parentId ?? "null"}:${lookupKey(segment)}`;
       if (categoryByKey.has(key)) {
         parentId = categoryByKey.get(key);
         continue;
       }
       const existing = await models.ProductCategories.findOne({
-        where: { industry_id: industryId, parent_id: parentId, title: segment },
+        where: { parent_id: parentId, title: segment },
         transaction,
       });
       if (existing) {
@@ -259,7 +258,7 @@ async function importProductMain(normalizedRows, { models, transaction }) {
       }
       const slug = await generateUniqueSlug(models.ProductCategories, segment, { transaction });
       const createdCategory = await models.ProductCategories.create(
-        { title: segment, title_ar: segment, slug, industry_id: industryId, parent_id: parentId },
+        { title: segment, title_ar: segment, slug, parent_id: parentId },
         { transaction },
       );
       categoryByKey.set(key, createdCategory.id);
@@ -337,7 +336,7 @@ async function importProductMain(normalizedRows, { models, transaction }) {
   };
 
   for (const row of normalizedRows) {
-    const categoryId = await resolveCategoryChain(row.industry_id, row.category_segments);
+    const categoryId = await resolveCategoryChain(row.category_segments);
 
     const attributeIds = [];
     const orderedValueIdLists = []; // one value-id array per attribute, same order as attributeIds

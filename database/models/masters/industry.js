@@ -74,16 +74,18 @@ module.exports = (sequelize) => {
       as: "homeBanner",
     });
 
-    // hasmany with prod categry
-    industry.hasMany(models.ProductCategories, {
-      foreignKey: "industry_id",
-      as: "productCategories",
-    });
-
     // hasMany with projects (one industry/category -> many projects)
     industry.hasMany(models.Projects, {
       foreignKey: "category_id",
       as: "projects",
+    });
+
+    // many-to-many with product categories via a join table managed by Sequelize
+    industry.belongsToMany(models.ProductCategories, {
+      through: "industry_categories",
+      as: "categories",
+      foreignKey: "industry_id",
+      otherKey: "category_id",
     });
   };
 

@@ -1,11 +1,6 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  body("industry_id")
-    .notEmpty()
-    .withMessage("Industry is required")
-    .isInt({ min: 1 })
-    .withMessage("Industry must be a valid ID"),
   body("parent_id")
     .optional({ checkFalsy: true })
     .isInt({ min: 1 })

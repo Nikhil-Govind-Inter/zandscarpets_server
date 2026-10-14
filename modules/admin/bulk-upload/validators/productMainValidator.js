@@ -95,20 +95,17 @@ async function validateProductMain(rows, { models, transaction }) {
   const warnings = [];
   const normalizedRows = [];
 
-  const industries = await models.Industry.findAll({ attributes: ["id", "slug"], transaction });
-  const industryBySlugKey = new Map(industries.map((i) => [lookupKey(i.slug), i.id]));
-
   const existingCategories = await models.ProductCategories.findAll({
-    attributes: ["id", "title", "industry_id", "parent_id"],
+    attributes: ["id", "title", "parent_id"],
     transaction,
   });
-  // `(industry_id, parent_id-or-placeholder, titleKey) -> real id` seeded
-  // from the DB; gains placeholder entries (negative ints) as this pass
-  // discovers rows that need new categories, shared across every row in
-  // this file so a second row referencing the same new chain reuses it.
+  // `(parent_id-or-placeholder, titleKey) -> real id` seeded from the DB;
+  // gains placeholder entries (negative ints) as this pass discovers rows
+  // that need new categories, shared across every row in this file so a
+  // second row referencing the same new chain reuses it.
   const categoryIndex = new Map();
   existingCategories.forEach((c) => {
-    categoryIndex.set(`${c.industry_id}:${c.parent_id ?? "null"}:${lookupKey(c.title)}`, c.id);
+    categoryIndex.set(`${c.parent_id ?? "null"}:${lookupKey(c.title)}`, c.id);
   });
 
   const existingAttributes = await models.Attributes.findAll({ attributes: ["id", "title", "type"], transaction });
@@ -135,7 +132,7 @@ async function validateProductMain(rows, { models, transaction }) {
   const liveRows = rows.filter((row) => !isExampleRow(row, config.columns[0].key) && !isBlankRow(row, config.columns));
 
   let nextPlaceholder = -1;
-  const seenProductPathKeys = new Map(); // `${industry}:${pathString}:${titleKey}` -> rowNumber
+  const seenProductPathKeys = new Map(); // `${pathString}:${titleKey}` -> rowNumber
 
   liveRows.forEach((row) => {
     const rowNumber = row.__rowNumber;
@@ -173,17 +170,6 @@ async function validateProductMain(rows, { models, transaction }) {
     const metaDescriptionAr = metaDescription || null;
     const metaKeywordsAr = metaKeywords || null;
 
-    const industrySlugInput = trimOrUndefined(row.industry_slug);
-    let industryId;
-    if (!industrySlugInput) {
-      rowErrors.push(err(rowNumber, "industry_slug", "REQUIRED_FIELD", { column: "industry_slug" }));
-    } else {
-      industryId = industryBySlugKey.get(lookupKey(industrySlugInput));
-      if (!industryId) {
-        rowErrors.push(err(rowNumber, "industry_slug", "REF_NOT_FOUND", { column: "industry_slug", value: industrySlugInput }));
-      }
-    }
-
     // Category: 3 plain columns instead of one ">"-separated path. A
     // deeper column filled in while a shallower one is blank is rejected.
     const category = trimOrUndefined(row.category);
@@ -200,13 +186,13 @@ async function validateProductMain(rows, { models, transaction }) {
     // too (nothing could already reference a not-yet-existing parent).
     const categorySegments = [];
     let finalCategoryKeyId; // real id, placeholder (negative int), or undefined on error
-    if (category && industryId !== undefined) {
+    if (category) {
       const rawSegments = [category, subCategory1, subCategory2].filter(Boolean);
       let parentId = null; // null = root
       let pending = false;
       rawSegments.forEach((segment) => {
         categorySegments.push(segment);
-        const key = `${industryId}:${parentId ?? "null"}:${lookupKey(segment)}`;
+        const key = `${parentId ?? "null"}:${lookupKey(segment)}`;
         if (!pending && categoryIndex.has(key)) {
           parentId = categoryIndex.get(key); // real id or an earlier row's placeholder
           if (parentId < 0) pending = true; // chain continues on top of another new row's pending category
@@ -226,7 +212,7 @@ async function validateProductMain(rows, { models, transaction }) {
     let mode;
     let existingId = null;
     if (finalCategoryKeyId !== undefined && title) {
-      const pathKey = `${industryId}:${categorySegments.map(lookupKey).join(">")}:${lookupKey(title)}`;
+      const pathKey = `${categorySegments.map(lookupKey).join(">")}:${lookupKey(title)}`;
       if (seenProductPathKeys.has(pathKey)) {
         rowErrors.push(err(rowNumber, "title", "DUPLICATE_IN_FILE", { column: "title", value: title, otherRow: seenProductPathKeys.get(pathKey) }));
       } else {
@@ -425,7 +411,6 @@ async function validateProductMain(rows, { models, transaction }) {
 
     normalizedRows.push({
       rowNumber,
-      industry_id: industryId,
       category_segments: categorySegments,
       attribute_value_groups: attributeValueGroups,
       generate_variants: mode !== "update" && attributeValueGroups.length > 0,

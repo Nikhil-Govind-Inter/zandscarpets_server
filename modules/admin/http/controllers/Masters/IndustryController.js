@@ -11,6 +11,7 @@ const {
   assertNoDuplicate,
 } = require("../../../../../utils/slugHelper");
 const { paginate } = require("../../traits/datatablePaginationHelper");
+const { invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const {
   invalidateCache: invalidateFrontendCache,
   cacheKeys: frontendCacheKeys,
@@ -22,6 +23,33 @@ const {
 const { validationResult } = require("express-validator");
 
 const dataModel = models.Industry;
+
+const categoryInclude = {
+  model: models.ProductCategories,
+  as: "categories",
+  attributes: ["id", "title", "title_ar", "slug"],
+  through: { attributes: [] },
+};
+
+// null = field not sent (leave links untouched on update)
+const parseCategoryIds = (value) => {
+  if (value === undefined) return null;
+  const arr = Array.isArray(value)
+    ? value
+    : typeof value === "string" && value.trim()
+      ? (() => {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (_) {
+            return [];
+          }
+        })()
+      : [];
+  return arr
+    .map((id) => Number(id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+};
 
 class IndustryController {
   static async list(req, res) {
@@ -38,6 +66,7 @@ class IndustryController {
         where,
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "slug"],
+        include: [categoryInclude],
       });
 
       sendSuccessResponse(res, result, "Industry list retrieved successfully");
@@ -67,7 +96,7 @@ class IndustryController {
 
     try {
       const { id } = req.params;
-      const item = await dataModel.findByPk(id);
+      const item = await dataModel.findByPk(id, { include: [categoryInclude] });
       if (!item) return sendNotFoundError(res, "Industry item");
 
       sendSuccessResponse(res, item, "Industry item retrieved successfully");
@@ -94,8 +123,16 @@ class IndustryController {
         });
       }
 
+      const categoryIds = parseCategoryIds(req.body.category_ids);
+      delete req.body.category_ids;
+
       const item = await dataModel.create(req.body);
 
+      if (categoryIds?.length) {
+        await item.setCategories(categoryIds);
+      }
+
+      await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Industry item created successfully", 201);
     } catch (error) {
@@ -131,11 +168,21 @@ class IndustryController {
         }
       }
 
+      const categoryIds = parseCategoryIds(req.body.category_ids);
+      delete req.body.category_ids;
+
       await item.update(req.body);
 
+      if (categoryIds !== null) {
+        await item.setCategories(categoryIds);
+      }
+
+      await invalidateCache(req, cacheKeys.industryItem(id));
+      await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
-      sendSuccessResponse(res, item, "Industry item updated successfully");
+      const updated = await dataModel.findByPk(id, { include: [categoryInclude] });
+      sendSuccessResponse(res, updated, "Industry item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -151,8 +198,12 @@ class IndustryController {
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Industry item");
 
+      // Paranoid delete keeps the row, so drop the category links explicitly.
+      await item.setCategories([]);
       await item.destroy();
 
+      await invalidateCache(req, cacheKeys.industryItem(id));
+      await invalidateCache(req, cacheKeys.industryListPattern());
       await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(

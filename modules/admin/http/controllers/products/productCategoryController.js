@@ -27,7 +27,6 @@ const dataModel = models.ProductCategories;
 const fileFields = ["media_path"];
 
 const relatedInclude = [
-  { model: models.Industry, as: "industry", attributes: ["id", "title"] },
   { model: dataModel, as: "parent", attributes: ["id", "title"] },
   {
     model: dataModel,
@@ -106,7 +105,6 @@ class ProductCategoryController {
     try {
       const where = {};
       const parentId = parseInt(req.query.parent_id, 10);
-      const industryId = parseInt(req.query.industry_id, 10);
       const status = req.query.status;
       const showInNavbar = req.query.show_in_navbar;
       if (status === "active") {
@@ -126,16 +124,12 @@ class ProductCategoryController {
       } else if (req.query.type === "subcategory") {
         where.parent_id = { [Op.ne]: null };
       }
-      if (Number.isInteger(industryId) && industryId > 0) {
-        where.industry_id = industryId;
-      }
 
       const result = await paginate(dataModel, req, {
         where,
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "title_ar", "slug"],
         include: [
-          { model: models.Industry, as: "industry", attributes: ["id", "title"] },
           { model: dataModel, as: "parent", attributes: ["id", "title"] },
           {
             model: dataModel,
@@ -164,7 +158,7 @@ class ProductCategoryController {
       let result = await dataModel.findAll({
         where: { is_active: true },
         order: [["sort_order", "ASC"]],
-        attributes: ["id", "title", "parent_id", "industry_id"],
+        attributes: ["id", "title", "parent_id"],
       });
 
       if (Number.isInteger(excludeId) && excludeId > 0) {

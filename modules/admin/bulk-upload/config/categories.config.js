@@ -5,11 +5,10 @@
 module.exports = {
   entity: "categories",
   sheetName: "Categories",
-  templateVersion: 3, // v3: dropped all _ar columns (title_ar/description_ar/material_type_ar) — Arabic fields now default to their English counterpart
+  templateVersion: 4, // v3: dropped all _ar columns (title_ar/description_ar/material_type_ar) — Arabic fields now default to their English counterpart. v4: dropped industry_slug — categories are no longer tied to an industry.
   model: "ProductCategories",
   columns: [
     { key: "title", header: "title", required: true, type: "text", example: "Flooring" },
-    { key: "industry_slug", header: "industry_slug", required: true, type: "ref", example: "home-interiors" },
     {
       key: "parent_title",
       header: "parent_title",
