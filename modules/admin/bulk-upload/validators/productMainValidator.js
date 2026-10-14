@@ -1,52 +1,75 @@
-// Product Main Upload — one row spans Category (path) -> Attribute(s) ->
+// Product Main Upload — one row spans Category (levels) -> Attribute(s) ->
 // Attribute Value(s) -> Product -> its SEO meta data, auto-creating
 // whichever of those don't already exist. This generalizes the "pending
 // parent forces create" technique from categoriesValidator.js: within one
-// row, once any step in the category_path is new (not yet in the DB),
-// every deeper step — and the product itself — must also be new, since
-// nothing could already reference something that doesn't exist yet.
-// Internally this uses synthetic negative-int placeholder ids, scoped to a
-// single validateProductMain() call, purely so later rows/segments in the
-// *same* file correctly reuse a chain/attribute/value another row in this
-// file is also creating. Those placeholders never leave this function —
+// row, once any category level is new (not yet in the DB), every deeper
+// level — and the product itself — must also be new, since nothing could
+// already reference something that doesn't exist yet. Internally this uses
+// synthetic negative-int placeholder ids, scoped to a single
+// validateProductMain() call, purely so later rows/segments in the *same*
+// file correctly reuse a chain/attribute/value another row in this file is
+// also creating. Those placeholders never leave this function —
 // normalizedRows carries only raw fields (category_segments,
-// attribute_value_pairs), and importer.js re-derives create-vs-reuse for
+// attribute_value_groups), and importer.js re-derives create-vs-reuse for
 // real at commit time with its own fresh DB-backed walk, the same
 // relationship every other upsert validator/importer pair already has.
 //
-// Product match key, required fields, image handling and SEO meta are
-// identical in spirit to productsValidator.js / metaDataController.js —
-// see those files for why (meta_title/meta_description/meta_keywords
-// required, _ar variants optional, mirroring metaDataRequest.js exactly).
+// Product match key and required fields are identical in spirit to
+// productsValidator.js / metaDataController.js — see those files for why
+// (meta_title/meta_description/meta_keywords required, _ar variants
+// optional, mirroring metaDataRequest.js exactly). No image/sort_order/
+// is_active columns on this sheet (v7) — every row gets
+// main_media_path/list_media_path: null, sort_order: 0, is_active: true;
+// an image is added afterward via the product's edit screen.
 //
-// attribute_value_refs: "Attribute=Value" pairs, one or more comma-
-// separated values per attribute (e.g. "Size=120cm,140cm"), optionally
-// "Value|#RRGGBB" per value for a color value. A brand-new Attribute is
-// created as type "text", unless the FIRST value (across the whole group)
-// that introduces it carries a hex suffix, in which case it's created as
-// type "color" with that color_code (a brand-new attribute is therefore
-// never "icon" — there's no inline way to signal that from this sheet).
+// Category (v7): 3 plain columns — Category, Sub-Category 1,
+// Sub-Category 2 — instead of one ">"-separated category_path column. A
+// deeper column filled in while a shallower one is blank is rejected
+// (CATEGORY_LEVEL_GAP). The non-blank columns in order become
+// categorySegments, feeding the same pending-placeholder "force create"
+// logic as before.
 //
-// An EXISTING attribute keeps its real type, and every type auto-creates a
-// missing value from plain text alone — the ref text becomes the value's
-// `value`/`value_ar`: for text that's the value itself; for color it's the
-// color's name, with color_code set from a hex suffix if one was given,
-// left null otherwise; for icon it's a name/label, with media_path/
-// media_alt left blank. Any hex/media left blank this way is filled in
-// later via the Attribute Values edit screen — nothing here requires it
-// up front, unlike the dedicated Attribute Values sheet (which still
-// enforces the real missingForType() rules). A stray |#RRGGBB on a
-// non-color ref is ignored with a warning.
+// Attributes (v7): 2 plain columns, paired by position — "Attributes"
+// lists attribute names separated by ";"; "Values for Each Attribute"
+// lists one value-group per attribute in the same order, also separated
+// by ";", with multiple values for one attribute comma-separated within
+// its group, e.g. "Size;Color" / "120cm,140cm;Oak|#8B5A2B,Black|#000000".
+// There's no has_attributes/generate_variants gate anymore: whether a
+// product gets attributes is simply whether these two columns are filled
+// in, and variants are *always* generated (every combination, cartesian
+// product) whenever there's attribute data on a create row — a single
+// attribute with a single value still produces exactly one variant. A
+// brand-new Attribute is created as type "text", unless the FIRST value
+// (across the whole group) that introduces it carries a hex suffix, in
+// which case it's created as type "color" with that color_code (a
+// brand-new attribute is therefore never "icon" — there's no inline way to
+// signal that from this sheet). An EXISTING attribute keeps its real type,
+// and every type auto-creates a missing value from plain text alone — the
+// value text becomes the value's `value`/`value_ar`: for text that's the
+// value itself; for color it's the color's name, with color_code set from
+// a hex suffix if one was given, left null otherwise; for icon it's a
+// name/label, with media_path/media_alt left blank. Any hex/media left
+// blank this way is filled in later via the Attribute Values edit screen —
+// nothing here requires it up front, unlike the dedicated Attribute Values
+// sheet (which still enforces the real missingForType() rules). A stray
+// |#RRGGBB on a non-color ref is ignored with a warning. Total combination
+// count is capped (MAX_VARIANT_COMBINATIONS) to guard against an
+// accidental huge cross product — see importer.js for where variants
+// actually get created (validate-time only computes the count).
 //
-// generate_variants (TRUE/FALSE, default FALSE): when TRUE, every
-// combination across all attributes' value-lists (cartesian product) is
-// generated as a real variant for the new product — see importer.js for
-// where that actually happens (validate-time only computes the count, to
-// enforce MAX_VARIANT_COMBINATIONS, and never creates anything).
+// Features/Tags/Specifications (v8 added Tags/Specifications, v9 added
+// Features): plain comma-separated label names, attached to the shared
+// ProductLabels master (CLAUDE.md §2 — features/tags/specifications,
+// discriminated by `type`), auto-created if missing, scoped to their own
+// type so the same name can independently exist as a feature, a tag, and
+// a specification. Applies on create only, like attributes — see
+// importer.js for the actual attach step, which (unlike every other join
+// here) has no explicit join model to bulkCreate into, so it uses the
+// Sequelize association mixin `addLabels()` instead,
+// mirroring the real manual controller's own `item.setLabels(...)`.
 
-const { resolveMediaPath } = require("../resolvers");
 const { messages } = require("../messages");
-const { isBlankRow, isExampleRow, trimOrUndefined, parseBoolean, parseInteger, lookupKey } = require("./shared");
+const { isBlankRow, isExampleRow, trimOrUndefined, lookupKey } = require("./shared");
 const config = require("../config/productMain.config");
 
 const MAX_VARIANT_COMBINATIONS = 200;
@@ -101,6 +124,10 @@ async function validateProductMain(rows, { models, transaction }) {
     valueIndex.set(`${attrTitleKey}:${lookupKey(v.value)}`, v.id);
   });
 
+  const existingLabels = await models.ProductLabels.findAll({ attributes: ["id", "title", "type"], transaction });
+  const labelIndex = new Map(); // `${type}:${titleKey}` -> id (real or placeholder)
+  existingLabels.forEach((l) => labelIndex.set(`${l.type}:${lookupKey(l.title)}`, l.id));
+
   const existingProducts = await models.Products.findAll({ attributes: ["id", "title", "product_category_id"], transaction });
   const productIndex = new Map(); // `${category_id}:${titleKey}` -> id
   existingProducts.forEach((p) => productIndex.set(`${p.product_category_id}:${lookupKey(p.title)}`, p.id));
@@ -130,22 +157,6 @@ async function validateProductMain(rows, { models, transaction }) {
     const shortDescriptionAr = shortDescription;
     const productDescriptionAr = productDescription;
 
-    const mainImage = trimOrUndefined(row.main_image);
-    if (!mainImage) {
-      rowErrors.push(err(rowNumber, "main_image", "REQUIRED_FIELD", { column: "main_image" }));
-    } else {
-      const resolved = resolveMediaPath(mainImage, "products");
-      if (!resolved.ok) rowErrors.push(err(rowNumber, "main_image", "MEDIA_NOT_FOUND", { column: "main_image", value: mainImage }));
-    }
-
-    const listImage = trimOrUndefined(row.list_image);
-    if (!listImage) {
-      rowWarnings.push(warn(rowNumber, "list_image", "LIST_IMAGE_FALLBACK"));
-    } else {
-      const resolved = resolveMediaPath(listImage, "products");
-      if (!resolved.ok) rowErrors.push(err(rowNumber, "list_image", "MEDIA_NOT_FOUND", { column: "list_image", value: listImage }));
-    }
-
     const metaTitle = trimOrUndefined(row.meta_title);
     if (!metaTitle) rowErrors.push(err(rowNumber, "meta_title", "REQUIRED_FIELD", { column: "meta_title" }));
 
@@ -162,16 +173,6 @@ async function validateProductMain(rows, { models, transaction }) {
     const metaDescriptionAr = metaDescription || null;
     const metaKeywordsAr = metaKeywords || null;
 
-    const sortOrderResult = parseInteger(row.sort_order, { defaultValue: 0, min: 0 });
-    if (!sortOrderResult.ok) rowErrors.push(err(rowNumber, "sort_order", "INVALID_NUMBER", { column: "sort_order", value: row.sort_order }));
-
-    const isActiveResult = parseBoolean(row.is_active, true);
-    if (!isActiveResult.ok) rowErrors.push(err(rowNumber, "is_active", "INVALID_BOOLEAN", { column: "is_active", value: row.is_active }));
-
-    const hasAttributesResult = parseBoolean(row.has_attributes, false);
-    if (!hasAttributesResult.ok)
-      rowErrors.push(err(rowNumber, "has_attributes", "INVALID_BOOLEAN", { column: "has_attributes", value: row.has_attributes }));
-
     const industrySlugInput = trimOrUndefined(row.industry_slug);
     let industryId;
     if (!industrySlugInput) {
@@ -183,36 +184,40 @@ async function validateProductMain(rows, { models, transaction }) {
       }
     }
 
-    // Walk the category path, resolving/creating each level in order. Once
-    // any level is new, every deeper level — and the product — is forced
-    // new too (nothing could already reference a not-yet-existing parent).
-    const pathInput = trimOrUndefined(row.category_path);
+    // Category: 3 plain columns instead of one ">"-separated path. A
+    // deeper column filled in while a shallower one is blank is rejected.
+    const category = trimOrUndefined(row.category);
+    if (!category) rowErrors.push(err(rowNumber, "category", "REQUIRED_FIELD", { column: "Category" }));
+
+    const subCategory1 = trimOrUndefined(row.sub_category_1);
+    const subCategory2 = trimOrUndefined(row.sub_category_2);
+    if (subCategory2 && !subCategory1) {
+      rowErrors.push(err(rowNumber, "sub_category_2", "CATEGORY_LEVEL_GAP", { column: "Sub-Category 2", previousColumn: "Sub-Category 1" }));
+    }
+
+    // Walk the category levels, resolving/creating each in order. Once any
+    // level is new, every deeper level — and the product — is forced new
+    // too (nothing could already reference a not-yet-existing parent).
     const categorySegments = [];
     let finalCategoryKeyId; // real id, placeholder (negative int), or undefined on error
-    if (!pathInput) {
-      rowErrors.push(err(rowNumber, "category_path", "REQUIRED_FIELD", { column: "category_path" }));
-    } else {
-      const rawSegments = pathInput.split(">").map((s) => s.trim());
-      if (rawSegments.some((s) => !s)) {
-        rowErrors.push(err(rowNumber, "category_path", "INVALID_CATEGORY_PATH", { value: pathInput }));
-      } else if (industryId !== undefined) {
-        let parentId = null; // null = root
-        let pending = false;
-        rawSegments.forEach((segment) => {
-          categorySegments.push(segment);
-          const key = `${industryId}:${parentId ?? "null"}:${lookupKey(segment)}`;
-          if (!pending && categoryIndex.has(key)) {
-            parentId = categoryIndex.get(key); // real id or an earlier row's placeholder
-            if (parentId < 0) pending = true; // chain continues on top of another new row's pending category
-          } else {
-            const placeholder = nextPlaceholder--;
-            categoryIndex.set(key, placeholder);
-            parentId = placeholder;
-            pending = true;
-          }
-        });
-        finalCategoryKeyId = parentId;
-      }
+    if (category && industryId !== undefined) {
+      const rawSegments = [category, subCategory1, subCategory2].filter(Boolean);
+      let parentId = null; // null = root
+      let pending = false;
+      rawSegments.forEach((segment) => {
+        categorySegments.push(segment);
+        const key = `${industryId}:${parentId ?? "null"}:${lookupKey(segment)}`;
+        if (!pending && categoryIndex.has(key)) {
+          parentId = categoryIndex.get(key); // real id or an earlier row's placeholder
+          if (parentId < 0) pending = true; // chain continues on top of another new row's pending category
+        } else {
+          const placeholder = nextPlaceholder--;
+          categoryIndex.set(key, placeholder);
+          parentId = placeholder;
+          pending = true;
+        }
+      });
+      finalCategoryKeyId = parentId;
     }
 
     // Product match key — only resolvable once the category chain
@@ -236,132 +241,179 @@ async function validateProductMain(rows, { models, transaction }) {
       }
     }
 
-    // attribute_value_refs is only processed when has_attributes is TRUE,
-    // and only on create — an update never touches product_attributes,
-    // same rule as productsValidator.js (no Product Variant orphaning
-    // risk). The flag/content mismatches are each caught explicitly rather
-    // than silently inferred from blank-ness.
-    const refsInput = trimOrUndefined(row.attribute_value_refs);
-    const hasAttributes = hasAttributesResult.value;
-    const generateVariantsResult = parseBoolean(row.generate_variants, false);
-    if (!generateVariantsResult.ok) {
-      rowErrors.push(err(rowNumber, "generate_variants", "INVALID_BOOLEAN", { column: "generate_variants", value: row.generate_variants }));
-    }
-    const generateVariants = generateVariantsResult.value;
-    if (generateVariants && !hasAttributes && mode !== "update") {
-      rowErrors.push(err(rowNumber, "generate_variants", "GENERATE_VARIANTS_NEEDS_ATTRIBUTES"));
-    }
+    // Attributes: 2 plain columns paired by position, only on create — an
+    // update never touches product_attributes, same rule as
+    // productsValidator.js (no Product Variant orphaning risk). Whether a
+    // product gets attributes is simply whether these columns are filled
+    // in; variants are always generated from whatever's listed.
+    const attributeNamesInput = trimOrUndefined(row.attribute_names);
+    const attributeValuesInput = trimOrUndefined(row.attribute_values);
+    const attributeValueGroups = []; // [{ attributeTitle, items: [{ valueText, colorCode }] }]
 
-    // attributeValueGroups: [{ attributeTitle, items: [{ valueText, colorCode }] }]
-    const attributeValueGroups = [];
     if (mode === "update") {
-      if (refsInput || hasAttributes || generateVariants) rowWarnings.push(warn(rowNumber, "attribute_value_refs", "ATTRIBUTES_IGNORED_ON_UPDATE"));
-    } else if (hasAttributes && !refsInput) {
-      rowErrors.push(err(rowNumber, "has_attributes", "HAS_ATTRIBUTES_BUT_NO_REFS"));
-    } else if (!hasAttributes && refsInput) {
-      rowWarnings.push(warn(rowNumber, "attribute_value_refs", "ATTRIBUTES_FLAG_OFF_REFS_IGNORED"));
-    } else if (hasAttributes && refsInput) {
-      const segments = refsInput
-        .split(";")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const seenAttrKeys = new Set();
-      segments.forEach((segment) => {
-        const eqIndex = segment.indexOf("=");
-        if (eqIndex <= 0 || eqIndex === segment.length - 1) {
-          rowErrors.push(err(rowNumber, "attribute_value_refs", "ATTRIBUTE_VALUE_REF_FORMAT", { value: segment }));
-          return;
-        }
-        const attributeTitle = segment.slice(0, eqIndex).trim();
-        const rawValueList = segment.slice(eqIndex + 1).trim();
-        const attrKey = lookupKey(attributeTitle);
-        if (seenAttrKeys.has(attrKey)) return; // same attribute named twice in one row — first wins
-        seenAttrKeys.add(attrKey);
+      if (attributeNamesInput || attributeValuesInput) {
+        rowWarnings.push(warn(rowNumber, "attribute_names", "ATTRIBUTES_IGNORED_ON_UPDATE"));
+      }
+    } else if (attributeNamesInput && !attributeValuesInput) {
+      rowErrors.push(
+        err(rowNumber, "attribute_values", "ATTRIBUTE_COLUMN_ONE_SIDED", {
+          filledColumn: "Attributes",
+          blankColumn: "Values for Each Attribute",
+        }),
+      );
+    } else if (!attributeNamesInput && attributeValuesInput) {
+      rowErrors.push(
+        err(rowNumber, "attribute_names", "ATTRIBUTE_COLUMN_ONE_SIDED", {
+          filledColumn: "Values for Each Attribute",
+          blankColumn: "Attributes",
+        }),
+      );
+    } else if (attributeNamesInput && attributeValuesInput) {
+      const nameSegments = attributeNamesInput.split(";").map((s) => s.trim());
+      const valueSegments = attributeValuesInput.split(";").map((s) => s.trim());
 
-        const rawItems = rawValueList
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
+      if (nameSegments.length !== valueSegments.length) {
+        rowErrors.push(
+          err(rowNumber, "attribute_values", "ATTRIBUTE_COLUMN_COUNT_MISMATCH", {
+            namesCount: nameSegments.length,
+            valuesCount: valueSegments.length,
+          }),
+        );
+      } else {
+        const seenAttrKeys = new Set();
+        nameSegments.forEach((attributeTitle, index) => {
+          const rawValueList = valueSegments[index];
+          if (!attributeTitle && !rawValueList) return; // tolerate a stray trailing ;
+          if (!attributeTitle || !rawValueList) {
+            rowErrors.push(
+              err(rowNumber, attributeTitle ? "attribute_values" : "attribute_names", "ATTRIBUTE_COLUMN_ONE_SIDED", {
+                filledColumn: attributeTitle ? "Attributes" : "Values for Each Attribute",
+                blankColumn: attributeTitle ? "Values for Each Attribute" : "Attributes",
+              }),
+            );
+            return;
+          }
 
-        // Parse every "Value" or "Value|#RRGGBB" item first, so a brand-new
-        // attribute's type can be decided from whichever item in the whole
-        // group carries the first hex, before any per-item lookups run.
-        const parsedItems = [];
-        let formatError = false;
-        rawItems.forEach((rawItem) => {
-          let valueText = rawItem;
-          let colorCode = null;
-          const pipeIndex = rawItem.indexOf("|");
-          if (pipeIndex !== -1) {
-            valueText = rawItem.slice(0, pipeIndex).trim();
-            colorCode = rawItem.slice(pipeIndex + 1).trim();
-            if (!/^#[0-9A-Fa-f]{6}$/.test(colorCode)) {
-              rowErrors.push(err(rowNumber, "attribute_value_refs", "INVALID_COLOR_CODE", { value: colorCode }));
-              formatError = true;
-              return;
+          const attrKey = lookupKey(attributeTitle);
+          if (seenAttrKeys.has(attrKey)) return; // same attribute named twice in one row — first wins
+          seenAttrKeys.add(attrKey);
+
+          const rawItems = rawValueList
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+          // Parse every "Value" or "Value|#RRGGBB" item first, so a brand-new
+          // attribute's type can be decided from whichever item in the whole
+          // group carries the first hex, before any per-item lookups run.
+          const parsedItems = [];
+          let formatError = false;
+          rawItems.forEach((rawItem) => {
+            let valueText = rawItem;
+            let colorCode = null;
+            const pipeIndex = rawItem.indexOf("|");
+            if (pipeIndex !== -1) {
+              valueText = rawItem.slice(0, pipeIndex).trim();
+              colorCode = rawItem.slice(pipeIndex + 1).trim();
+              if (!/^#[0-9A-Fa-f]{6}$/.test(colorCode)) {
+                rowErrors.push(err(rowNumber, "attribute_values", "INVALID_COLOR_CODE", { value: colorCode }));
+                formatError = true;
+                return;
+              }
             }
-          }
-          parsedItems.push({ valueText, colorCode });
-        });
-        if (formatError) return;
+            parsedItems.push({ valueText, colorCode });
+          });
+          if (formatError) return;
 
-        const seenValueKeys = new Set();
-        const dedupedItems = parsedItems.filter((item) => {
-          const key = lookupKey(item.valueText);
-          if (seenValueKeys.has(key)) return false; // same value named twice — first wins
-          seenValueKeys.add(key);
-          return true;
-        });
+          const seenValueKeys = new Set();
+          const dedupedItems = parsedItems.filter((item) => {
+            const key = lookupKey(item.valueText);
+            if (seenValueKeys.has(key)) return false; // same value named twice — first wins
+            seenValueKeys.add(key);
+            return true;
+          });
 
-        let attribute = attributeIndex.get(attrKey);
-        if (!attribute) {
-          // A brand-new attribute's type is decided by whether ANY item in
-          // this group carries a hex: a suffix means "color", none means
-          // "text".
-          const firstHexItem = dedupedItems.find((item) => item.colorCode);
-          attribute = { id: nextPlaceholder--, type: firstHexItem ? "color" : "text" };
-          attributeIndex.set(attrKey, attribute);
-        }
-
-        // Every type (text/color/icon) auto-creates a missing value from
-        // plain text alone here — the ref text becomes `value`/`value_ar`.
-        // A color value's hex (color_code) and an icon value's media are
-        // both optional at this point, filled in later via the Attribute
-        // Values edit screen; a stray hex on a non-color ref is ignored
-        // with a warning (only color uses color_code).
-        dedupedItems.forEach(({ valueText, colorCode }) => {
-          if (colorCode && attribute.type !== "color") {
-            rowWarnings.push(warn(rowNumber, "attribute_value_refs", "COLOR_CODE_IGNORED", { attributeTitle, attributeType: attribute.type }));
+          let attribute = attributeIndex.get(attrKey);
+          if (!attribute) {
+            // A brand-new attribute's type is decided by whether ANY item in
+            // this group carries a hex: a suffix means "color", none means
+            // "text".
+            const firstHexItem = dedupedItems.find((item) => item.colorCode);
+            attribute = { id: nextPlaceholder--, type: firstHexItem ? "color" : "text" };
+            attributeIndex.set(attrKey, attribute);
           }
 
-          const valueKey = `${attrKey}:${lookupKey(valueText)}`;
-          if (!valueIndex.has(valueKey)) {
-            valueIndex.set(valueKey, nextPlaceholder--);
-          }
+          // Every type (text/color/icon) auto-creates a missing value from
+          // plain text alone here — the value text becomes
+          // `value`/`value_ar`. A color value's hex (color_code) and an
+          // icon value's media are both optional at this point, filled in
+          // later via the Attribute Values edit screen; a stray hex on a
+          // non-color ref is ignored with a warning (only color uses
+          // color_code).
+          dedupedItems.forEach(({ valueText, colorCode }) => {
+            if (colorCode && attribute.type !== "color") {
+              rowWarnings.push(warn(rowNumber, "attribute_values", "COLOR_CODE_IGNORED", { attributeTitle, attributeType: attribute.type }));
+            }
+
+            const valueKey = `${attrKey}:${lookupKey(valueText)}`;
+            if (!valueIndex.has(valueKey)) {
+              valueIndex.set(valueKey, nextPlaceholder--);
+            }
+          });
+
+          attributeValueGroups.push({ attributeTitle, items: dedupedItems });
         });
 
-        if (dedupedItems.length > 1 && !generateVariants) {
-          rowWarnings.push(warn(rowNumber, "attribute_value_refs", "MULTIPLE_VALUES_BUT_GENERATE_VARIANTS_OFF", { attributeTitle }));
-        }
-
-        attributeValueGroups.push({ attributeTitle, items: dedupedItems });
-      });
-
-      if (!rowErrors.length && generateVariants && attributeValueGroups.length) {
-        const combinationCount = attributeValueGroups.reduce((total, group) => total * group.items.length, 1);
-        if (combinationCount > MAX_VARIANT_COMBINATIONS) {
-          rowErrors.push(
-            err(rowNumber, "attribute_value_refs", "TOO_MANY_VARIANT_COMBINATIONS", {
-              count: combinationCount,
-              max: MAX_VARIANT_COMBINATIONS,
-            }),
-          );
+        if (!rowErrors.length && attributeValueGroups.length) {
+          const combinationCount = attributeValueGroups.reduce((total, group) => total * group.items.length, 1);
+          if (combinationCount > MAX_VARIANT_COMBINATIONS) {
+            rowErrors.push(
+              err(rowNumber, "attribute_values", "TOO_MANY_VARIANT_COMBINATIONS", {
+                count: combinationCount,
+                max: MAX_VARIANT_COMBINATIONS,
+              }),
+            );
+          }
         }
       }
     }
 
-    if (generateVariants && mode === "update") {
-      rowWarnings.push(warn(rowNumber, "generate_variants", "VARIANTS_IGNORED_ON_UPDATE"));
+    // Features/Tags/Specifications: plain comma-separated label names,
+    // scoped to their own type (so "New" can exist as a feature, a tag,
+    // and a specification independently) — auto-created like every other
+    // entity in this sheet, applied on create only (same reasoning as
+    // attributes: this sheet never edits an existing product's relations).
+    const featuresInput = trimOrUndefined(row.features);
+    const tagsInput = trimOrUndefined(row.tags);
+    const specificationsInput = trimOrUndefined(row.specifications);
+    const labelRefs = []; // [{ title, type }]
+
+    if (mode === "update") {
+      if (featuresInput || tagsInput || specificationsInput) rowWarnings.push(warn(rowNumber, "features", "LABELS_IGNORED_ON_UPDATE"));
+    } else {
+      [
+        { input: featuresInput, type: "feature" },
+        { input: tagsInput, type: "tag" },
+        { input: specificationsInput, type: "specification" },
+      ].forEach(({ input, type }) => {
+        if (!input) return;
+        const names = input
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const seenTitleKeys = new Set();
+        names.forEach((title) => {
+          const titleKey = lookupKey(title);
+          if (seenTitleKeys.has(titleKey)) return; // same name twice in one cell — first wins
+          seenTitleKeys.add(titleKey);
+
+          const labelKey = `${type}:${titleKey}`;
+          if (!labelIndex.has(labelKey)) {
+            labelIndex.set(labelKey, nextPlaceholder--);
+          }
+          labelRefs.push({ title, type });
+        });
+      });
     }
 
     if (rowErrors.length) {
@@ -376,7 +428,8 @@ async function validateProductMain(rows, { models, transaction }) {
       industry_id: industryId,
       category_segments: categorySegments,
       attribute_value_groups: attributeValueGroups,
-      generate_variants: generateVariants && mode !== "update" && attributeValueGroups.length > 0,
+      generate_variants: mode !== "update" && attributeValueGroups.length > 0,
+      label_refs: labelRefs,
       mode,
       existingId,
       title,
@@ -385,16 +438,16 @@ async function validateProductMain(rows, { models, transaction }) {
       short_description_ar: shortDescriptionAr,
       product_description: productDescription,
       product_description_ar: productDescriptionAr,
-      main_media_path: mainImage,
-      list_media_path: listImage || mainImage,
+      main_media_path: null,
+      list_media_path: null,
       meta_title: metaTitle,
       meta_title_ar: metaTitleAr,
       meta_description: metaDescription,
       meta_description_ar: metaDescriptionAr,
       meta_keywords: metaKeywords,
       meta_keywords_ar: metaKeywordsAr,
-      sort_order: sortOrderResult.value,
-      is_active: isActiveResult.value,
+      sort_order: 0,
+      is_active: true,
     });
   });
 

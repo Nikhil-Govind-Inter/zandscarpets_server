@@ -232,11 +232,13 @@ async function importProductMain(normalizedRows, { models, transaction }) {
   let attributesCreated = 0;
   let attributeValuesCreated = 0;
   let variantsCreated = 0;
+  let labelsCreated = 0;
 
   const categoryByKey = new Map(); // `${industry_id}:${parent_id|"null"}:${titleKey}` -> id
   const attributeByTitleKey = new Map(); // titleKey -> { id, type }
   const valueByKey = new Map(); // `${attributeTitleKey}:${valueKey}` -> id
   const valueDetailsById = new Map(); // id -> { value, value_ar }, for building variant labels
+  const labelByKey = new Map(); // `${type}:${titleKey}` -> id
 
   const resolveCategoryChain = async (industryId, segments) => {
     let parentId = null;
@@ -314,6 +316,26 @@ async function importProductMain(normalizedRows, { models, transaction }) {
     return createdValue.id;
   };
 
+  // Scoped per `type` so "New" can exist independently as both a tag and a
+  // specification — mirrors productLabelsController.js's own `type`-scoped
+  // slug/duplicate checks.
+  const resolveLabelId = async (type, title) => {
+    const labelKey = `${type}:${lookupKey(title)}`;
+    if (labelByKey.has(labelKey)) return labelByKey.get(labelKey);
+
+    const existing = await models.ProductLabels.findOne({ where: { type, title }, transaction });
+    if (existing) {
+      labelByKey.set(labelKey, existing.id);
+      return existing.id;
+    }
+
+    const slug = await generateUniqueSlug(models.ProductLabels, title, { scope: { type }, transaction });
+    const createdLabel = await models.ProductLabels.create({ type, title, title_ar: title, slug }, { transaction });
+    labelsCreated += 1;
+    labelByKey.set(labelKey, createdLabel.id);
+    return createdLabel.id;
+  };
+
   for (const row of normalizedRows) {
     const categoryId = await resolveCategoryChain(row.industry_id, row.category_segments);
 
@@ -344,20 +366,26 @@ async function importProductMain(normalizedRows, { models, transaction }) {
       short_description_ar: row.short_description_ar,
       product_description: row.product_description,
       product_description_ar: row.product_description_ar,
-      main_media_path: row.main_media_path,
-      list_media_path: row.list_media_path,
-      sort_order: row.sort_order,
-      is_active: row.is_active,
     };
 
     let productId;
     if (row.mode === "update") {
+      // No image/sort_order/is_active columns on this sheet (v7) — an
+      // update row never touches an existing product's image, sort order,
+      // or active status, only the fields this sheet actually carries.
       fields.slug = await generateUniqueSlug(models.Products, row.title, { excludeId: row.existingId, transaction });
       const item = await models.Products.findByPk(row.existingId, { transaction });
       await item.update(fields, { transaction });
       productId = row.existingId;
       updated += 1;
     } else {
+      // A brand-new product has no existing image/sort_order/is_active to
+      // preserve — these are this sheet's hardcoded defaults (see
+      // productMainValidator.js); set here only on create.
+      fields.main_media_path = row.main_media_path;
+      fields.list_media_path = row.list_media_path;
+      fields.sort_order = row.sort_order;
+      fields.is_active = row.is_active;
       fields.slug = await generateUniqueSlug(models.Products, row.title, { transaction });
       const createdProduct = await models.Products.create(fields, { transaction });
       productId = createdProduct.id;
@@ -367,6 +395,19 @@ async function importProductMain(normalizedRows, { models, transaction }) {
           attributeIds.map((attributeId, index) => ({ product_id: productId, attribute_id: attributeId, sort_order: index })),
           { transaction },
         );
+      }
+
+      // Tags/Specifications — no explicit join model for product_label_map
+      // (it's a plain `through: "..."` string on the association), so this
+      // is the one relation here attached via the Sequelize mixin instead
+      // of a bulkCreate, mirroring the real manual controller's own
+      // `item.setLabels(...)` (productsController.js).
+      if (row.label_refs.length) {
+        const labelIds = [];
+        for (const { title, type } of row.label_refs) {
+          labelIds.push(await resolveLabelId(type, title));
+        }
+        await createdProduct.addLabels(labelIds, { transaction });
       }
 
       // Generate every combination of the resolved values as a real
@@ -421,7 +462,7 @@ async function importProductMain(normalizedRows, { models, transaction }) {
     }
   }
 
-  return { created, updated, skipped: 0, categoriesCreated, attributesCreated, attributeValuesCreated, variantsCreated };
+  return { created, updated, skipped: 0, categoriesCreated, attributesCreated, attributeValuesCreated, variantsCreated, labelsCreated };
 }
 
 module.exports = {

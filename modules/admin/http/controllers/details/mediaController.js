@@ -21,6 +21,14 @@ const { validationResult } = require("express-validator");
 
 const formatMb = (bytes) => `${(bytes / (1024 * 1024)).toFixed(0)}MB`;
 
+// Trims a text field and normalizes a cleared/blank value to null, never a
+// stray empty string — applied uniformly to alt_text/title/description.
+const normalizeText = (value) => {
+  if (value === undefined || value === null) return null;
+  const trimmed = String(value).trim();
+  return trimmed || null;
+};
+
 const dataModel = models.Media;
 
 // Trust the uploaded file's own mimetype to decide image vs video, never a
@@ -122,7 +130,9 @@ class MediaController {
           location: req.body.file,
           mime_type: uploaded.mimetype,
           size_bytes: uploaded.size,
-          alt_text: req.body.alt_text || null,
+          alt_text: normalizeText(req.body.alt_text),
+          title: normalizeText(req.body.title),
+          description: normalizeText(req.body.description),
           thumbnail_location: kind === "video" ? req.body.thumbnail || null : null,
         },
         { transaction: t },
@@ -138,8 +148,9 @@ class MediaController {
     }
   }
 
-  // Alt-text-only edit. Re-uploading a file is always delete + re-add
-  // (create a new Media row, remove the old one) to avoid orphaning files.
+  // Metadata-only edit (alt text / title / description). Re-uploading a
+  // file is always delete + re-add (create a new Media row, remove the old
+  // one) to avoid orphaning files — this never touches location/kind.
   static async update(req, res) {
     await Promise.all([...validateId, ...validationRequestPatch].map((v) => v.run(req)));
     const errors = validationResult(req);
@@ -149,7 +160,18 @@ class MediaController {
       const item = await dataModel.findByPk(req.params.id);
       if (!item) return sendNotFoundError(res, "Media");
 
-      await item.update({ alt_text: req.body.alt_text ?? item.alt_text });
+      // Only overwrite a field if its key was actually present in the
+      // request — but when present, an empty/blank value genuinely clears
+      // it to null, it never falls back to the old value. Applied the same
+      // way to all three metadata fields.
+      const fields = {};
+      for (const field of ["alt_text", "title", "description"]) {
+        if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+          fields[field] = normalizeText(req.body[field]);
+        }
+      }
+
+      await item.update(fields);
       return sendSuccessResponse(res, item, "Media updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
