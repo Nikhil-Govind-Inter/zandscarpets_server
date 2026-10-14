@@ -7,6 +7,7 @@
 
 const { lookupKey } = require("./validators/shared");
 const { generateUniqueSlug } = require("../../../utils/slugHelper");
+const { buildCombinationKey, buildLabel, cartesian } = require("./resolvers");
 
 async function importCategories(normalizedRows, { models, transaction }) {
   // in-file title -> the real id this row ended up with (whether created
@@ -216,10 +217,218 @@ async function importProductVariants(normalizedRows, { models, transaction }) {
   return { created: normalizedRows.length, skipped: 0 };
 }
 
+// Product Main Upload — one row cascades Category path -> Attribute(s) ->
+// Attribute Value(s) -> Product -> its SEO meta data. Re-derives
+// create-vs-reuse for real from the raw fields productMainValidator.js
+// normalized (category_segments, attribute_value_pairs), with its own
+// fresh DB-backed + this-import-so-far caches — the same relationship
+// every other upsert importer has with its validator. Meta data is a
+// simple 1:1-by-product_id upsert (the model's own unique index on
+// product_id), checked after the product's real id is known.
+async function importProductMain(normalizedRows, { models, transaction }) {
+  let created = 0;
+  let updated = 0;
+  let categoriesCreated = 0;
+  let attributesCreated = 0;
+  let attributeValuesCreated = 0;
+  let variantsCreated = 0;
+
+  const categoryByKey = new Map(); // `${industry_id}:${parent_id|"null"}:${titleKey}` -> id
+  const attributeByTitleKey = new Map(); // titleKey -> { id, type }
+  const valueByKey = new Map(); // `${attributeTitleKey}:${valueKey}` -> id
+  const valueDetailsById = new Map(); // id -> { value, value_ar }, for building variant labels
+
+  const resolveCategoryChain = async (industryId, segments) => {
+    let parentId = null;
+    for (const segment of segments) {
+      const key = `${industryId}:${parentId ?? "null"}:${lookupKey(segment)}`;
+      if (categoryByKey.has(key)) {
+        parentId = categoryByKey.get(key);
+        continue;
+      }
+      const existing = await models.ProductCategories.findOne({
+        where: { industry_id: industryId, parent_id: parentId, title: segment },
+        transaction,
+      });
+      if (existing) {
+        categoryByKey.set(key, existing.id);
+        parentId = existing.id;
+        continue;
+      }
+      const slug = await generateUniqueSlug(models.ProductCategories, segment, { transaction });
+      const createdCategory = await models.ProductCategories.create(
+        { title: segment, title_ar: segment, slug, industry_id: industryId, parent_id: parentId },
+        { transaction },
+      );
+      categoryByKey.set(key, createdCategory.id);
+      parentId = createdCategory.id;
+      categoriesCreated += 1;
+    }
+    return parentId;
+  };
+
+  // A brand-new attribute's type is decided by whether THIS pair carries a
+  // color code — same rule the validator uses, applied independently here
+  // in the same row order, so both naturally agree.
+  const resolveAttributeId = async (attributeTitle, colorCode) => {
+    const attrKey = lookupKey(attributeTitle);
+    if (attributeByTitleKey.has(attrKey)) return attributeByTitleKey.get(attrKey);
+
+    const existing = await models.Attributes.findOne({ where: { title: attributeTitle }, transaction });
+    if (existing) {
+      attributeByTitleKey.set(attrKey, { id: existing.id, type: existing.type });
+      return attributeByTitleKey.get(attrKey);
+    }
+
+    const type = colorCode ? "color" : "text";
+    const slug = await generateUniqueSlug(models.Attributes, attributeTitle, { transaction });
+    const createdAttribute = await models.Attributes.create({ title: attributeTitle, title_ar: attributeTitle, slug, type }, { transaction });
+    attributesCreated += 1;
+    const entry = { id: createdAttribute.id, type };
+    attributeByTitleKey.set(attrKey, entry);
+    return entry;
+  };
+
+  const resolveAttributeValueId = async (attribute, attributeTitle, valueText, colorCode) => {
+    const attrKey = lookupKey(attributeTitle);
+    const valueKey = `${attrKey}:${lookupKey(valueText)}`;
+    if (valueByKey.has(valueKey)) return valueByKey.get(valueKey);
+
+    const existing = await models.AttributeValues.findOne({
+      where: { attribute_id: attribute.id, value: valueText },
+      transaction,
+    });
+    if (existing) {
+      valueByKey.set(valueKey, existing.id);
+      valueDetailsById.set(existing.id, { value: existing.value, value_ar: existing.value_ar });
+      return existing.id;
+    }
+
+    const fields = { attribute_id: attribute.id, value: valueText, value_ar: valueText };
+    if (attribute.type === "color" && colorCode) fields.color_code = colorCode;
+    const slug = await generateUniqueSlug(models.AttributeValues, valueText, { scope: { attribute_id: attribute.id }, transaction });
+    const createdValue = await models.AttributeValues.create({ ...fields, slug }, { transaction });
+    attributeValuesCreated += 1;
+    valueByKey.set(valueKey, createdValue.id);
+    valueDetailsById.set(createdValue.id, { value: createdValue.value, value_ar: createdValue.value_ar });
+    return createdValue.id;
+  };
+
+  for (const row of normalizedRows) {
+    const categoryId = await resolveCategoryChain(row.industry_id, row.category_segments);
+
+    const attributeIds = [];
+    const orderedValueIdLists = []; // one value-id array per attribute, same order as attributeIds
+    for (const group of row.attribute_value_groups) {
+      const firstHexItem = group.items.find((item) => item.colorCode);
+      const attribute = await resolveAttributeId(group.attributeTitle, firstHexItem?.colorCode);
+      const valueIds = [];
+      for (const item of group.items) {
+        // Icon values created here carry just `value` (the ref text, as a
+        // name/label) — media_path/media_alt are left blank, filled in
+        // later via the Attribute Values edit screen.
+        const valueId = await resolveAttributeValueId(attribute, group.attributeTitle, item.valueText, item.colorCode);
+        valueIds.push(valueId);
+      }
+      if (!attributeIds.includes(attribute.id)) {
+        attributeIds.push(attribute.id);
+        orderedValueIdLists.push(valueIds);
+      }
+    }
+
+    const fields = {
+      title: row.title,
+      title_ar: row.title_ar,
+      product_category_id: categoryId,
+      short_description: row.short_description,
+      short_description_ar: row.short_description_ar,
+      product_description: row.product_description,
+      product_description_ar: row.product_description_ar,
+      main_media_path: row.main_media_path,
+      list_media_path: row.list_media_path,
+      sort_order: row.sort_order,
+      is_active: row.is_active,
+    };
+
+    let productId;
+    if (row.mode === "update") {
+      fields.slug = await generateUniqueSlug(models.Products, row.title, { excludeId: row.existingId, transaction });
+      const item = await models.Products.findByPk(row.existingId, { transaction });
+      await item.update(fields, { transaction });
+      productId = row.existingId;
+      updated += 1;
+    } else {
+      fields.slug = await generateUniqueSlug(models.Products, row.title, { transaction });
+      const createdProduct = await models.Products.create(fields, { transaction });
+      productId = createdProduct.id;
+
+      if (attributeIds.length) {
+        await models.ProductAttributes.bulkCreate(
+          attributeIds.map((attributeId, index) => ({ product_id: productId, attribute_id: attributeId, sort_order: index })),
+          { transaction },
+        );
+      }
+
+      // Generate every combination of the resolved values as a real
+      // variant, same shape as importProductVariants() just above and the
+      // manual "generate all combinations" action in variantsController.js
+      // (brand-new product, so there's never a pre-existing combination to
+      // collide with — no dedupe-against-DB needed here).
+      if (row.generate_variants && orderedValueIdLists.length) {
+        const combinations = cartesian(orderedValueIdLists);
+        for (const [index, combo] of combinations.entries()) {
+          const comboValues = combo.map((id) => valueDetailsById.get(id));
+          const createdVariant = await models.ProductVariants.create(
+            {
+              product_id: productId,
+              label: buildLabel(comboValues, "value"),
+              label_ar: buildLabel(comboValues, "value_ar"),
+              combination_key: buildCombinationKey(combo),
+              sort_order: index,
+              is_active: true,
+            },
+            { transaction },
+          );
+          await models.VariantAttributeValues.bulkCreate(
+            attributeIds.map((attributeId, attrIndex) => ({
+              variant_id: createdVariant.id,
+              attribute_id: attributeId,
+              attribute_value_id: combo[attrIndex],
+            })),
+            { transaction },
+          );
+          variantsCreated += 1;
+        }
+      }
+      created += 1;
+    }
+
+    const metaFields = {
+      type: "product",
+      product_id: productId,
+      meta_title: row.meta_title,
+      meta_title_ar: row.meta_title_ar,
+      meta_description: row.meta_description,
+      meta_description_ar: row.meta_description_ar,
+      meta_keywords: row.meta_keywords,
+      meta_keywords_ar: row.meta_keywords_ar,
+    };
+    const existingMeta = await models.MetaData.findOne({ where: { product_id: productId }, transaction });
+    if (existingMeta) {
+      await existingMeta.update(metaFields, { transaction });
+    } else {
+      await models.MetaData.create(metaFields, { transaction });
+    }
+  }
+
+  return { created, updated, skipped: 0, categoriesCreated, attributesCreated, attributeValuesCreated, variantsCreated };
+}
+
 module.exports = {
   importCategories,
   importAttributes,
   importAttributeValues,
   importProducts,
   importProductVariants,
+  importProductMain,
 };

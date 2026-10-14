@@ -82,20 +82,17 @@ async function validateProducts(rows, { models, transaction }) {
     const title = trimOrUndefined(row.title);
     if (!title) rowErrors.push(err(rowNumber, "title", "REQUIRED_FIELD", { column: "title" }));
 
-    const titleAr = trimOrUndefined(row.title_ar);
-    if (!titleAr) rowErrors.push(err(rowNumber, "title_ar", "REQUIRED_FIELD", { column: "title_ar" }));
-
     const shortDescription = trimOrUndefined(row.short_description);
     if (!shortDescription) rowErrors.push(err(rowNumber, "short_description", "REQUIRED_FIELD", { column: "short_description" }));
-
-    const shortDescriptionAr = trimOrUndefined(row.short_description_ar);
-    if (!shortDescriptionAr) rowErrors.push(err(rowNumber, "short_description_ar", "REQUIRED_FIELD", { column: "short_description_ar" }));
 
     const productDescription = trimOrUndefined(row.product_description);
     if (!productDescription) rowErrors.push(err(rowNumber, "product_description", "REQUIRED_FIELD", { column: "product_description" }));
 
-    const productDescriptionAr = trimOrUndefined(row.product_description_ar);
-    if (!productDescriptionAr) rowErrors.push(err(rowNumber, "product_description_ar", "REQUIRED_FIELD", { column: "product_description_ar" }));
+    // No _ar columns in this sheet — each Arabic field defaults to its
+    // English counterpart.
+    const titleAr = title;
+    const shortDescriptionAr = shortDescription;
+    const productDescriptionAr = productDescription;
 
     const categorySlugInput = trimOrUndefined(row.category_slug);
     let categoryId;

@@ -91,7 +91,7 @@ async function validateAttributes(rows, { models, transaction }) {
       mode,
       existingId,
       title,
-      title_ar: trimOrUndefined(row.title_ar) || "",
+      title_ar: title, // no title_ar column in this sheet — defaults to title
       type: type.toLowerCase(),
       sort_order: sortOrderResult.value,
       is_active: isActiveResult.value,

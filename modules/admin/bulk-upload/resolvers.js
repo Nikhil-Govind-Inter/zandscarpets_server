@@ -14,6 +14,19 @@ const ALLOWED_IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".svg"]);
 const buildCombinationKey = (valueIds) =>
   valueIds.map(Number).sort((a, b) => a - b).join("-");
 
+// Mirrors buildLabel() in variantsController.js — joins each resolved
+// attribute value's chosen field, dropping blanks, with " / ".
+const buildLabel = (values, field) =>
+  values
+    .map((v) => v[field])
+    .filter((v) => v && String(v).trim())
+    .join(" / ");
+
+// Mirrors cartesian() in variantsController.js — [[a,b],[1,2]] ->
+// [[a,1],[a,2],[b,1],[b,2]]. Used by Product Main's generate_variants.
+const cartesian = (lists) =>
+  lists.reduce((acc, list) => acc.flatMap((combo) => list.map((value) => [...combo, value])), [[]]);
+
 // Validates a stored path like "uploads/products/abc.webp" against the
 // folder it's supposed to live in (blocks "../" and wrong-folder paths —
 // spec §8) and that the file actually exists on disk.
@@ -36,4 +49,4 @@ const resolveMediaPath = (storedPath, expectedFolder) => {
   return { ok: true };
 };
 
-module.exports = { buildCombinationKey, resolveMediaPath };
+module.exports = { buildCombinationKey, buildLabel, cartesian, resolveMediaPath };

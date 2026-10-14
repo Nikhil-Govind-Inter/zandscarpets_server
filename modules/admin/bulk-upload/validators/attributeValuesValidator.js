@@ -83,9 +83,12 @@ async function validateAttributeValues(rows, { models, transaction }) {
     const value = trimOrUndefined(row.value);
     const mediaPath = trimOrUndefined(row.media_path);
     const mediaAlt = trimOrUndefined(row.media_alt);
-    const mediaAltAr = trimOrUndefined(row.media_alt_ar);
     const colorCode = trimOrUndefined(row.color_code);
-    const valueAr = trimOrUndefined(row.value_ar);
+    // No value_ar/media_alt_ar columns in this sheet — each defaults to its
+    // English counterpart, supplied before missingForType's required-field
+    // check so that check never fires for these two.
+    const valueAr = value || null;
+    const mediaAltAr = mediaAlt || null;
 
     if (attribute) {
       const bodyForType = { value, value_ar: valueAr, media_path: mediaPath, media_alt: mediaAlt, media_alt_ar: mediaAltAr, color_code: colorCode };

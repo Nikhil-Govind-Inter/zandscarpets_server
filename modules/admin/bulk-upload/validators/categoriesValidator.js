@@ -109,9 +109,6 @@ async function validateCategories(rows, { models, transaction }) {
     const title = trimOrUndefined(row.title);
     if (!title) rowErrors.push(err(rowNumber, "title", "REQUIRED_FIELD", { column: "title" }));
 
-    const titleAr = trimOrUndefined(row.title_ar);
-    if (!titleAr) rowErrors.push(err(rowNumber, "title_ar", "REQUIRED_FIELD", { column: "title_ar" }));
-
     const industrySlugInput = trimOrUndefined(row.industry_slug);
     let industryId;
     if (!industrySlugInput) {
@@ -135,18 +132,24 @@ async function validateCategories(rows, { models, transaction }) {
     if (!showInNavbarResult.ok)
       rowErrors.push(err(rowNumber, "show_in_navbar", "INVALID_BOOLEAN", { column: "show_in_navbar", value: row.show_in_navbar }));
 
+    // No _ar columns in this sheet — each Arabic field defaults to its
+    // English counterpart (blank optional fields default to null either way,
+    // matching no Arabic text).
+    const description = trimOrUndefined(row.description) || null;
+    const materialType = trimOrUndefined(row.material_type) || null;
+
     const record = {
       rowNumber,
       rowErrors,
       title,
-      title_ar: titleAr,
+      title_ar: title,
       industry_id: industryId,
       parent_title_input: parentTitleInput,
       parent_title_key: parentTitleInput ? lookupKey(parentTitleInput) : null,
-      description: trimOrUndefined(row.description) || null,
-      description_ar: trimOrUndefined(row.description_ar) || null,
-      material_type: trimOrUndefined(row.material_type) || null,
-      material_type_ar: trimOrUndefined(row.material_type_ar) || null,
+      description,
+      description_ar: description,
+      material_type: materialType,
+      material_type_ar: materialType,
       sort_order: sortOrderResult.value,
       is_active: isActiveResult.value,
       show_in_navbar: showInNavbarResult.value,

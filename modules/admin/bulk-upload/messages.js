@@ -46,8 +46,32 @@ const messages = {
 
   LIST_IMAGE_FALLBACK: () => `list_image is blank, main_image will be used instead`,
 
+  INVALID_CATEGORY_PATH: ({ value }) =>
+    `category_path ${quote(value)} has an empty segment — check for a stray ">" or extra spaces`,
+
+  COLOR_CODE_IGNORED: ({ attributeTitle, attributeType }) =>
+    `Attribute ${quote(attributeTitle)} is type ${quote(attributeType || "text")} — the |#RRGGBB color code was ignored`,
+
+  HAS_ATTRIBUTES_BUT_NO_REFS: () =>
+    `has_attributes is TRUE but attribute_value_refs is empty — fill it in (e.g. Size=120cm) or set has_attributes to FALSE`,
+
+  ATTRIBUTES_FLAG_OFF_REFS_IGNORED: () =>
+    `attribute_value_refs has content but has_attributes is FALSE — it was ignored. Set has_attributes to TRUE to apply it`,
+
   ATTRIBUTES_IGNORED_ON_UPDATE: () =>
     `attribute_titles is ignored when updating an existing product — attributes aren't changed via bulk upload; edit them from the product's screen instead`,
+
+  VARIANTS_IGNORED_ON_UPDATE: () =>
+    `generate_variants is ignored when updating an existing product — variants aren't generated via bulk upload on update; use the Product Variants sheet or Manage Variants instead`,
+
+  GENERATE_VARIANTS_NEEDS_ATTRIBUTES: () =>
+    `generate_variants is TRUE but has_attributes isn't — variants need attributes to vary over. Set has_attributes to TRUE and fill in attribute_value_refs`,
+
+  MULTIPLE_VALUES_BUT_GENERATE_VARIANTS_OFF: ({ attributeTitle }) =>
+    `Attribute ${quote(attributeTitle)} lists more than one value but generate_variants is FALSE — the values were still created/linked, but no variants were generated from them`,
+
+  TOO_MANY_VARIANT_COMBINATIONS: ({ count, max }) =>
+    `attribute_value_refs would generate ${count} variant combinations, over the limit of ${max} per row — list fewer values, or split this into multiple uploads`,
 
   ATTRIBUTE_VALUE_REF_FORMAT: ({ value }) =>
     `${quote(value)} must be in the form Attribute=Value, e.g. Size=120cm`,

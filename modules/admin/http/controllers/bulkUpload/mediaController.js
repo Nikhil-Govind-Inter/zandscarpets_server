@@ -20,6 +20,12 @@ const FOLDER_WHITELIST = {
 };
 
 const ALLOWED_EXT = /jpeg|jpg|png|webp/;
+const IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
+
+// Pagination for the listing endpoint — the admin page shows 25 at a time
+// and "loads more" on demand.
+const DEFAULT_LIST_LIMIT = 25;
+const MAX_LIST_LIMIT = 200;
 const MAGIC_BYTES = [
   { ext: "jpg", bytes: [0xff, 0xd8, 0xff] },
   { ext: "png", bytes: [0x89, 0x50, 0x4e, 0x47] },
@@ -53,6 +59,61 @@ const buildUploader = (folder) =>
   }).array("files", 50);
 
 class BulkUploadMediaController {
+  // Read-only listing of whatever is already stored in the folder for the
+  // given type, so the admin page can show previously-uploaded files (with a
+  // preview) — not just the ones uploaded in the current browser session.
+  // Same fixed whitelist as upload: the client never supplies a raw path.
+  // Paginated (`limit`/`offset`) so the page can "load more" 25 at a time.
+  static async list(req, res) {
+    const folder = FOLDER_WHITELIST[req.query?.type];
+    if (!folder) {
+      return sendValidationError(res, [
+        { field: "type", message: `?type= query param must be one of: ${Object.keys(FOLDER_WHITELIST).join(", ")}` },
+      ]);
+    }
+
+    const parsedLimit = Number.parseInt(req.query?.limit, 10);
+    const limit = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), MAX_LIST_LIMIT) : DEFAULT_LIST_LIMIT;
+    const parsedOffset = Number.parseInt(req.query?.offset, 10);
+    const offset = Number.isFinite(parsedOffset) ? Math.max(parsedOffset, 0) : 0;
+
+    try {
+      const dir = path.join(process.cwd(), "uploads", folder);
+      if (!fs.existsSync(dir)) {
+        return sendSuccessResponse(res, { files: [], total: 0, limit, offset, hasMore: false }, "Media list retrieved");
+      }
+
+      const files = [];
+      for (const name of fs.readdirSync(dir)) {
+        if (!IMAGE_EXT.test(name)) continue;
+        try {
+          const stat = fs.statSync(path.join(dir, name));
+          if (!stat.isFile()) continue;
+          const storedPath = path.join("uploads", folder, name).replace(/\\/g, "/");
+          files.push({
+            name,
+            storedPath,
+            previewUrl: `${BASE_URL}/${storedPath}`,
+            sizeBytes: stat.size,
+            modifiedAt: stat.mtime.toISOString(),
+          });
+        } catch (_err) {
+          // Skip files that vanish / can't be stat'd mid-listing.
+        }
+      }
+      files.sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
+
+      const page = files.slice(offset, offset + limit);
+      return sendSuccessResponse(
+        res,
+        { files: page, total: files.length, limit, offset, hasMore: offset + page.length < files.length },
+        "Media list retrieved",
+      );
+    } catch (error) {
+      return sendErrorResponse(res, error);
+    }
+  }
+
   static async upload(req, res) {
     // `type` must be known before multer is configured (it picks the
     // destination folder), so it's a query param, not a multipart field —
