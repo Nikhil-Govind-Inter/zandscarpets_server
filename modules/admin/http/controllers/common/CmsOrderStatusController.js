@@ -63,8 +63,14 @@ const navbarValidators = [
   body("show_in_navbar").isBoolean({ strict: true }).withMessage("show_in_navbar must be a boolean"),
 ];
 
+const homeValidators = [
+  ...baseValidators,
+  body("show_in_home").isBoolean({ strict: true }).withMessage("show_in_home must be a boolean"),
+];
+
 module.exports = {
   updateStatus: updateField(statusValidators, "is_active", "Status"),
   updateSortOrder: updateField(sortOrderValidators, "sort_order", "Sort order"),
   updateNavbar: updateField(navbarValidators, "show_in_navbar", "Navbar visibility"),
+  updateHome: updateField(homeValidators, "show_in_home", "Home page visibility"),
 };
