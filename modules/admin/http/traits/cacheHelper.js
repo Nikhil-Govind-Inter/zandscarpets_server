@@ -279,6 +279,11 @@ const cacheKeys = {
   productMediaListPattern: () => "admin:cache:productmedia:list:*",
   productMediaItem: (id) => `admin:cache:productmedia:item:${id}`,
 
+  // PRODUCT DATA SHEETS
+  productDataSheetList: (req) => `admin:cache:productdatasheet:list:${stableStringify(req.query)}`,
+  productDataSheetListPattern: () => "admin:cache:productdatasheet:list:*",
+  productDataSheetItem: (productId) => `admin:cache:productdatasheet:item:${productId}`,
+
 };
 
 module.exports = {
