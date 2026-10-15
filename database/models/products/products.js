@@ -87,6 +87,11 @@ module.exports = (sequelize) => {
         type: DataTypes.DECIMAL,
         allowNull: true,
       },
+      // The product's single badge, chosen from badge-flagged labels.
+      badge_label_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
@@ -151,6 +156,12 @@ module.exports = (sequelize) => {
     Products.hasMany(models.DetailMappings, {
       foreignKey: "product_id",
       as: "detailMappings",
+    });
+
+    // The product's single badge label (a master label flagged is_product_badge).
+    Products.belongsTo(models.ProductLabels, {
+      foreignKey: "badge_label_id",
+      as: "badge",
     });
 
     // One SEO meta per product (see MetaData metaData.js — discriminated by type).

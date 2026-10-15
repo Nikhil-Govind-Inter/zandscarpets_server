@@ -62,6 +62,11 @@ const validationRequestPost = [
   optionalJsonArray("related_product_ids", "Related product ids"),
   optionalJsonArray("attribute_ids", "Attribute ids"),
 
+  body("badge_label_id")
+    .optional({ checkFalsy: true })
+    .isInt({ min: 1 })
+    .withMessage("Badge must be a valid label ID"),
+
   body("sort_order")
     .notEmpty()
     .withMessage("Sort order is required")

@@ -63,10 +63,15 @@ class ProductLabelController {
       const type = labelType(req.query.type);
       if (type) where.type = type;
 
+      // `?badge=true` limits the list to badge-capable labels (the badge picker).
+      if (req.query.badge === "true" || req.query.badge === "1") {
+        where.is_product_badge = true;
+      }
+
       const result = await dataModel.findAll({
         where,
         order: [["sort_order", "ASC"]],
-        attributes: ["id", "title", "title_ar", "type"],
+        attributes: ["id", "title", "title_ar", "type", "is_product_badge"],
       });
 
       return sendSuccessResponse(res, result, "Product label list retrieved successfully");

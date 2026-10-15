@@ -19,6 +19,14 @@ const labelsInclude = {
   required: false,
 };
 
+// The product's single badge label (a master label flagged is_product_badge).
+const badgeInclude = {
+  model: models.ProductLabels,
+  as: "badge",
+  attributes: ["id", "title", "title_ar", "slug", "is_product_badge"],
+  required: false,
+};
+
 // Attributes the product uses to build variants (Size, Color, ...).
 const attributesInclude = {
   model: models.Attributes,
@@ -35,6 +43,7 @@ const detailInclude = [
     attributes: ["id", "title", "title_ar"],
   },
   labelsInclude,
+  badgeInclude,
   attributesInclude,
   {
     model: dataModel,
@@ -96,6 +105,14 @@ const parseIds = (value) => {
   ];
 };
 
+// undefined = not sent (leave as-is); "" / "null" = explicit clear (null).
+const parseOptionalId = (value) => {
+  if (value === undefined) return undefined;
+  if (value === null || value === "" || value === "null") return null;
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
+
 // true when every id exists (soft-deleted rows don't count)
 const allExist = async (model, ids, transaction) => {
   if (!ids || !ids.length) return true;
@@ -107,7 +124,7 @@ const allExist = async (model, ids, transaction) => {
 // Slug is never read from req.body here — it's always server-generated (see
 // create()/update()), so there's nothing to check it against.
 const validateRelations = async (req, ids, ignoreId, t) => {
-  const { label_ids, related_product_ids, attribute_ids } = ids;
+  const { label_ids, related_product_ids, attribute_ids, badge_label_id } = ids;
 
   const category = await models.ProductCategories.findByPk(req.body.product_category_id, { transaction: t });
   if (!category) {
@@ -116,6 +133,17 @@ const validateRelations = async (req, ids, ignoreId, t) => {
 
   if (!(await allExist(models.ProductLabels, label_ids, t))) {
     return [{ path: "label_ids", msg: "One or more labels not found" }];
+  }
+
+  // The badge must be a label flagged is_product_badge.
+  if (badge_label_id) {
+    const badge = await models.ProductLabels.findOne({
+      where: { id: badge_label_id, is_product_badge: true },
+      transaction: t,
+    });
+    if (!badge) {
+      return [{ path: "badge_label_id", msg: "Badge label not found or not a badge" }];
+    }
   }
 
   if (!(await allExist(models.Attributes, attribute_ids, t))) {
@@ -148,10 +176,12 @@ const readIds = (req) => {
     label_ids: parseIds(req.body.label_ids),
     related_product_ids: parseIds(req.body.related_product_ids),
     attribute_ids: parseIds(req.body.attribute_ids),
+    badge_label_id: parseOptionalId(req.body.badge_label_id),
   };
   delete req.body.label_ids;
   delete req.body.related_product_ids;
   delete req.body.attribute_ids;
+  delete req.body.badge_label_id;
   return ids;
 };
 
@@ -160,6 +190,21 @@ const syncLinks = async (item, ids, t) => {
   if (ids.label_ids !== null) await item.setLabels(ids.label_ids, { transaction: t });
   if (ids.related_product_ids !== null) await item.setRelatedProducts(ids.related_product_ids, { transaction: t });
   if (ids.attribute_ids !== null) await item.setAttributes(ids.attribute_ids, { transaction: t });
+};
+
+// The chosen badge label is also attached to the product's labels, so it isn't
+// "badge-only". When label_ids wasn't sent, merge the badge into the current set.
+const attachBadgeToLabels = async (item, ids, t) => {
+  const badgeId = ids.badge_label_id;
+  if (!badgeId) return;
+  if (ids.label_ids !== null) {
+    if (!ids.label_ids.includes(badgeId)) ids.label_ids.push(badgeId);
+    return;
+  }
+  const current = await item.getLabels({ transaction: t, attributes: ["id"] });
+  const currentIds = current.map((l) => l.id);
+  if (!currentIds.includes(badgeId)) currentIds.push(badgeId);
+  ids.label_ids = currentIds;
 };
 
 class ProductController {
@@ -293,7 +338,12 @@ class ProductController {
       // Always server-generated — there is no slug field in the admin form.
       req.body.slug = await generateUniqueSlug(dataModel, req.body.title, { transaction: t });
 
-      const item = await dataModel.create(req.body, { transaction: t });
+      const item = await dataModel.create(
+        { ...req.body, badge_label_id: ids.badge_label_id ?? null },
+        { transaction: t },
+      );
+      // Make sure the badge is also one of the product's labels, then sync links.
+      await attachBadgeToLabels(item, ids, t);
       await syncLinks(item, ids, t);
 
       await t.commit();
@@ -338,7 +388,12 @@ class ProductController {
       // item's own row when checking for a collision.
       req.body.slug = await generateUniqueSlug(dataModel, req.body.title, { excludeId: id, transaction: t });
 
-      await item.update(req.body, { transaction: t });
+      const updateData = { ...req.body };
+      if (ids.badge_label_id !== undefined) updateData.badge_label_id = ids.badge_label_id;
+      await item.update(updateData, { transaction: t });
+
+      // Make sure the badge is also attached to the product's labels.
+      await attachBadgeToLabels(item, ids, t);
       await syncLinks(item, ids, t);
 
       await t.commit();
