@@ -57,6 +57,10 @@ const validationRequestPost = [
     .optional()
     .isBoolean()
     .withMessage("Show in home must be a boolean"),
+  body("badge_label_id")
+    .optional({ checkFalsy: true })
+    .isInt({ min: 1 })
+    .withMessage("Badge must be a valid label ID"),
 ];
 
 const validateId = [

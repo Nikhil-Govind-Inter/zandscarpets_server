@@ -42,6 +42,13 @@ const relatedInclude = [
   },
 ];
 
+const badgeInclude = {
+  model: models.ProductLabels,
+  as: "badge",
+  attributes: ["id", "title", "title_ar", "slug", "is_product_badge"],
+  required: false,
+};
+
 const parseJsonArray = (value) => {
   if (Array.isArray(value)) return value;
   if (typeof value === "string" && value.trim()) {
@@ -61,6 +68,13 @@ const parseHighlightIds = (value) => {
   return parseJsonArray(value)
     .map((id) => Number(id))
     .filter((id) => Number.isInteger(id) && id > 0);
+};
+
+const parseOptionalId = (value) => {
+  if (value === undefined) return undefined;
+  if (value === null || value === "" || value === "null") return null;
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
 };
 
 // Ids of every category below `rootId` in the tree (children, grandchildren, ...).
@@ -209,7 +223,7 @@ class ProductCategoryController {
 
     try {
       const { id } = req.params;
-      const item = await dataModel.findByPk(id, { include: relatedInclude });
+      const item = await dataModel.findByPk(id, { include: [...relatedInclude, badgeInclude] });
       if (!item) return sendNotFoundError(res, "Product category");
 
       sendSuccessResponse(res, item, "Product category retrieved successfully");
@@ -241,7 +255,22 @@ class ProductCategoryController {
       }
 
       const highlightIds = parseHighlightIds(req.body.highlight_ids);
+      const badgeLabelId = parseOptionalId(req.body.badge_label_id);
       delete req.body.highlight_ids;
+      delete req.body.badge_label_id;
+      if (badgeLabelId) {
+        const badge = await models.ProductLabels.findOne({
+          where: { id: badgeLabelId, is_product_badge: true },
+          transaction: t,
+        });
+        if (!badge) {
+          await t.rollback();
+          return sendValidationError(res, [
+            { path: "badge_label_id", msg: "Badge label not found or not a badge" },
+          ]);
+        }
+      }
+
 
       const slug = req.body.slug;
       if (!slug || !String(slug).trim()) {
@@ -257,7 +286,10 @@ class ProductCategoryController {
         });
       }
 
-      const item = await dataModel.create(req.body, { transaction: t });
+      const item = await dataModel.create(
+        { ...req.body, badge_label_id: badgeLabelId ?? null },
+        { transaction: t },
+      );
 
       if (highlightIds?.length) {
         await item.setHighlights(highlightIds, { transaction: t });
@@ -266,7 +298,7 @@ class ProductCategoryController {
       await t.commit();
 
       const created = await dataModel.findByPk(item.id, {
-        include: relatedInclude,
+        include: [...relatedInclude, badgeInclude],
       });
       sendSuccessResponse(
         res,
@@ -323,7 +355,35 @@ class ProductCategoryController {
       await handleFileUploadUpdate(req, item, fileFields);
 
       const highlightIds = parseHighlightIds(req.body.highlight_ids);
+      const badgeLabelId = parseOptionalId(req.body.badge_label_id);
       delete req.body.highlight_ids;
+      delete req.body.badge_label_id;
+      if (badgeLabelId) {
+        const badge = await models.ProductLabels.findOne({
+          where: { id: badgeLabelId, is_product_badge: true },
+          transaction: t,
+        });
+        if (!badge) {
+          await t.rollback();
+          return sendValidationError(res, [
+            { path: "badge_label_id", msg: "Badge label not found or not a badge" },
+          ]);
+        }
+      }
+
+      if (badgeLabelId) {
+        const badge = await models.ProductLabels.findOne({
+          where: { id: badgeLabelId, is_product_badge: true },
+          transaction: t,
+        });
+        if (!badge) {
+          await t.rollback();
+          return sendValidationError(res, [
+            { path: "badge_label_id", msg: "Badge label not found or not a badge" },
+          ]);
+        }
+      }
+
 
       const nextSlug = req.body.slug;
       if (!nextSlug || !String(nextSlug).trim()) {
@@ -344,7 +404,9 @@ class ProductCategoryController {
         }
       }
 
-      await item.update(req.body, { transaction: t });
+      const updateData = { ...req.body };
+      if (badgeLabelId !== undefined) updateData.badge_label_id = badgeLabelId;
+      await item.update(updateData, { transaction: t });
 
       if (highlightIds !== null) {
         await item.setHighlights(highlightIds, { transaction: t });
@@ -352,7 +414,7 @@ class ProductCategoryController {
 
       await t.commit();
 
-      const updated = await dataModel.findByPk(id, { include: relatedInclude });
+      const updated = await dataModel.findByPk(id, { include: [...relatedInclude, badgeInclude] });
       sendSuccessResponse(res, updated, "Product category updated successfully");
     } catch (error) {
       await t.rollback();

@@ -43,6 +43,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      badge_label_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       media_path: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -117,6 +121,11 @@ module.exports = (sequelize) => {
     });
 
     // many-to-many with industries via a join table managed by Sequelize
+    ProductCategories.belongsTo(models.ProductLabels, {
+      foreignKey: "badge_label_id",
+      as: "badge",
+    });
+
     ProductCategories.belongsToMany(models.Industry, {
       through: "industry_categories",
       as: "industries",
