@@ -164,11 +164,6 @@ const cacheKeys = {
   homeBrandsListPattern: () => "admin:cache:homebrands:list:*",
   homeBrandsItem: (id) => `admin:cache:homebrands:item:${id}`,
 
-  // HOME MILESTONES
-  homeMilestoneList: (req) => `admin:cache:homemilestone:list:${stableStringify(req.query)}`,
-  homeMilestoneListPattern: () => "admin:cache:homemilestone:list:*",
-  homeMilestoneItem: (id) => `admin:cache:homemilestone:item:${id}`,
-
   // HOME TESTIMONAILS
   homeTestimonialsList: (req) => `admin:cache:hometestimonials:list:${stableStringify(req.query)}`,
   homeTestimonialsListPattern: () => "admin:cache:hometestimonials:list:*",
@@ -197,10 +192,10 @@ const cacheKeys = {
   messagesListPattern: () => "admin:cache:messages:list:*",
   messagesItem: (id) => `admin:cache:messages:item:${id}`,
 
-  // MILESTONES
-  milestonesList: (req) => `admin:cache:milestones:list:${stableStringify(req.query)}`,
-  milestonesListPattern: () => "admin:cache:milestones:list:*",
-  milestonesItem: (id) => `admin:cache:milestones:item:${id}`,
+  // COMMON MILESTONES
+  commonMilestoneList: (req) => `admin:cache:commonmilestone:list:${stableStringify(req.query)}`,
+  commonMilestoneListPattern: () => "admin:cache:commonmilestone:list:*",
+  commonMilestoneItem: (id) => `admin:cache:commonmilestone:item:${id}`,
 
   // CONTACT CMS
   contactCms: () => "admin:cache:contactcms",

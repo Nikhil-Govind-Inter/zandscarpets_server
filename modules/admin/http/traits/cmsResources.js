@@ -38,7 +38,7 @@ const cmsResources = {
     frontend: [ABOUT],
   },
   "home-banner": { model: "HomeBanner", cachePrefix: "homebanner" },
-  "home-milestones": { model: "HomeMilestones", cachePrefix: "homemilestone" },
+  "common-milestones": { model: "CommonMilestones", cachePrefix: "commonmilestone" },
   "home-brands": { model: "HomeBrands", cachePrefix: "homebrands" },
   "home-testimonials": {
     model: "HomeTestimonials",
@@ -52,11 +52,6 @@ const cmsResources = {
     frontend: [ABOUT],
   },
   messages: { model: "Messages", cachePrefix: "messages", frontend: [ABOUT] },
-  milestones: {
-    model: "Milestones",
-    cachePrefix: "milestones",
-    frontend: [ABOUT],
-  },
   connections: { model: "Connections", cachePrefix: "connections" },
   projects: { model: "Projects", cachePrefix: "projects" },
   services: { model: "Services", cachePrefix: "services", frontend: [SERVICES] },

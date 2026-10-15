@@ -8,7 +8,6 @@ const {
   sendSuccessResponse,
   sendErrorResponse,
   sendNotFoundError,
-  sendValidationError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
@@ -20,26 +19,26 @@ const {
 const {
   validationRequestPost,
   validateId,
-} = require("../../request/home/homeMilestonesRequest");
+} = require("../../request/common/milestonesRequest");
 const {
   updateValidationCheck,
   createValidationCheck,
   idValidationCheck,
 } = require("../../traits/validationHelper");
 
-const dataModel = models.HomeMilestones;
+const dataModel = models.CommonMilestones;
 const fileFields = ["media_path"];
 
-class HomeMilestonesController {
+class CommonMilestonesController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.homeMilestoneList(req);
+      const listCacheKey = cacheKeys.commonMilestoneList(req);
       const cached = await getCache(req, listCacheKey);
       if (cached) {
         return sendSuccessResponse(
           res,
           cached,
-          "Home milestone retrieved successfully from cache",
+          "Common milestone retrieved successfully from cache",
         );
       }
 
@@ -49,7 +48,7 @@ class HomeMilestonesController {
       });
 
       await setCache(req, listCacheKey, result);
-      sendSuccessResponse(res, result, "Home milestone retrieved successfully");
+      sendSuccessResponse(res, result, "Common milestone retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -59,20 +58,20 @@ class HomeMilestonesController {
     await idValidationCheck(req, res, validateId);
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.homeMilestoneItem(id);
+      const itemCacheKey = cacheKeys.commonMilestoneItem(id);
       const cached = await getCache(req, itemCacheKey);
       if (cached)
         return sendSuccessResponse(
           res,
           cached,
-          "Home milestone retrieved successfully",
+          "Common milestone retrieved successfully",
         );
 
       const item = await dataModel.findByPk(id);
-      if (!item) return sendNotFoundError(res, "Home milestone");
+      if (!item) return sendNotFoundError(res, "Common milestone");
 
       await setCache(req, itemCacheKey, item);
-      sendSuccessResponse(res, item, "Home milestone retrieved successfully");
+      sendSuccessResponse(res, item, "Common milestone retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -88,11 +87,11 @@ class HomeMilestonesController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.homeMilestoneListPattern());
+      await invalidateCache(req, cacheKeys.commonMilestoneListPattern());
       sendSuccessResponse(
         res,
         item,
-        "Home milestone created successfully",
+        "Common milestone created successfully",
         201,
       );
     } catch (error) {
@@ -109,7 +108,7 @@ class HomeMilestonesController {
       const item = await dataModel.findByPk(id);
       if (!item) {
         await t.rollback();
-        return sendNotFoundError(res, "Home milestone");
+        return sendNotFoundError(res, "Common milestone");
       }
 
       await handleFileUploadUpdate(req, item, fileFields);
@@ -118,10 +117,10 @@ class HomeMilestonesController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.homeMilestoneItem(id));
-      await invalidateCache(req, cacheKeys.homeMilestoneListPattern());
+      await invalidateCache(req, cacheKeys.commonMilestoneItem(id));
+      await invalidateCache(req, cacheKeys.commonMilestoneListPattern());
 
-      sendSuccessResponse(res, item, "Home milestone updated successfully");
+      sendSuccessResponse(res, item, "Common milestone updated successfully");
     } catch (error) {
       await t.rollback();
       return sendErrorResponse(res, error);
@@ -136,7 +135,7 @@ class HomeMilestonesController {
       const item = await dataModel.findByPk(id);
       if (!item) {
         await t.rollback();
-        return sendNotFoundError(res, "Home milestone");
+        return sendNotFoundError(res, "Common milestone");
       }
 
       await item.destroy({ transaction: t });
@@ -145,13 +144,13 @@ class HomeMilestonesController {
 
       if (item.media_path) await deleteOldFile(item.media_path);
 
-      await invalidateCache(req, cacheKeys.homeMilestoneItem(id));
-      await invalidateCache(req, cacheKeys.homeMilestoneListPattern());
+      await invalidateCache(req, cacheKeys.commonMilestoneItem(id));
+      await invalidateCache(req, cacheKeys.commonMilestoneListPattern());
 
       sendSuccessResponse(
         res,
         { id: id },
-        "Home milestone deleted successfully",
+        "Common milestone deleted successfully",
       );
     } catch (error) {
       await t.rollback();
@@ -160,4 +159,4 @@ class HomeMilestonesController {
   }
 }
 
-module.exports = HomeMilestonesController;
+module.exports = CommonMilestonesController;

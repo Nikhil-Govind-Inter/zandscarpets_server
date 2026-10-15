@@ -15,7 +15,6 @@ class HomeService {
     }
     const [
       homeBanners = [],
-      homeMilestone = [],
       homeMap = [],
       homeExploreOurExpertise = [],
       homeAppFeatures = [],
@@ -25,7 +24,6 @@ class HomeService {
       blogs = [],
     ] = await Promise.all([
       models.HomeBanner.findAll(orderedActive),
-      models.HomeMilestone.findAll(orderedActive),
       models.HomeMap.findAll(orderedActive),
       models.HomeExploreOurExpertise.findAll(orderedActive),
       models.HomeAppFeatures.findAll(orderedActive),
@@ -38,7 +36,6 @@ class HomeService {
 
     const data = {
       banner_section: this.buildBannerSection(homeBanners),
-      milestone_section: this.buildMilestoneSection(cmsData, homeMilestone),
       company_growth_section: this.buildCompanyGrowthSection(homeMap),
       make_ride_section: this.buildMakeRideSection(cmsData),
       explore_section: this.buildExploreSection(
@@ -78,17 +75,6 @@ class HomeService {
             "media_mobile_path",
             "media_alt"
           ),
-        })) || [],
-    };
-  }
-
-  static buildMilestoneSection(cmsData, homeMilestone) {
-    return {
-      description: cmsData?.milestone_description ?? "",
-      list:
-        homeMilestone.map((item) => ({
-          title: item?.title ?? "",
-          value: item?.value ?? "",
         })) || [],
     };
   }

@@ -17,7 +17,6 @@ const defineMaterials = require("./masters/materials");
 const defineWorkPlan = require("./masters/workPlan");
 const defineHomeCms = require("./home/homeCms");
 const defineHomeBanner = require("./home/homeBanner");
-const defineHomeMilestones = require("./home/homeMilestones");
 const defineHomeBrands = require("./home/homeBrands");
 const defineHomeTestimonials = require("./home/homeTestimonials");
 const defineAboutCms = require("./about/aboutCms");
@@ -25,7 +24,6 @@ const defineCoreValues = require("./about/coreValues");
 const defineHistory = require("./about/history");
 const defineAboutIndustries = require("./about/aboutIndustries");
 const defineMessages = require("./about/messages");
-const defineMilestones = require("./about/mileStones");
 const defineContactCms = require("./contact/contactCms");
 const defineConnections = require("./contact/connections");
 const defineProjects = require("./projects/projects");
@@ -56,6 +54,8 @@ const defineDetailItemExclusions = require("./details/detailItemExclusions");
 const defineProcessSteps = require("./services/processSteps");
 const defineServices = require("./services/services");
 const defineServiceCms = require("./services/serviceCms");
+// common
+const defineCommonMilestones = require("./common/commonMilestones");
 
 // product masters
 const models = {
@@ -80,7 +80,6 @@ const models = {
   WorkPlan: defineWorkPlan(sequelize),
   HomeCms: defineHomeCms(sequelize),
   HomeBanner: defineHomeBanner(sequelize),
-  HomeMilestones: defineHomeMilestones(sequelize),
   HomeBrands: defineHomeBrands(sequelize),
   HomeTestimonials: defineHomeTestimonials(sequelize),
 
@@ -90,7 +89,6 @@ const models = {
   History: defineHistory(sequelize),
   AboutIndustries: defineAboutIndustries(sequelize),
   Messages: defineMessages(sequelize),
-  Milestones: defineMilestones(sequelize),
 
   // CONTACT
   ContactCms: defineContactCms(sequelize),
@@ -132,6 +130,9 @@ const models = {
   Services: defineServices(sequelize),
   ServiceCms: defineServiceCms(sequelize),
   ProcessSteps: defineProcessSteps(sequelize),
+
+  // COMMON
+  CommonMilestones: defineCommonMilestones(sequelize),
 };
 
 Object.keys(models).forEach((modelName) => {

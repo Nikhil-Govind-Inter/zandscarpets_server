@@ -23,7 +23,6 @@ class AboutService {
 
     const [
       banner = [],
-      stats = [],
       coreValues = [],
       history = [],
       messages = [],
@@ -42,7 +41,6 @@ class AboutService {
           },
         ],
       }),
-      models.Milestones.findAll(activeQuery),
       models.CoreValues.findAll(activeQuery),
       models.History.findAll(activeQuery),
       models.Messages.findAll({
@@ -72,7 +70,7 @@ class AboutService {
       ),
       introduction_section: AboutSectionBuilder.buildIntroductionSection(
         cmsData,
-        stats,
+        [],
         normalizedLang,
       ),
       history_section: AboutSectionBuilder.buildHistorySection(

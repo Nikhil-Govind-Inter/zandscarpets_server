@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const HomeMilestones = sequelize.define(
-    "HomeMilestones",
+  const CommonMilestones = sequelize.define(
+    "CommonMilestones",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -47,17 +47,21 @@ module.exports = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      show_in_home: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
       deleted_at: {
         type: DataTypes.DATE,
       },
     },
     {
-      tableName: "home_milestones",
+      tableName: "common_milestones",
       timestamps: true,
       paranoid: true,
       deletedAt: "deleted_at",
     },
   );
 
-  return HomeMilestones;
+  return CommonMilestones;
 };

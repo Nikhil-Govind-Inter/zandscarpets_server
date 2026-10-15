@@ -1,12 +1,12 @@
 const express = require("express");
-const Controller = require("../../http/controllers/home/homeMilestonesController");
+const Controller = require("../../http/controllers/common/commonMilestonesController");
 const { createUploadMiddleware } = require("../../http/middleware/multerMiddleware");
 const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
 const uploadFields = [{ name: "media_path" }];
-const upload = createUploadMiddleware("home-milestones", uploadFields);
+const upload = createUploadMiddleware("common-milestones", uploadFields);
 
 router.use(authMiddleware(["admin", "user"]));
 router.get("/", Controller.list);
