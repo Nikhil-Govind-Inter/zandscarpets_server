@@ -158,13 +158,32 @@ class ProductCategoryController {
 
   // Flat list for parent selects. When `excludeId` is given, that category and
   // its whole subtree are left out so a category can't become its own ancestor.
+  // When `industry_id` is given, the list is scoped to categories mapped to
+  // that industry via the industry_categories join (e.g. the Projects form's
+  // dependent Category dropdown).
   static async getActive(req, res) {
     try {
       const excludeId = parseInt(req.query.excludeId, 10);
+      const industryId = parseInt(req.query.industry_id, 10);
+
+      const industryFilter =
+        Number.isInteger(industryId) && industryId > 0
+          ? [
+              {
+                model: models.Industry,
+                as: "industries",
+                where: { id: industryId },
+                attributes: [],
+                through: { attributes: [] },
+              },
+            ]
+          : [];
+
       let result = await dataModel.findAll({
         where: { is_active: true },
         order: [["sort_order", "ASC"]],
         attributes: ["id", "title", "parent_id"],
+        include: industryFilter,
       });
 
       if (Number.isInteger(excludeId) && excludeId > 0) {

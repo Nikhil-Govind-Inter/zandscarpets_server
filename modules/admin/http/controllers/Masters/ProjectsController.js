@@ -13,36 +13,41 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/projectsRequest");
 const { validationResult } = require("express-validator");
+const {
+  generateSlug,
+  generateUniqueSlug,
+  assertNoDuplicate,
+} = require("../../../../../utils/slugHelper");
 
 const dataModel = models.Projects;
 const fileFields = ["thumbnail", "media_path"];
-const GALLERY_SUBFOLDER = "projects";
 
 const relatedInclude = [
-  { model: models.Industry, as: "category", attributes: ["id", "title"] },
-  { model: models.Materials, as: "material", attributes: ["id", "title"] },
+  { model: models.Industry, as: "industry", attributes: ["id", "title"] },
+  {
+    model: models.ProductCategories,
+    as: "category",
+    attributes: ["id", "title"],
+  },
   {
     model: dataModel,
     as: "relatedProjects",
     attributes: ["id", "title", "thumbnail"],
     through: { attributes: [] },
   },
+  {
+    model: models.ProjectMedia,
+    as: "project_media",
+    attributes: ["id", "media_type", "media_path", "thumbnail", "sort_order"],
+    separate: true,
+    order: [["sort_order", "ASC"]],
+  },
 ];
 
-// Multer normalizes single-file fields (thumbnail/media_path) via `fields`
-// in the upload middleware, but a gallery field like project_media can carry
-// several files under the same fieldname — those aren't in that `fields`
-// list, so they land untouched in req.files.project_media as an array.
 const parseJsonArray = (value) => {
   if (Array.isArray(value)) return value;
   if (typeof value === "string" && value.trim()) {
@@ -56,21 +61,6 @@ const parseJsonArray = (value) => {
   return [];
 };
 
-// Builds the final project_media array: existing paths the client asked to
-// keep (filtered to ones actually under our upload subfolder, so bogus
-// client input can't be smuggled into the column) plus any newly uploaded
-// gallery files from this request.
-const buildProjectMedia = (req) => {
-  const kept = parseJsonArray(req.body.project_media).filter(
-    (p) =>
-      typeof p === "string" && p.startsWith(`uploads/${GALLERY_SUBFOLDER}/`),
-  );
-  const newFiles = (req.files?.project_media || []).map((f) =>
-    f.path.replace(/\\/g, "/"),
-  );
-  return [...kept, ...newFiles];
-};
-
 const parseRelatedProjectIds = (value) => {
   if (value === undefined) return null;
   return parseJsonArray(value)
@@ -78,28 +68,135 @@ const parseRelatedProjectIds = (value) => {
     .filter((id) => Number.isInteger(id) && id > 0);
 };
 
+// A category only makes sense attached to a project if it's actually one of
+// the categories mapped (via industry_categories) to that project's industry.
+const categoryBelongsToIndustry = async (industryId, categoryId) => {
+  const industry = await models.Industry.findByPk(industryId, {
+    include: [
+      {
+        model: models.ProductCategories,
+        as: "categories",
+        where: { id: categoryId },
+        attributes: ["id"],
+        through: { attributes: [] },
+      },
+    ],
+  });
+  return Boolean(industry);
+};
+
+// Multer's upload.any() groups every uploaded file by fieldname regardless
+// of whether it's in createUploadMiddleware's declared `fields` list, so a
+// per-gallery-item file pair arrives as req.files["project_media_file__<tempId>"]
+// / req.files["project_media_thumbnail__<tempId>"], keyed by the client's tempId.
+const buildMediaFilePaths = (req, tempId) => {
+  const file = req.files?.[`project_media_file__${tempId}`]?.[0];
+  const thumb = req.files?.[`project_media_thumbnail__${tempId}`]?.[0];
+  return {
+    media_path: file ? file.path.replace(/\\/g, "/") : null,
+    thumbnail: thumb ? thumb.path.replace(/\\/g, "/") : null,
+  };
+};
+
+// Reconciles the project's gallery (ProjectMedia rows) against the desired
+// final state the client sent in `project_media_meta`: a JSON array of
+// `{ id, sort_order }` for kept existing items and `{ tempId, media_type,
+// sort_order }` for new ones (whose files travel under that tempId). Rows no
+// longer referenced are soft-deleted and returned so their files can be
+// cleaned up (best-effort) after the transaction commits.
+const syncProjectMedia = async (req, project, t) => {
+  const metaItems = parseJsonArray(req.body.project_media_meta);
+  delete req.body.project_media_meta;
+
+  const existingRows = await models.ProjectMedia.findAll({
+    where: { project_id: project.id },
+    transaction: t,
+  });
+  const existingById = new Map(existingRows.map((row) => [row.id, row]));
+  const keptIds = new Set();
+
+  for (const entry of metaItems) {
+    const sortOrder = Number.isInteger(entry?.sort_order) ? entry.sort_order : 0;
+
+    if (entry?.id && existingById.has(Number(entry.id))) {
+      const row = existingById.get(Number(entry.id));
+      keptIds.add(row.id);
+      if (row.sort_order !== sortOrder) {
+        await row.update({ sort_order: sortOrder }, { transaction: t });
+      }
+      continue;
+    }
+
+    if (entry?.tempId && ["image", "video"].includes(entry.media_type)) {
+      const { media_path, thumbnail } = buildMediaFilePaths(req, entry.tempId);
+      if (!media_path) continue;
+      await models.ProjectMedia.create(
+        {
+          project_id: project.id,
+          media_type: entry.media_type,
+          media_path,
+          thumbnail: entry.media_type === "video" ? thumbnail : null,
+          sort_order: sortOrder,
+        },
+        { transaction: t },
+      );
+    }
+  }
+
+  const removedRows = existingRows.filter((row) => !keptIds.has(row.id));
+  for (const row of removedRows) {
+    await row.destroy({ transaction: t });
+  }
+
+  return removedRows;
+};
+
+const deleteProjectMediaFiles = (rows) =>
+  Promise.all(
+    rows.flatMap((row) => [row.media_path, row.thumbnail].filter(Boolean)).map((p) => deleteOldFile(p)),
+  );
+
 class ProjectsController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.projectsList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Project list retrieved successfully from cache",
-        );
+      const where = {};
+      const industryId = parseInt(req.query.industry_id, 10);
+      if (Number.isInteger(industryId) && industryId > 0) {
+        where.industry_id = industryId;
+      }
+      const status = req.query.status;
+      if (status === "active") {
+        where.is_active = true;
+      } else if (status === "inactive") {
+        where.is_active = false;
       }
 
       const result = await paginate(dataModel, req, {
+        where,
         order: [["sort_order", "ASC"]],
-        searchFields: ["title", "location", "material_type", "category.title"],
+        searchFields: [
+          "title",
+          "location",
+          "material_type",
+          "industry.title",
+          "category.title",
+        ],
         include: [
-          { model: models.Industry, as: "category", attributes: ["title"] },
+          {
+            model: models.Industry,
+            as: "industry",
+            attributes: ["title"],
+            where: { is_active: true },
+            required: true,
+          },
+          {
+            model: models.ProductCategories,
+            as: "category",
+            attributes: ["id", "title"],
+          },
         ],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Project list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -133,19 +230,10 @@ class ProjectsController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.projectsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Project retrieved successfully",
-        );
 
       const item = await dataModel.findByPk(id, { include: relatedInclude });
       if (!item) return sendNotFoundError(res, "Project");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Project retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -157,6 +245,21 @@ class ProjectsController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
+    if (req.body.category_id) {
+      const valid = await categoryBelongsToIndustry(
+        req.body.industry_id,
+        req.body.category_id,
+      );
+      if (!valid) {
+        return sendValidationError(res, [
+          {
+            path: "category_id",
+            msg: "Category is not mapped to the selected industry",
+          },
+        ]);
+      }
+    }
+
     const t = await sequelize.transaction();
     try {
       handleFileUploadStore(req, fileFields);
@@ -165,18 +268,29 @@ class ProjectsController {
         req.body.related_project_ids,
       );
       delete req.body.related_project_ids;
-      req.body.project_media = buildProjectMedia(req);
+
+      const slug = req.body.slug;
+      if (!slug || !String(slug).trim()) {
+        req.body.slug = await generateUniqueSlug(dataModel, req.body.title, {
+          transaction: t,
+        });
+      } else {
+        req.body.slug = generateSlug(slug);
+        await assertNoDuplicate(dataModel, {
+          field: "slug",
+          value: req.body.slug,
+          transaction: t,
+        });
+      }
 
       const item = await dataModel.create(req.body, { transaction: t });
+      await syncProjectMedia(req, item, t);
 
       if (relatedProjectIds?.length) {
         await item.setRelatedProjects(relatedProjectIds, { transaction: t });
       }
 
       await t.commit();
-
-      await invalidateCache(req, cacheKeys.projectsListPattern());
-      await invalidateCache(req, cacheKeys.projectsActivePattern());
 
       const created = await dataModel.findByPk(item.id, {
         include: relatedInclude,
@@ -195,6 +309,21 @@ class ProjectsController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
+    if (req.body.category_id) {
+      const valid = await categoryBelongsToIndustry(
+        req.body.industry_id,
+        req.body.category_id,
+      );
+      if (!valid) {
+        return sendValidationError(res, [
+          {
+            path: "category_id",
+            msg: "Category is not mapped to the selected industry",
+          },
+        ]);
+      }
+    }
+
     const t = await sequelize.transaction();
     try {
       const { id } = req.params;
@@ -211,9 +340,26 @@ class ProjectsController {
       );
       delete req.body.related_project_ids;
 
-      const oldMedia = item.project_media || [];
-      const newMedia = buildProjectMedia(req);
-      req.body.project_media = newMedia;
+      const removedMediaRows = await syncProjectMedia(req, item, t);
+
+      const nextSlug = req.body.slug;
+      if (!nextSlug || !String(nextSlug).trim()) {
+        req.body.slug = await generateUniqueSlug(
+          dataModel,
+          req.body.title || item.title,
+          { excludeId: id, transaction: t },
+        );
+      } else {
+        req.body.slug = generateSlug(nextSlug);
+        if (item.slug !== req.body.slug) {
+          await assertNoDuplicate(dataModel, {
+            field: "slug",
+            value: req.body.slug,
+            excludeId: id,
+            transaction: t,
+          });
+        }
+      }
 
       await item.update(req.body, { transaction: t });
 
@@ -223,13 +369,8 @@ class ProjectsController {
 
       await t.commit();
 
-      // Clean up gallery files dropped from the array (best-effort, after commit).
-      const removed = oldMedia.filter((p) => !newMedia.includes(p));
-      await Promise.all(removed.map((p) => deleteOldFile(p)));
-
-      await invalidateCache(req, cacheKeys.projectsItem(id));
-      await invalidateCache(req, cacheKeys.projectsListPattern());
-      await invalidateCache(req, cacheKeys.projectsActivePattern());
+      // Clean up gallery files dropped from the project (best-effort, after commit).
+      await deleteProjectMediaFiles(removedMediaRows);
 
       const updated = await dataModel.findByPk(id, {
         include: relatedInclude,
@@ -249,10 +390,18 @@ class ProjectsController {
     const t = await sequelize.transaction();
     try {
       const { id } = req.params;
-      const item = await dataModel.findByPk(id, { transaction: t });
+      const item = await dataModel.findByPk(id, {
+        include: [{ model: models.ProjectMedia, as: "project_media" }],
+        transaction: t,
+      });
       if (!item) {
         await t.rollback();
         return sendNotFoundError(res, "Project");
+      }
+
+      const mediaRows = item.project_media || [];
+      for (const row of mediaRows) {
+        await row.destroy({ transaction: t });
       }
 
       await item.destroy({ transaction: t });
@@ -260,14 +409,9 @@ class ProjectsController {
       await t.commit();
 
       await Promise.all(
-        [item.thumbnail, item.media_path, ...(item.project_media || [])]
-          .filter(Boolean)
-          .map((p) => deleteOldFile(p)),
+        [item.thumbnail, item.media_path].filter(Boolean).map((p) => deleteOldFile(p)),
       );
-
-      await invalidateCache(req, cacheKeys.projectsItem(id));
-      await invalidateCache(req, cacheKeys.projectsListPattern());
-      await invalidateCache(req, cacheKeys.projectsActivePattern());
+      await deleteProjectMediaFiles(mediaRows);
 
       sendSuccessResponse(res, { id: id }, "Project deleted successfully");
     } catch (error) {

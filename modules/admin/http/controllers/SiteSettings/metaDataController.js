@@ -8,16 +8,17 @@ const { validationResult } = require("express-validator");
 
 const dataModel = models.MetaData;
 
-const TYPES = ["page", "product", "product-variant", "blog"];
+const TYPES = ["page", "product", "product-variant", "blog", "project"];
 
 // Maps the validated body to its single target column so we can look for an
-// existing meta item for the same page/product/variant/blog. validationRequestPost
-// guarantees exactly one of the four is set.
+// existing meta item for the same page/product/variant/blog/project. validationRequestPost
+// guarantees exactly one of the five is set.
 const buildTargetWhere = (body) => {
   if (body.page_name) return { page_name: body.page_name };
   if (body.product_id) return { product_id: body.product_id };
   if (body.variant_id) return { variant_id: body.variant_id };
   if (body.blog_id) return { blog_id: body.blog_id };
+  if (body.project_id) return { project_id: body.project_id };
   return null;
 };
 
@@ -27,6 +28,7 @@ const targetNoun = (type) => {
     product: "product",
     "product-variant": "product variant",
     blog: "blog post",
+    project: "project",
   };
   return nouns[type] || "target";
 };
@@ -44,18 +46,21 @@ class MetaDataController {
       if (Number.isInteger(variantId) && variantId > 0) where.variant_id = variantId;
       const blogId = req.query.blog_id ? String(req.query.blog_id).trim() : "";
       if (blogId) where.blog_id = blogId;
+      const projectId = parseInt(req.query.project_id, 10);
+      if (Number.isInteger(projectId) && projectId > 0) where.project_id = projectId;
 
       const result = await paginate(dataModel, req, {
         where,
         include: [
           { model: models.Products, as: "product", attributes: ["id", "title"] },
           { model: models.ProductVariants, as: "variant", attributes: ["id", "label"] },
+          { model: models.Projects, as: "project", attributes: ["id", "title"] },
         ],
         order: [
           ["page_name", "ASC"],
           ["id", "DESC"],
         ],
-        searchFields: ["page_name", "blog_id", "meta_title", "product.title", "variant.label"],
+        searchFields: ["page_name", "blog_id", "meta_title", "product.title", "variant.label", "project.title"],
       });
 
       sendSuccessResponse(res, result, "Meta data list retrieved successfully");
@@ -78,6 +83,7 @@ class MetaDataController {
         include: [
           { model: models.Products, as: "product", attributes: ["id", "title"] },
           { model: models.ProductVariants, as: "variant", attributes: ["id", "label"] },
+          { model: models.Projects, as: "project", attributes: ["id", "title"] },
         ],
       });
       if (!item) {

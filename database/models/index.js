@@ -29,6 +29,7 @@ const defineMilestones = require("./about/mileStones");
 const defineContactCms = require("./contact/contactCms");
 const defineConnections = require("./contact/connections");
 const defineProjects = require("./projects/projects");
+const defineProjectMedia = require("./projects/projectMedia");
 // policies
 const definePrivacyPolicy = require("./policies/privacyPolicy");
 // enquiries
@@ -101,6 +102,7 @@ const models = {
 
   // PROJECTS
   Projects: defineProjects(sequelize),
+  ProjectMedia: defineProjectMedia(sequelize),
 
   // PRODUCTS
   ProductCategories: defineProductCategories(sequelize),

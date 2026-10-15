@@ -1,21 +1,24 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
-  body("category_id")
+  body("industry_id")
     .notEmpty()
-    .withMessage("Category is required")
+    .withMessage("Industry is required")
+    .isInt({ min: 1 })
+    .withMessage("Industry must be a valid ID"),
+  body("category_id")
+    .optional({ checkFalsy: true })
     .isInt({ min: 1 })
     .withMessage("Category must be a valid ID"),
-  body("material_id")
-    .notEmpty()
-    .withMessage("Material is required")
-    .isInt({ min: 1 })
-    .withMessage("Material must be a valid ID"),
   body("title")
     .notEmpty()
     .withMessage("Title is required")
     .isString()
     .withMessage("Title must be a string"),
+  body("slug")
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage("Slug must be a string"),
   body("title_ar")
     .notEmpty()
     .withMessage("Title (Arabic) is required")

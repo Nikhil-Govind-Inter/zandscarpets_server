@@ -1,4 +1,5 @@
  const { DataTypes } = require("sequelize");
+const { generateSlug } = require("../../../utils/slugHelper");
 
 module.exports = (sequelize) => {
   const Projects = sequelize.define(
@@ -9,11 +10,11 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      category_id: {
+      industry_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      material_id: {
+      category_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
@@ -24,6 +25,10 @@ module.exports = (sequelize) => {
       title: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       title_ar: {
         type: DataTypes.STRING,
@@ -62,11 +67,6 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      project_media: {
-        type: DataTypes.ARRAY(DataTypes.TEXT),
-        allowNull: true,
-        defaultValue: [],
-      },
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
@@ -88,20 +88,45 @@ module.exports = (sequelize) => {
       timestamps: true,
       paranoid: true,
       deletedAt: "deleted_at",
+      indexes: [
+        {
+          name: "projects_slug_active_unique",
+          unique: true,
+          fields: [sequelize.fn("lower", sequelize.col("slug"))],
+          where: { deleted_at: null },
+        },
+      ],
     },
   );
+
+  // Uniform slug generation: always derive from title (or normalize a given
+  // slug) before validation. Titles that cannot be slugified keep slug NULL,
+  // which the partial unique index ignores. Mirrors ProductCategories.
+  Projects.beforeValidate((instance) => {
+    const source = instance.slug || instance.title;
+    const slug = source ? generateSlug(source) : "";
+    instance.slug = slug || null;
+  });
 
   Projects.associate = function (models) {
     // belongsTo industry (one industry -> many projects)
     Projects.belongsTo(models.Industry, {
+      foreignKey: "industry_id",
+      as: "industry",
+    });
+
+    // belongsTo category (one category, mapped to the project's industry via
+    // industry_categories, -> many projects). Optional: not every industry
+    // has categories mapped to it.
+    Projects.belongsTo(models.ProductCategories, {
       foreignKey: "category_id",
       as: "category",
     });
 
-    // belongsTo material (one material -> many projects)
-    Projects.belongsTo(models.Materials, {
-      foreignKey: "material_id",
-      as: "material",
+    // hasMany gallery items (images/videos), ordered by sort_order.
+    Projects.hasMany(models.ProjectMedia, {
+      foreignKey: "project_id",
+      as: "project_media",
     });
 
     // self-referential many-to-many via a join table, so a project can

@@ -74,9 +74,9 @@ module.exports = (sequelize) => {
       as: "homeBanner",
     });
 
-    // hasMany with projects (one industry/category -> many projects)
+    // hasMany with projects (one industry -> many projects)
     industry.hasMany(models.Projects, {
-      foreignKey: "category_id",
+      foreignKey: "industry_id",
       as: "projects",
     });
 

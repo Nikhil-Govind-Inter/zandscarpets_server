@@ -1,7 +1,7 @@
 const {body, param} = require("express-validator");
 const { PAGE_NAME_SLUGS } = require("../../../../../database/seeders/pagenames");
 
-const TYPES = ["page", "product", "product-variant", "blog"];
+const TYPES = ["page", "product", "product-variant", "blog", "project"];
 
 const isBlank = (value) => value === undefined || value === null || value === "";
 
@@ -17,12 +17,12 @@ const validationRequestPost = [
     // target discriminator + exactly one target column matching the type
     body("type")
         .isIn(TYPES)
-        .withMessage("Type must be one of: page, product, product-variant, blog")
+        .withMessage("Type must be one of: page, product, product-variant, blog, project")
         .custom((type, { req }) => {
-            const { page_name, product_id, variant_id, blog_id } = req.body;
-            const targets = [page_name, product_id, variant_id, blog_id].filter((v) => !isBlank(v));
+            const { page_name, product_id, variant_id, blog_id, project_id } = req.body;
+            const targets = [page_name, product_id, variant_id, blog_id, project_id].filter((v) => !isBlank(v));
             if (targets.length !== 1) {
-                throw new Error("Exactly one of page_name, product_id, variant_id or blog_id must be set");
+                throw new Error("Exactly one of page_name, product_id, variant_id, blog_id or project_id must be set");
             }
             if (type === "page" && isBlank(page_name)) {
                 throw new Error("Type 'page' requires page_name");
@@ -35,6 +35,9 @@ const validationRequestPost = [
             }
             if (type === "blog" && isBlank(blog_id)) {
                 throw new Error("Type 'blog' requires blog_id");
+            }
+            if (type === "project" && isBlank(project_id)) {
+                throw new Error("Type 'project' requires project_id");
             }
             return true;
         }),
@@ -59,6 +62,10 @@ const validationRequestPost = [
         .trim()
         .isLength({ min: 1, max: 191 })
         .withMessage("Blog id must be between 1 and 191 characters"),
+    body("project_id")
+        .optional({ values: "null" })
+        .isInt({ min: 1 })
+        .withMessage("Project id must be a positive integer"),
 
     // Freeform SEO extras — plain string check only, deliberately no HTML/tag
     // stripping or escaping.
