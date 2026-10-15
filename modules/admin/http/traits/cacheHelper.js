@@ -258,11 +258,6 @@ const cacheKeys = {
   attributeValuesListPattern: () => "admin:cache:attribute-values:list:*",
   attributeValuesItem: (id) => `admin:cache:attribute-values:item:${id}`,
 
-  // PRODUCT FAQ
-  productFaqsList: (req) => `admin:cache:productfaqs:list:${stableStringify(req.query)}`,
-  productFaqsListPattern: () => "admin:cache:productfaqs:list:*",
-  productFaqsItem: (id) => `admin:cache:productfaqs:item:${id}`,
-
   // PRODUCTS
   productsList: (req) => `admin:cache:products:list:${stableStringify(req.query)}`,
   productsListPattern: () => "admin:cache:products:list:*",

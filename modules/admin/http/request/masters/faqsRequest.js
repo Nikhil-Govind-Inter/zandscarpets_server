@@ -1,6 +1,10 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
+  body("product_id")
+    .optional({ values: "falsy" })
+    .isInt({ min: 1 })
+    .withMessage("Product must be a valid ID"),
   body("question").notEmpty().withMessage("Question is required").isString().withMessage("Question must be a string"),
   body("question_ar").optional().isString().withMessage("Arabic question must be a string"),
   body("answer").notEmpty().withMessage("Answer is required").isString().withMessage("Answer must be a string"),

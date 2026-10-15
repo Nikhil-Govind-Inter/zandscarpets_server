@@ -73,11 +73,6 @@ const cmsResources = {
     cachePrefix: "productlabels",
     frontend: [PRODUCTS],
   },
-  "product-faq": {
-    model: "ProductFaq",
-    cachePrefix: "productfaqs",
-    frontend: [PRODUCTS],
-  },
   // attribute responses embed their values, so value changes bust attributes too
   attributes: {
     model: "Attributes",

@@ -9,6 +9,10 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      product_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       question: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -44,6 +48,14 @@ module.exports = (sequelize) => {
       deletedAt: "deleted_at",
     },
   );
+
+  // relation with prod
+  Faqs.associate = (models) => {
+    Faqs.belongsTo(models.Products, {
+      foreignKey: "product_id",
+      as: "product",
+    });
+  };
 
   return Faqs;
 };

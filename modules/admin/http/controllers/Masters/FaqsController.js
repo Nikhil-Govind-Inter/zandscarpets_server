@@ -1,44 +1,39 @@
 const { models } = require("../../../../../database/models");
-const {
-  sendSuccessResponse,
-  sendErrorResponse,
-  sendNotFoundError,
-  sendValidationError,
-} = require("../../traits/responseHandler");
+const { sendSuccessResponse, sendErrorResponse, sendNotFoundError, sendValidationError } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  validationRequestPost,
-  validateId,
-} = require("../../request/masters/faqsRequest");
+const { validationRequestPost, validateId } = require("../../request/masters/faqsRequest");
 const { validationResult } = require("express-validator");
 
 const dataModel = models.Faqs;
 
+const productInclude = [{ model: models.Products, as: "product", attributes: ["id", "title"] }];
+
+// `product_id` query is either a numeric product id, the literal "global"
+// (product_id IS NULL), or absent (all FAQs).
+const buildProductWhere = (rawProductId) => {
+  if (rawProductId === undefined || rawProductId === null || rawProductId === "") {
+    return {};
+  }
+  if (rawProductId === "global") {
+    return { product_id: null };
+  }
+  const productId = parseInt(rawProductId, 10);
+  if (Number.isInteger(productId) && productId > 0) {
+    return { product_id: productId };
+  }
+  return {};
+};
+
 class FaqsController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.faqsList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Faqs list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
+        where: buildProductWhere(req.query.product_id),
         order: [["sort_order", "ASC"]],
-        searchFields: ["question", "answer"],
+        searchFields: ["question", "answer", "$product.title$"],
+        include: productInclude,
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Faqs list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -52,19 +47,10 @@ class FaqsController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.faqsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Faq item retrieved successfully",
-        );
 
-      const item = await dataModel.findByPk(id);
+      const item = await dataModel.findByPk(id, { include: productInclude });
       if (!item) return sendNotFoundError(res, "Faq item");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Faq item retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -77,19 +63,26 @@ class FaqsController {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return sendValidationError(res, errors);
 
+      if (req.body.product_id) {
+        const product = await models.Products.findByPk(req.body.product_id);
+        if (!product) {
+          return sendValidationError(res, [{ path: "product_id", msg: "Product not found" }]);
+        }
+      }
+
       const item = await dataModel.create(req.body);
 
-      await invalidateCache(req, cacheKeys.faqsListPattern());
-      sendSuccessResponse(res, item, "Faq item created successfully", 201);
+      const created = await dataModel.findByPk(item.id, {
+        include: productInclude,
+      });
+      sendSuccessResponse(res, created, "Faq item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
     }
   }
 
   static async update(req, res) {
-    await Promise.all(
-      [...validateId, ...validationRequestPost].map((v) => v.run(req)),
-    );
+    await Promise.all([...validateId, ...validationRequestPost].map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendValidationError(res, errors.array());
 
@@ -98,12 +91,17 @@ class FaqsController {
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Faq item");
 
+      if (req.body.product_id) {
+        const product = await models.Products.findByPk(req.body.product_id);
+        if (!product) {
+          return sendValidationError(res, [{ path: "product_id", msg: "Product not found" }]);
+        }
+      }
+
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.faqsItem(id));
-      await invalidateCache(req, cacheKeys.faqsListPattern());
-
-      sendSuccessResponse(res, item, "Faq item updated successfully");
+      const updated = await dataModel.findByPk(id, { include: productInclude });
+      sendSuccessResponse(res, updated, "Faq item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -120,9 +118,6 @@ class FaqsController {
       if (!item) return sendNotFoundError(res, "Faq item");
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.faqsItem(id));
-      await invalidateCache(req, cacheKeys.faqsListPattern());
 
       sendSuccessResponse(res, { id: id }, "Faq item deleted successfully");
     } catch (error) {

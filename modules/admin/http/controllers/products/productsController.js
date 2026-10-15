@@ -416,7 +416,7 @@ class ProductController {
         transaction: t,
       });
 
-      await models.ProductFaq.destroy({
+      await models.Faqs.destroy({
         where: { product_id: id },
         transaction: t,
       });
