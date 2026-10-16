@@ -19,6 +19,7 @@ const defineHomeCms = require("./home/homeCms");
 const defineHomeBanner = require("./home/homeBanner");
 const defineHomeBrands = require("./home/homeBrands");
 const defineHomeTestimonials = require("./home/homeTestimonials");
+const defineHomeSideImages = require("./home/homeSideImages");
 const defineAboutCms = require("./about/aboutCms");
 const defineCoreValues = require("./about/coreValues");
 const defineHistory = require("./about/history");
@@ -81,6 +82,7 @@ const models = {
   HomeBanner: defineHomeBanner(sequelize),
   HomeBrands: defineHomeBrands(sequelize),
   HomeTestimonials: defineHomeTestimonials(sequelize),
+  HomeSideImages: defineHomeSideImages(sequelize),
 
   // ABOUT
   AboutCms: defineAboutCms(sequelize),

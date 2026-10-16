@@ -44,6 +44,10 @@ const cmsResources = {
     model: "HomeTestimonials",
     cachePrefix: "hometestimonials",
   },
+  "home-side-images": {
+    model: "HomeSideImages",
+    cachePrefix: "homesideimages",
+  },
   "core-values": { model: "CoreValues", cachePrefix: "corevalues", frontend: [ABOUT] },
   history: { model: "History", cachePrefix: "history", frontend: [ABOUT] },
   "about-industries": {

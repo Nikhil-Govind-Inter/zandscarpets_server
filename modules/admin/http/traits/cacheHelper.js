@@ -169,6 +169,11 @@ const cacheKeys = {
   homeTestimonialsListPattern: () => "admin:cache:hometestimonials:list:*",
   homeTestimonialsItem: (id) => `admin:cache:hometestimonials:item:${id}`,
 
+  // HOME SIDE IMAGES
+  homeSideImagesList: (req) => `admin:cache:homesideimages:list:${stableStringify(req.query)}`,
+  homeSideImagesListPattern: () => "admin:cache:homesideimages:list:*",
+  homeSideImagesItem: (id) => `admin:cache:homesideimages:item:${id}`,
+
   // ABOUT CMS
   aboutCms: () => "admin:cache:aboutcms",
 
