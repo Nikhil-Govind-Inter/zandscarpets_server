@@ -9,12 +9,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validateId,
   validationRequestPost,
 } = require("../../request/home/homeCmsRequest");
@@ -25,18 +19,7 @@ const fileFields = ["cta_media_path"];
 class HomeCmsController {
   static async get(req, res) {
     try {
-      const cached = await getCache(req, cacheKeys.homeCms());
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Home CMS retrieved successfully from cache",
-        );
-      }
-
       const data = await models.HomeCms.findOne();
-
-      await setCache(req, cacheKeys.homeCms(), data);
 
       sendSuccessResponse(res, data, "Home CMS retrieved successfully");
     } catch (error) {
@@ -63,7 +46,6 @@ class HomeCmsController {
         await handleFileUploadUpdate(req, homeCms, fileFields);
         await homeCms.update(req.body);
       }
-      await invalidateCache(req, cacheKeys.homeCms());
 
       sendSuccessResponse(res, homeCms, "Home CMS updated successfully");
     } catch (error) {

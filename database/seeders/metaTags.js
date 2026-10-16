@@ -9,6 +9,12 @@ const { PAGE_NAME_SLUGS } = require("./pagenames");
  */
 const defaultMetaTags = [
     {
+        page_name: "home",
+        meta_title: "Zandscarpets | Trusted Flooring Specialists in UAE & GCC",
+        meta_description: "Zandscarpets offers premium carpets, vinyl, laminate, and flooring solutions with expert installation across the UAE & GCC.",
+        meta_keywords: "zandscarpets, carpets, flooring, vinyl flooring, laminate flooring",
+    },
+    {
         page_name: "about",
         meta_title: "About Us | Zandscarpets",
         meta_description: "Learn more about Zandscarpets, our craftsmanship, and our commitment to quality carpets and flooring.",

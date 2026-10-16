@@ -25,7 +25,6 @@ const REFRESH_COOKIE_PATH = "/api/backend/auth";
 // None+Secure works equally well for a same-origin deployment and avoids a
 // NODE_ENV-dependent behavior difference between dev and prod.
 
-
 const sameSite = NODE_ENV === "production" ? "none" : "lax";
 const secure = NODE_ENV === "production";
 

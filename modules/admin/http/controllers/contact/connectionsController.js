@@ -11,16 +11,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/contact/connectionsRequest");
@@ -36,16 +26,10 @@ const fileFields = ["icon_media_path"];
 class ConnectionsController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.connectionsList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Connections retrieved successfully from cache");
-      }
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "description"],
       });
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Connections retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -56,14 +40,10 @@ class ConnectionsController {
     await idValidationCheck(req, res, validateId);
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.connectionsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) return sendSuccessResponse(res, cached, "Connection retrieved successfully");
 
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Connection");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Connection retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -77,8 +57,6 @@ class ConnectionsController {
       handleFileUploadStore(req, fileFields);
       const item = await dataModel.create(req.body, { transaction: t });
       await t.commit();
-      await invalidateCache(req, cacheKeys.connectionsListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, item, "Connection created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -99,9 +77,6 @@ class ConnectionsController {
       await handleFileUploadUpdate(req, item, fileFields);
       await item.update(req.body, { transaction: t });
       await t.commit();
-      await invalidateCache(req, cacheKeys.connectionsItem(id));
-      await invalidateCache(req, cacheKeys.connectionsListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, item, "Connection updated successfully");
     } catch (error) {
       await t.rollback();
@@ -122,9 +97,6 @@ class ConnectionsController {
       await item.destroy({ transaction: t });
       await t.commit();
       if (item.icon_media_path) await deleteOldFile(item.icon_media_path);
-      await invalidateCache(req, cacheKeys.connectionsItem(id));
-      await invalidateCache(req, cacheKeys.connectionsListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
       sendSuccessResponse(res, { id: id }, "Connection deleted successfully");
     } catch (error) {
       await t.rollback();

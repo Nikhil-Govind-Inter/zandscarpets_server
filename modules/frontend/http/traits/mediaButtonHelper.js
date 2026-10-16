@@ -3,7 +3,6 @@ const { BASE_URL } = require("../../../../constants");
 
 const backendUrl = `${BASE_URL}/` ?? "http://localhost:5000/";
 
-
 // Media object (desktop + mobile) WITH type
 const mediaWithType = (
   data = {},
@@ -122,7 +121,6 @@ function formatDate(dateInput) {
 
 //   return `${day} ${month} ${year}`;
 // }
-
 
 const generateSlugWithTimestamp = (name) => {
   if (!name) return null;

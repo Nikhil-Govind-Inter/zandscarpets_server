@@ -10,16 +10,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/services/serviceRequest");
@@ -30,18 +20,11 @@ const dataModel = models.Services;
 class ServiceController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.serviceList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Services retrieved successfully from cache");
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Services retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -69,14 +52,10 @@ class ServiceController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.serviceItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) return sendSuccessResponse(res, cached, "Service retrieved successfully");
 
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Service");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Service retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -94,9 +73,6 @@ class ServiceController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.serviceListPattern());
-
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Service created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -121,10 +97,6 @@ class ServiceController {
       await item.update(req.body, { transaction: t });
 
       await t.commit();
-
-      await invalidateCache(req, cacheKeys.serviceItem(id));
-      await invalidateCache(req, cacheKeys.serviceListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Service updated successfully");
     } catch (error) {
@@ -152,10 +124,6 @@ class ServiceController {
       await t.commit();
 
       if (item.profile_media_path) await deleteOldFile(item.profile_media_path);
-
-      await invalidateCache(req, cacheKeys.serviceItem(id));
-      await invalidateCache(req, cacheKeys.serviceListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, { id: id }, "Service deleted successfully");
     } catch (error) {

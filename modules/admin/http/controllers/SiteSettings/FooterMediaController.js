@@ -11,7 +11,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -22,21 +21,10 @@ const dataModel = models.FooterMedia;
 const fileFields = ["media_path"];
 
 // Site settings response embeds social/footer media
-const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
 
 class FooterMediaController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.footerMediaList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Footer media list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [
           ["sort_order", "ASC"],
@@ -44,8 +32,6 @@ class FooterMediaController {
         ],
         searchFields: ["media_alt"],
       });
-
-      await setCache(req, listCacheKey, result);
 
       sendSuccessResponse(
         res,
@@ -67,22 +53,10 @@ class FooterMediaController {
     try {
       const { id } = req.params;
 
-      const itemCacheKey = cacheKeys.footerMediaItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Footer media item retrieved successfully",
-        );
-      }
-
       const item = await dataModel.findByPk(id);
       if (!item) {
         return sendNotFoundError(res, "Footer media item");
       }
-
-      await setCache(req, itemCacheKey, item);
 
       sendSuccessResponse(
         res,
@@ -103,9 +77,6 @@ class FooterMediaController {
       handleFileUploadStore(req, fileFields);
 
       const item = await dataModel.create(req.body);
-
-      await invalidateCache(req, cacheKeys.footerMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(
         res,
@@ -139,10 +110,6 @@ class FooterMediaController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.footerMediaItem(id));
-      await invalidateCache(req, cacheKeys.footerMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
-
       sendSuccessResponse(res, item, "Footer media item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -168,10 +135,6 @@ class FooterMediaController {
       }
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.footerMediaItem(id));
-      await invalidateCache(req, cacheKeys.footerMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, {
         id: id,

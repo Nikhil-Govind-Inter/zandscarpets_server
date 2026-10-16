@@ -11,7 +11,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -21,24 +20,9 @@ const { validationResult } = require("express-validator");
 const dataModel = models.FloatingIcon;
 const fileFields = ["media_path"];
 
-// Public API responses are cached per language under this pattern
-const FRONTEND_CACHE_PATTERN = "frontend:cache:floating-icon:*";
-// Site settings response embeds the active floating icons as floating_buttons
-const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
-
 class FloatingIconController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.floatingIconList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Floating icons list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [
           ["sort_order", "ASC"],
@@ -46,8 +30,6 @@ class FloatingIconController {
         ],
         searchFields: ["link", "media_alt"],
       });
-
-      await setCache(req, listCacheKey, result);
 
       sendSuccessResponse(
         res,
@@ -69,22 +51,10 @@ class FloatingIconController {
     try {
       const { id } = req.params;
 
-      const itemCacheKey = cacheKeys.floatingIconItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Floating icon retrieved successfully",
-        );
-      }
-
       const item = await dataModel.findByPk(id);
       if (!item) {
         return sendNotFoundError(res, "Floating icon");
       }
-
-      await setCache(req, itemCacheKey, item);
 
       sendSuccessResponse(res, item, "Floating icon retrieved successfully");
     } catch (error) {
@@ -101,10 +71,6 @@ class FloatingIconController {
       handleFileUploadStore(req, fileFields);
 
       const item = await dataModel.create(req.body);
-
-      await invalidateCache(req, cacheKeys.floatingIconListPattern());
-      await invalidateCache(req, FRONTEND_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, item, "Floating icon created successfully", 201);
     } catch (error) {
@@ -133,11 +99,6 @@ class FloatingIconController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.floatingIconItem(id));
-      await invalidateCache(req, cacheKeys.floatingIconListPattern());
-      await invalidateCache(req, FRONTEND_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
-
       sendSuccessResponse(res, item, "Floating icon updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -163,11 +124,6 @@ class FloatingIconController {
       }
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.floatingIconItem(id));
-      await invalidateCache(req, cacheKeys.floatingIconListPattern());
-      await invalidateCache(req, FRONTEND_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
 
       sendSuccessResponse(res, { id }, "Floating icon deleted successfully");
     } catch (error) {

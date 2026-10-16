@@ -12,12 +12,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
   MEDIA_TYPES,
@@ -31,27 +25,9 @@ const productInclude = [
   { model: models.Products, as: "product", attributes: ["id", "title"] },
 ];
 
-
-const invalidateAll = async (req, id) => {
-  if (id) await invalidateCache(req, cacheKeys.productMediaItem(id));
-  await invalidateCache(req, cacheKeys.productMediaListPattern());
-  // Product responses embed this resource, so drop cached products too.
-  await invalidateCache(req, "admin:cache:products:*");
-};
-
 class ProductMediaController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.productMediaList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Product media list retrieved successfully from cache",
-        );
-      }
-
       const where = {};
       const productId = parseInt(req.query.product_id, 10);
       if (Number.isInteger(productId) && productId > 0) {
@@ -71,7 +47,6 @@ class ProductMediaController {
         include: productInclude,
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(
         res,
         result,
@@ -89,20 +64,10 @@ class ProductMediaController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.productMediaItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Product media retrieved successfully",
-        );
-      }
 
       const item = await dataModel.findByPk(id, { include: productInclude });
       if (!item) return sendNotFoundError(res, "Product media");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Product media retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -127,7 +92,6 @@ class ProductMediaController {
       if (req.body.media_type !== "video") req.body.thumbnail = null;
 
       const item = await dataModel.create(req.body);
-      await invalidateAll(req);
 
       const created = await dataModel.findByPk(item.id, {
         include: productInclude,
@@ -172,7 +136,6 @@ class ProductMediaController {
       }
 
       await item.update(req.body);
-      await invalidateAll(req, id);
 
       const updated = await dataModel.findByPk(id, { include: productInclude });
       sendSuccessResponse(res, updated, "Product media updated successfully");
@@ -196,7 +159,6 @@ class ProductMediaController {
       }
 
       await item.destroy();
-      await invalidateAll(req, id);
 
       sendSuccessResponse(res, { id }, "Product media deleted successfully");
     } catch (error) {

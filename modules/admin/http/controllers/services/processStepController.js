@@ -12,16 +12,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/services/processStepRequest");
@@ -33,18 +23,11 @@ const fileFields = ["media_path"];
 class ProcessStepController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.processStepsList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Process steps retrieved successfully from cache");
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Process steps retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -58,14 +41,10 @@ class ProcessStepController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.processStepsItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) return sendSuccessResponse(res, cached, "Process step retrieved successfully");
 
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Process step");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Process step retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -84,9 +63,6 @@ class ProcessStepController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.processStepsListPattern());
-
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Process step created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -112,10 +88,6 @@ class ProcessStepController {
       await item.update(req.body, { transaction: t });
 
       await t.commit();
-
-      await invalidateCache(req, cacheKeys.processStepsItem(id));
-      await invalidateCache(req, cacheKeys.processStepsListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, item, "Process step updated successfully");
     } catch (error) {
@@ -143,10 +115,6 @@ class ProcessStepController {
       await t.commit();
 
       if (item.profile_media_path) await deleteOldFile(item.profile_media_path);
-
-      await invalidateCache(req, cacheKeys.processStepsItem(id));
-      await invalidateCache(req, cacheKeys.processStepsListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, { id: id }, "Process step deleted successfully");
     } catch (error) {

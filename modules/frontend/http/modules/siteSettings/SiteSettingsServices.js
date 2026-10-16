@@ -1,14 +1,9 @@
 const { models } = require("../../../../../database/models");
-const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
 const SiteSettingsSectionBuilder = require("./SiteSettingsSectionBuilder");
 
 class SiteSettingsService {
   static async index(req) {
     const normalizedLang = req?.query?.lang === "ar" ? "ar" : "en";
-    const cacheKey = cacheKeys.siteSettings(normalizedLang);
-
-    const cached = await getCache(req, cacheKey);
-    if (cached) return { data: cached, fromCache: true };
 
     const cmsData = await models.SiteSettings.findOne({});
 
@@ -46,8 +41,6 @@ class SiteSettingsService {
         normalizedLang,
       ),
     };
-
-    await setCache(req, cacheKey, data);
 
     return { data };
   }

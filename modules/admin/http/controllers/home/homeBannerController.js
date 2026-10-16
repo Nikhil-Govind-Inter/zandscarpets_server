@@ -12,12 +12,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/home/homeBannerRequest");
@@ -30,16 +24,6 @@ const fileFields = ["media_path", "thumbnail"];
 class HomeBannerController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.homeBannerList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Home banner retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title", "industry.title"],
@@ -48,7 +32,6 @@ class HomeBannerController {
         ],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Home banner retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -62,21 +45,12 @@ class HomeBannerController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.homeBannerItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Home banner retrieved successfully",
-        );
 
       const item = await dataModel.findByPk(id, {
         include: [{ model: models.Industry, as: "industry" }],
       });
       if (!item) return sendNotFoundError(res, "Home banner");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Home banner retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -106,7 +80,6 @@ class HomeBannerController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.homeBannerListPattern());
       sendSuccessResponse(res, item, "Home banner created successfully", 201);
     } catch (error) {
       await t.rollback();
@@ -153,9 +126,6 @@ class HomeBannerController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.homeBannerItem(id));
-      await invalidateCache(req, cacheKeys.homeBannerListPattern());
-
       sendSuccessResponse(res, item, "Home banner updated successfully");
     } catch (error) {
       await t.rollback();
@@ -183,9 +153,6 @@ class HomeBannerController {
 
       if (item.media_path) await deleteOldFile(item.media_path);
       if (item.thumbnail) await deleteOldFile(item.thumbnail);
-
-      await invalidateCache(req, cacheKeys.homeBannerItem(id));
-      await invalidateCache(req, cacheKeys.homeBannerListPattern());
 
       sendSuccessResponse(res, { id: id }, "Home banner deleted successfully");
     } catch (error) {

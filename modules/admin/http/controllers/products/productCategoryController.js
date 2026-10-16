@@ -271,7 +271,6 @@ class ProductCategoryController {
         }
       }
 
-
       const slug = req.body.slug;
       if (!slug || !String(slug).trim()) {
         req.body.slug = await generateUniqueSlug(dataModel, req.body.title, {
@@ -383,7 +382,6 @@ class ProductCategoryController {
           ]);
         }
       }
-
 
       const nextSlug = req.body.slug;
       if (!nextSlug || !String(nextSlug).trim()) {

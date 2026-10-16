@@ -5,12 +5,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
   validateId,
   validationRequestPost,
 } = require("../../request/common/commonContentRequest");
@@ -19,18 +13,7 @@ const { validationResult } = require("express-validator");
 class CommonContentController {
   static async get(req, res) {
     try {
-      const cached = await getCache(req, cacheKeys.commonContent());
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Common content retrieved successfully from cache",
-        );
-      }
-
       const data = await models.CommonContent.findOne();
-
-      await setCache(req, cacheKeys.commonContent(), data);
 
       sendSuccessResponse(res, data, "Common content retrieved successfully");
     } catch (error) {
@@ -55,7 +38,6 @@ class CommonContentController {
       } else {
         await commonContent.update(req.body);
       }
-      await invalidateCache(req, cacheKeys.commonContent());
 
       sendSuccessResponse(res, commonContent, "Common content updated successfully");
     } catch (error) {

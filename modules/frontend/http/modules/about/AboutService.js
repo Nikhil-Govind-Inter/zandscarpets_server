@@ -1,14 +1,9 @@
 const { models } = require("../../../../../database/models");
-const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
 const AboutSectionBuilder = require("./AboutSectionBuilder");
 
 class AboutService {
   static async index(req) {
     const normalizedLang = req?.query?.lang === "ar" ? "ar" : "en";
-    const cacheKey = cacheKeys.about(normalizedLang);
-
-    const cached = await getCache(req, cacheKey);
-    if (cached) return { data: cached, fromCache: true };
 
     const cmsData = await models.AboutCms.findOne({});
 
@@ -105,7 +100,6 @@ class AboutService {
       ),
     };
 
-    await setCache(req, cacheKey, data);
     return { data };
   }
 }

@@ -1,6 +1,5 @@
 const {body, param} = require("express-validator");
 
-
 const validationRequestPost = [
   // required fields
     body("media_path").notEmpty().withMessage("Media path is required").isString().withMessage("Media path must be a string"),

@@ -7,16 +7,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/workPlanRequest");
@@ -27,22 +17,11 @@ const dataModel = models.WorkPlan;
 class WorkPlanController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.workPlanList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Work Plan list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["sort_order", "ASC"]],
         searchFields: ["title"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Work Plan list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -56,19 +35,10 @@ class WorkPlanController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.workPlanItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Work Plan item retrieved successfully",
-        );
 
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Work Plan item");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Work Plan item retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -83,8 +53,6 @@ class WorkPlanController {
 
       const item = await dataModel.create(req.body);
 
-      await invalidateCache(req, cacheKeys.workPlanListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, item, "Work Plan item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -105,10 +73,6 @@ class WorkPlanController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.workPlanItem(id));
-      await invalidateCache(req, cacheKeys.workPlanListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
-
       sendSuccessResponse(res, item, "Work Plan item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -126,10 +90,6 @@ class WorkPlanController {
       if (!item) return sendNotFoundError(res, "Work Plan item");
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.workPlanItem(id));
-      await invalidateCache(req, cacheKeys.workPlanListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
 
       sendSuccessResponse(res, { id: id }, "Work Plan item deleted successfully");
     } catch (error) {

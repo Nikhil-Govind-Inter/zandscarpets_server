@@ -8,7 +8,6 @@ const {
   sendConflictError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const {
   validationRequestPost,
   validationRequestUpdate,
@@ -25,23 +24,11 @@ const BCRYPT_ROUNDS = 12;
 class UserController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.userList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "User list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["id", "ASC"]],
         searchFields: ["username", "email"],
         attributes: SAFE_ATTRIBUTES,
       });
-
-      await setCache(req, listCacheKey, result);
 
       sendSuccessResponse(res, result, "User list retrieved successfully");
     } catch (error) {
@@ -59,18 +46,10 @@ class UserController {
     try {
       const { id } = req.params;
 
-      const itemCacheKey = cacheKeys.userItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(res, cached, "User retrieved successfully");
-      }
-
       const item = await dataModel.findByPk(id, { attributes: SAFE_ATTRIBUTES });
       if (!item) {
         return sendNotFoundError(res, "User");
       }
-
-      await setCache(req, itemCacheKey, item);
 
       sendSuccessResponse(res, item, "User retrieved successfully");
     } catch (error) {
@@ -105,8 +84,6 @@ class UserController {
         role: role || "user",
         ...(is_active !== undefined && { is_active }),
       });
-
-      await invalidateCache(req, cacheKeys.userListPattern());
 
       const { password: _password, ...safeUser } = item.toJSON();
 
@@ -168,9 +145,6 @@ class UserController {
 
       await item.update(updates);
 
-      await invalidateCache(req, cacheKeys.userItem(id));
-      await invalidateCache(req, cacheKeys.userListPattern());
-
       const { password: _password, ...safeUser } = item.toJSON();
 
       sendSuccessResponse(res, safeUser, "User updated successfully");
@@ -198,9 +172,6 @@ class UserController {
       }
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.userItem(id));
-      await invalidateCache(req, cacheKeys.userListPattern());
 
       sendSuccessResponse(res, null, "User deleted successfully");
     } catch (error) {

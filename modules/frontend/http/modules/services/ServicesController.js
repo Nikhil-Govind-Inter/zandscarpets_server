@@ -11,11 +11,9 @@ class ServicesController {
    */
   static async index(req, res) {
     try {
-      const { data, fromCache = false } = await service.index(req);
+      const { data } = await service.index(req);
       return ApiResponse.success(res, {
-        message: fromCache
-          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
-          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
         data,
         status: HTTP_STATUS.OK,
       });

@@ -5,16 +5,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validateId,
   validationRequestPost,
 } = require("../../request/policies/privacyPolicyRequest");
@@ -23,13 +13,8 @@ const { validationResult } = require("express-validator");
 class PrivacyPolicyController {
   static async get(req, res) {
     try {
-      const cached = await getCache(req, cacheKeys.privacyPolicy());
-      if (cached) {
-        return sendSuccessResponse(res, cached, "Privacy Policy retrieved successfully from cache");
-      }
       const data = await models.PrivacyPolicy.findOne();
-      if (data) await setCache(req, cacheKeys.privacyPolicy(), data);
-      sendSuccessResponse(res, data, "Privacy Policy retrieved successfully");
+      if (data)       sendSuccessResponse(res, data, "Privacy Policy retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
     }
@@ -47,8 +32,6 @@ class PrivacyPolicyController {
       } else {
         await privacyPolicy.update(req.body);
       }
-      await invalidateCache(req, cacheKeys.privacyPolicy());
-      await invalidateFrontendCache(req, frontendCacheKeys.privacyPolicyPattern());
       sendSuccessResponse(res, privacyPolicy, "Privacy Policy updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

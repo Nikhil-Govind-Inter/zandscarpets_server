@@ -21,12 +21,10 @@ class MetaTagController {
       }
 
       req.query.page = page;
-      const { data, fromCache = false } = await service.index(req);
+      const { data } = await service.index(req);
 
       return ApiResponse.success(res, {
-        message: fromCache
-          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
-          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
         data,
         status: HTTP_STATUS.OK,
       });
@@ -63,12 +61,10 @@ class MetaTagController {
         });
       }
 
-      const { data, fromCache = false } = await service.byTarget(req);
+      const { data } = await service.byTarget(req);
 
       return ApiResponse.success(res, {
-        message: fromCache
-          ? RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED_FROM_CACHE
-          : RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
+        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
         data,
         status: HTTP_STATUS.OK,
       });

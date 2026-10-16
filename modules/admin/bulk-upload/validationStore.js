@@ -2,8 +2,7 @@
 // `validate` and `commit`, so commit never re-parses or re-validates the
 // file — it just re-checks uniqueness (against possibly-changed DB state)
 // and writes. Follows the same `req.app.get("redisClient")` + null-guard
-// convention as modules/admin/http/traits/cacheHelper.js. Unlike that cache
-// (a miss just costs a slower query), a miss here is user-visible — spec §9
+// convention used for the other Redis-backed features. A miss here is user-visible — spec §9
 // already designs for it ("validation expired, please re-validate"), so
 // Redis's best-effort nature is an acceptable trade-off.
 

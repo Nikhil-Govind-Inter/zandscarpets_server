@@ -197,7 +197,6 @@ const sendForbiddenError = (res, message = 'Access forbidden') =>
 const sendConflictError = (res, resource = 'Resource', message = null) =>
   sendErrorResponse(res, new CustomError(message || `${resource} already exists`, 409, 'CONFLICT'));
 
-
 module.exports = {
   CustomError,
   sendSuccessResponse,

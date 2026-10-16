@@ -6,16 +6,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validateId,
   validationRequestPost,
 } = require("../../request/about/aboutCmsRequest");
@@ -26,12 +16,7 @@ const fileFields = ["media_path", "about_code_media_path", "industry_media_path"
 class AboutCmsController {
   static async get(req, res) {
     try {
-      const cached = await getCache(req, cacheKeys.aboutCms());
-      if (cached) {
-        return sendSuccessResponse(res, cached, "About CMS retrieved successfully from cache");
-      }
       const data = await models.AboutCms.findOne();
-      await setCache(req, cacheKeys.aboutCms(), data);
       sendSuccessResponse(res, data, "About CMS retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -51,8 +36,6 @@ class AboutCmsController {
       } else {
         await aboutCms.update(req.body);
       }
-      await invalidateCache(req, cacheKeys.aboutCms());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
       sendSuccessResponse(res, aboutCms, "About CMS updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);

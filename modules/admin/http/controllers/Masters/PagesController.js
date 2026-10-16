@@ -7,16 +7,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/masters/pagesRequest");
@@ -28,22 +18,11 @@ const dataModel = models.Page;
 class PagesController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.pagesList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Pages list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["page", "ASC"]],
         searchFields: ["page", "page_slug"],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Pages list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -52,16 +31,6 @@ class PagesController {
 
   static async getActivePages(req, res) {
     try {
-      const cacheKey = cacheKeys.activePages();
-      const cached = await getCache(req, cacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Pages list retrieved successfully from cache",
-        );
-      }
-
       const result = await dataModel.findAll({
         where: {
           is_active: true,
@@ -69,7 +38,6 @@ class PagesController {
         order: [["page", "ASC"]],
       });
 
-      await setCache(req, cacheKey, result);
       sendSuccessResponse(res, result, "Pages list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -83,19 +51,10 @@ class PagesController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.pagesItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Page item retrieved successfully",
-        );
 
       const item = await dataModel.findByPk(id);
       if (!item) return sendNotFoundError(res, "Page item");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Page item retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -117,7 +76,6 @@ class PagesController {
 
       const item = await dataModel.create(req.body);
 
-      await invalidateCache(req, cacheKeys.pagesListPattern());
       sendSuccessResponse(res, item, "Page item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -153,12 +111,6 @@ class PagesController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.pagesItem(id));
-      await invalidateCache(req, cacheKeys.pagesListPattern());
-      await invalidateCache(req, cacheKeys.bannersListPattern());
-      await invalidateCache(req, cacheKeys.metaDataListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.metaTagsPattern());
-
       sendSuccessResponse(res, item, "Page item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -176,11 +128,6 @@ class PagesController {
       if (!item) return sendNotFoundError(res, "Page item");
 
       await item.destroy();
-      await invalidateFrontendCache(req, frontendCacheKeys.metaTagsPattern());
-
-      await invalidateCache(req, cacheKeys.pagesItem(id));
-      await invalidateCache(req, cacheKeys.pagesListPattern());
-      await invalidateCache(req, cacheKeys.bannersListPattern());
 
       sendSuccessResponse(res, { id: id }, "Page item deleted successfully");
     } catch (error) {

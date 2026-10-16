@@ -11,7 +11,6 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { getCache, setCache, invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -22,23 +21,11 @@ const dataModel = models.SocialMedia;
 const fileFields = ["media_path", "footer_media_path"];
 
 // Site settings response embeds social/footer media
-const FRONTEND_SITE_SETTINGS_CACHE_PATTERN = "frontend:cache:site-settings:*";
 // Contact page response embeds social media
-const FRONTEND_CONTACT_CACHE_PATTERN = "frontend:cache:contact:*";
 
 class SocialMediaController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.socialMediaList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Social media list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [
           ["sort_order", "ASC"],
@@ -46,8 +33,6 @@ class SocialMediaController {
         ],
         searchFields: ["link", "media_alt"],
       });
-
-      await setCache(req, listCacheKey, result);
 
       sendSuccessResponse(
         res,
@@ -69,22 +54,10 @@ class SocialMediaController {
     try {
       const { id } = req.params;
 
-      const itemCacheKey = cacheKeys.socialMediaItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Social media item retrieved successfully",
-        );
-      }
-
       const item = await dataModel.findByPk(id);
       if (!item) {
         return sendNotFoundError(res, "Social media item");
       }
-
-      await setCache(req, itemCacheKey, item);
 
       sendSuccessResponse(
         res,
@@ -105,10 +78,6 @@ class SocialMediaController {
       handleFileUploadStore(req, fileFields);
 
       const item = await dataModel.create(req.body);
-
-      await invalidateCache(req, cacheKeys.socialMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_CONTACT_CACHE_PATTERN);
 
       sendSuccessResponse(
         res,
@@ -142,11 +111,6 @@ class SocialMediaController {
 
       await item.update(req.body);
 
-      await invalidateCache(req, cacheKeys.socialMediaItem(id));
-      await invalidateCache(req, cacheKeys.socialMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_CONTACT_CACHE_PATTERN);
-
       sendSuccessResponse(res, item, "Social media item updated successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -172,11 +136,6 @@ class SocialMediaController {
       }
 
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.socialMediaItem(id));
-      await invalidateCache(req, cacheKeys.socialMediaListPattern());
-      await invalidateCache(req, FRONTEND_SITE_SETTINGS_CACHE_PATTERN);
-      await invalidateCache(req, FRONTEND_CONTACT_CACHE_PATTERN);
 
       sendSuccessResponse(res, {
         id: id,

@@ -1,108 +1,72 @@
-const ABOUT = "frontend:cache:about:*";
-const SITE_SETTINGS = "frontend:cache:site-settings:*";
-const FLOATING = "frontend:cache:floating-icon:*";
-const META_TAGS = "frontend:cache:meta-tags:*";
-const SERVICES = "frontend:cache:services:*";
-const PRODUCTS = "admin:cache:products:*";
-
 const cmsResources = {
   "social-media": {
     model: "SocialMedia",
-    cachePrefix: "socialmedia",
-    frontend: [SITE_SETTINGS],
   },
   "footer-media": {
     model: "FooterMedia",
-    cachePrefix: "footermedia",
-    frontend: [SITE_SETTINGS],
   },
   "floating-icons": {
     model: "FloatingIcon",
-    cachePrefix: "floatingicon",
-    frontend: [FLOATING, SITE_SETTINGS],
   },
   pages: {
     model: "Page",
-    cachePrefix: "pages",
-    frontend: [META_TAGS],
     sortable: false,
   },
-  "ads-banner": { model: "AdsBanner", cachePrefix: "adsbanner" },
-  faqs: { model: "Faqs", cachePrefix: "faqs" },
-  industry: { model: "Industry", cachePrefix: "industry", frontend: [SERVICES] },
-  "our-features": { model: "OurFeatures", cachePrefix: "ourfeatures", frontend: [ABOUT] },
-  materials: { model: "Materials", cachePrefix: "materials" },
+  "ads-banner": { model: "AdsBanner" },
+  faqs: { model: "Faqs" },
+  industry: { model: "Industry" },
+  "our-features": { model: "OurFeatures" },
+  materials: { model: "Materials" },
   "work-plan": {
     model: "WorkPlan",
-    cachePrefix: "workplan",
-    frontend: [ABOUT],
   },
-  "home-banner": { model: "HomeBanner", cachePrefix: "homebanner" },
-  "common-milestones": { model: "CommonMilestones", cachePrefix: "commonmilestone" },
-  "common-features": { model: "CommonFeatures", cachePrefix: "commonfeature" },
-  "common-how-it-works": { model: "CommonHowItWorks", cachePrefix: "commonhowitworks" },
-  "home-brands": { model: "HomeBrands", cachePrefix: "homebrands" },
+  "home-banner": { model: "HomeBanner" },
+  "common-milestones": { model: "CommonMilestones" },
+  "common-features": { model: "CommonFeatures" },
+  "common-how-it-works": { model: "CommonHowItWorks" },
+  "home-brands": { model: "HomeBrands" },
   "home-testimonials": {
     model: "HomeTestimonials",
-    cachePrefix: "hometestimonials",
   },
   "home-side-images": {
     model: "HomeSideImages",
-    cachePrefix: "homesideimages",
   },
-  "core-values": { model: "CoreValues", cachePrefix: "corevalues", frontend: [ABOUT] },
-  history: { model: "History", cachePrefix: "history", frontend: [ABOUT] },
+  "core-values": { model: "CoreValues" },
+  history: { model: "History" },
   "about-industries": {
     model: "AboutIndustries",
-    cachePrefix: "aboutindustries",
-    frontend: [ABOUT],
   },
-  messages: { model: "Messages", cachePrefix: "messages", frontend: [ABOUT] },
-  connections: { model: "Connections", cachePrefix: "connections" },
-  projects: { model: "Projects", cachePrefix: "projects" },
-  services: { model: "Services", cachePrefix: "services", frontend: [SERVICES] },
-  "process-steps": { model: "ProcessSteps", cachePrefix: "processsteps", frontend: [SERVICES] },
+  messages: { model: "Messages" },
+  connections: { model: "Connections" },
+  projects: { model: "Projects" },
+  services: { model: "Services" },
+  "process-steps": { model: "ProcessSteps" },
   "product-categories": {
     model: "ProductCategories",
-    cachePrefix: "productcategories",
   },
   // category responses embed highlights, so highlight changes bust them too
   "product-highlights": {
     model: "ProductHighlights",
-    cachePrefix: "producthighlights",
-    frontend: ["admin:cache:productcategories:*"],
   },
-  // product responses embed labels (features / tags / specifications),
-  // so label changes bust cached products too
   "product-labels": {
     model: "ProductLabels",
-    cachePrefix: "productlabels",
-    frontend: [PRODUCTS],
   },
   // attribute responses embed their values, so value changes bust attributes too
   attributes: {
     model: "Attributes",
-    cachePrefix: "attributes",
-    frontend: ["admin:cache:attribute-values:*"],
   },
   "attribute-values": {
     model: "AttributeValues",
-    cachePrefix: "attribute-values",
-    frontend: [PRODUCTS, "admin:cache:attributes:*"],
   },
   "product-media": {
     model: "ProductMedia",
-    cachePrefix: "productmedia",
-    frontend: [PRODUCTS],
   },
   // product responses embed variants, so variant changes bust products too
   "product-variants": {
     model: "ProductVariants",
-    cachePrefix: "productvariants",
-    frontend: [PRODUCTS],
   },
-  products: { model: "Products", cachePrefix: "products" },
-  "detail-fields": { model: "DetailFields", cachePrefix: "detailfields" },
+  products: { model: "Products" },
+  "detail-fields": { model: "DetailFields" },
 };
 
 module.exports = { cmsResources };

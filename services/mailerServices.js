@@ -1,8 +1,6 @@
 const nodemailer = require("nodemailer");
 const Logger = require("../config/logger");
 const { models } = require("../database/models");
-const { redisClient } = require("../config/redisClient");
-const { cacheKeys, DEFAULT_TTL } = require("../modules/admin/http/traits/cacheHelper");
 const {
   EMAIL_FROM,
   EMAIL_FROM_NAME,
@@ -23,37 +21,12 @@ const transporter = nodemailer.createTransport({
 class MailerService {
   /**
    * Resolves the "from" address for all outgoing admin emails: the
-   * DB-configured SiteSettings.admin_email, read through the same Redis
-   * cache key SiteSettingsController uses (so an admin_email change is
-   * picked up as soon as SiteSettingsController.update invalidates it),
-   * falling back to EMAIL_FROM if no SiteSettings row/admin_email
-   * exists yet or Redis is unavailable. Shared by every mailer method so
+   * DB-configured SiteSettings.admin_email, falling back to EMAIL_FROM if no
+   * SiteSettings row/admin_email exists yet. Shared by every mailer method so
    * the sender address is resolved once, not duplicated per email type.
    */
   static async getFromEmail() {
-    const cacheKey = cacheKeys.siteSettings();
-    let siteSettings = null;
-
-    if (redisClient?.isOpen) {
-      try {
-        const cached = await redisClient.get(cacheKey);
-        if (cached) siteSettings = JSON.parse(cached);
-      } catch (error) {
-        Logger.error("mailerServices: siteSettings cache read failed", { message: error.message });
-      }
-    }
-
-    if (!siteSettings) {
-      siteSettings = await models.SiteSettings.findOne();
-      if (siteSettings && redisClient?.isOpen) {
-        try {
-          await redisClient.set(cacheKey, JSON.stringify(siteSettings), { EX: DEFAULT_TTL });
-        } catch (error) {
-          Logger.error("mailerServices: siteSettings cache write failed", { message: error.message });
-        }
-      }
-    }
-
+    const siteSettings = await models.SiteSettings.findOne();
     return siteSettings?.admin_email || EMAIL_FROM;
   }
 

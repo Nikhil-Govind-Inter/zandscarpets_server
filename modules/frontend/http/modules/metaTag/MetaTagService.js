@@ -1,5 +1,4 @@
 const { models } = require("../../../../../database/models");
-const { getCache, setCache, cacheKeys } = require("../../traits/cacheHelper");
 const { t } = require("../../traits/localeHelper");
 const { HttpError } = require("../../traits/HttpError");
 
@@ -7,10 +6,6 @@ class MetaTagService {
   static async index(req) {
     const page = req?.query?.page;
     const lang = req?.query?.lang === "ar" ? "ar" : "en";
-    const cacheKey = cacheKeys.metaTags(page, lang);
-
-    const cached = await getCache(req, cacheKey);
-    if (cached) return { data: cached, fromCache: true };
 
     const meta = await models.MetaData.findOne({
       where: { type: "page", page_name: page },
@@ -26,8 +21,6 @@ class MetaTagService {
       meta_description: t(lang, meta.meta_description, meta.meta_description_ar),
       meta_keywords: t(lang, meta.meta_keywords, meta.meta_keywords_ar),
     };
-
-    await setCache(req, cacheKey, data);
 
     return { data };
   }
@@ -67,10 +60,6 @@ class MetaTagService {
       );
     }
 
-    const cacheKey = cacheKeys.metaTarget(target, lang);
-    const cached = await getCache(req, cacheKey);
-    if (cached) return { data: cached, fromCache: true };
-
     const meta = await models.MetaData.findOne({
       where,
       include: [
@@ -109,9 +98,25 @@ class MetaTagService {
       other_meta: t(lang, meta.other_meta, meta.other_meta_ar),
     };
 
-    await setCache(req, cacheKey, data);
-
     return { data };
+  }
+
+  /*
+   * Resolves just the admin-authored `other_meta`/`other_meta_ar` HTML for a
+   * static page (e.g. "home"), for a page-type CMS service to embed in its
+   * own response so the frontend doesn't need a second request to render
+   * JSON-LD/custom tags via DynamicMeta. Returns both languages raw (same
+   * convention as every other CMS field here) — the frontend picks which one
+   * to use for the current locale, it's not resolved server-side.
+   */
+  static async getOtherMetaForPage(pageName) {
+    const meta = await models.MetaData.findOne({
+      where: { type: "page", page_name: pageName },
+    });
+
+    if (!meta) return { other_meta: null, other_meta_ar: null };
+
+    return { other_meta: meta.other_meta, other_meta_ar: meta.other_meta_ar };
   }
 }
 

@@ -7,5 +7,4 @@ router.post("/", contactEnquiryUpload, Controller.create);
 
 module.exports = router;
 
-
 // {{zs_url}}/fontend/contact-enquiry

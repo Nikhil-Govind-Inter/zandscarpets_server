@@ -11,11 +11,6 @@ const {
   assertNoDuplicate,
 } = require("../../../../../utils/slugHelper");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-const { invalidateCache, cacheKeys } = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
 const {
   validationRequestPost,
   validateId,
@@ -132,8 +127,6 @@ class IndustryController {
         await item.setCategories(categoryIds);
       }
 
-      await invalidateCache(req, cacheKeys.industryListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
       sendSuccessResponse(res, item, "Industry item created successfully", 201);
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -177,10 +170,6 @@ class IndustryController {
         await item.setCategories(categoryIds);
       }
 
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-
       const updated = await dataModel.findByPk(id, { include: [categoryInclude] });
       sendSuccessResponse(res, updated, "Industry item updated successfully");
     } catch (error) {
@@ -201,10 +190,6 @@ class IndustryController {
       // Paranoid delete keeps the row, so drop the category links explicitly.
       await item.setCategories([]);
       await item.destroy();
-
-      await invalidateCache(req, cacheKeys.industryItem(id));
-      await invalidateCache(req, cacheKeys.industryListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(
         res,

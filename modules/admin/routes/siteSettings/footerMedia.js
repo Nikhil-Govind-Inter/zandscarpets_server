@@ -18,5 +18,4 @@ router.post("/", upload, Controller.create);
 router.put("/:id", upload, Controller.update);
 router.delete("/:id", Controller.destroy);
 
-
 module.exports = router;

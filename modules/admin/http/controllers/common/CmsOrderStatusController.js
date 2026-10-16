@@ -6,7 +6,6 @@ const {
   sendNotFoundError,
   sendValidationError,
 } = require("../../traits/responseHandler");
-const { invalidateCache } = require("../../traits/cacheHelper");
 const { validationResult, body, param } = require("express-validator");
 
 const baseValidators = [
@@ -32,7 +31,7 @@ const sortOrderValidators = [
     .toInt(),
 ];
 
-// Shared flow: validate -> find -> update a single field -> bust caches.
+// Shared flow: validate -> find -> update a single field.
 const updateField = (validators, field, label) => async (req, res) => {
   try {
     await Promise.all(validators.map((v) => v.run(req)));
@@ -46,9 +45,7 @@ const updateField = (validators, field, label) => async (req, res) => {
 
     await item.update({ [field]: req.body[field] });
 
-    await invalidateCache(req, `admin:cache:${config.cachePrefix}:*`);
     for (const pattern of config.frontend || []) {
-      await invalidateCache(req, pattern);
     }
 
     return sendSuccessResponse(res, { id: item.id, [field]: item[field] }, `${label} updated successfully`);

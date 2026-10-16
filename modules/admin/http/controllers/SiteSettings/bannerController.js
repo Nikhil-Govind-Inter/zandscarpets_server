@@ -12,20 +12,6 @@ const {
 } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-// Banners is shared across every page (home, about, services, contact, ...), so a
-// write here can't cheaply tell which frontend page cache it affects without an
-// extra Page lookup. Busting the (currently only) About frontend cache unconditionally
-// is a deliberate over-invalidation rather than risking stale content.
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validationRequestPost,
   validateId,
 } = require("../../request/siteSettings/bannerRequest");
@@ -38,16 +24,6 @@ const fileFields = ["media_path"];
 class BannerController {
   static async list(req, res) {
     try {
-      const listCacheKey = cacheKeys.bannersList(req);
-      const cached = await getCache(req, listCacheKey);
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Banners list retrieved successfully from cache",
-        );
-      }
-
       const result = await paginate(dataModel, req, {
         order: [["id", "ASC"]],
         // page title
@@ -55,7 +31,6 @@ class BannerController {
         include: [{ model: models.Page, as: "page", attributes: ["page"] }],
       });
 
-      await setCache(req, listCacheKey, result);
       sendSuccessResponse(res, result, "Banners list retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -69,21 +44,12 @@ class BannerController {
 
     try {
       const { id } = req.params;
-      const itemCacheKey = cacheKeys.bannersItem(id);
-      const cached = await getCache(req, itemCacheKey);
-      if (cached)
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Banner item retrieved successfully",
-        );
 
       const item = await dataModel.findByPk(id, {
         include: [{ model: models.Page, as: "page" }],
       });
       if (!item) return sendNotFoundError(res, "Banner item");
 
-      await setCache(req, itemCacheKey, item);
       sendSuccessResponse(res, item, "Banner item retrieved successfully");
     } catch (error) {
       return sendErrorResponse(res, error);
@@ -111,11 +77,6 @@ class BannerController {
       const item = await dataModel.create(req.body, { transaction: t });
 
       await t.commit();
-
-      await invalidateCache(req, cacheKeys.bannersListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
 
       sendSuccessResponse(res, item, "Banner item created successfully", 201);
     } catch (error) {
@@ -168,12 +129,6 @@ class BannerController {
 
       await t.commit();
 
-      await invalidateCache(req, cacheKeys.bannersItem(id));
-      await invalidateCache(req, cacheKeys.bannersListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
-
       sendSuccessResponse(res, item, "Banner item updated successfully");
     } catch (error) {
       await t.rollback();
@@ -200,12 +155,6 @@ class BannerController {
       await t.commit();
 
       if (item.media_path) await deleteOldFile(item.media_path);
-
-      await invalidateCache(req, cacheKeys.bannersItem(id));
-      await invalidateCache(req, cacheKeys.bannersListPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.aboutPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
-      await invalidateFrontendCache(req, frontendCacheKeys.contactPattern());
 
       sendSuccessResponse(res, { id: id }, "Banner item deleted successfully");
     } catch (error) {

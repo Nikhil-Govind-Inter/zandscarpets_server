@@ -1,4 +1,5 @@
 const PAGE_NAMES = [
+  { label: "Home", slug: "home" },
   { label: "About", slug: "about" },
   { label: "Services", slug: "services" },
   { label: "Contact", slug: "contact" },

@@ -13,7 +13,6 @@ const expressListEndpoints = require("express-list-endpoints");
 const cookieParser = require("cookie-parser");
 const { createClient } = require("redis");
 const { connectRedis, disconnectRedis } = require("./config/redisClient");
-const { invalidateAllCache } = require("./modules/admin/http/traits/cacheHelper");
 const { createAdminUser } = require("./database/seeders/adminUser");
 const { seedPages } = require("./database/seeders/pages");
 const { seedMetaTags } = require("./database/seeders/metaTags");
@@ -54,10 +53,6 @@ redisClient
   .then(async () => {
     Logger.info("✅ Redis connected");
     app.set("redisClient", redisClient);
-
-    await invalidateAllCache(app);
-
-    Logger.info("🧹 Cache flushed on startup");
   })
   .catch((err) => Logger.error("❌ Redis connection failed:", err.message));
 

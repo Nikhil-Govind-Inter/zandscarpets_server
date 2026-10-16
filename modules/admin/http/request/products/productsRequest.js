@@ -81,6 +81,10 @@ const validationRequestPost = [
     .optional({ checkFalsy: true })
     .isBoolean()
     .withMessage("List in navbar must be a boolean"),
+  body("show_in_home")
+    .optional()
+    .isBoolean()
+    .withMessage("Show in home must be a boolean"),
 ];
 
 const validateId = [

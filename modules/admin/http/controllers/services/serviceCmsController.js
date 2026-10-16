@@ -5,21 +5,10 @@ const {
   sendValidationError,
 } = require("../../traits/responseHandler");
 const {
-  getCache,
-  setCache,
-  invalidateCache,
-  cacheKeys,
-} = require("../../traits/cacheHelper");
-const {
-  invalidateCache: invalidateFrontendCache,
-  cacheKeys: frontendCacheKeys,
-} = require("../../../../frontend/http/traits/cacheHelper");
-const {
   validateId,
   validationRequestPost,
 } = require("../../request/services/serviceCmsRequest.js");
 const { validationResult } = require("express-validator");
-
 
 const dataModel = models.ServiceCms;
 
@@ -27,18 +16,7 @@ class ServiceCmsController {
 
   static async get(req, res) {
     try {
-      const cached = await getCache(req, cacheKeys.serviceCms());
-      if (cached) {
-        return sendSuccessResponse(
-          res,
-          cached,
-          "Service CMS retrieved successfully from cache",
-        );
-      }
-
       const data = await dataModel.findOne();
-
-      await setCache(req, cacheKeys.serviceCms(), data);
 
       sendSuccessResponse(res, data, "Service CMS retrieved successfully");
     } catch (error) {
@@ -63,8 +41,6 @@ class ServiceCmsController {
       } else {
         await serviceCms.update(req.body);
       }
-      await invalidateCache(req, cacheKeys.serviceCms());
-      await invalidateFrontendCache(req, frontendCacheKeys.servicesPattern());
 
       sendSuccessResponse(res, serviceCms, "Service CMS updated successfully");
     } catch (error) {
