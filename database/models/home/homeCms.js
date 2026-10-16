@@ -51,11 +51,11 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       cta_title: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       cta_title_ar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       cta_media_path: {
@@ -93,6 +93,16 @@ module.exports = (sequelize) => {
       premium_description_ar: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      space_section_title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+      },
+      space_section_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
       },
     },
     {

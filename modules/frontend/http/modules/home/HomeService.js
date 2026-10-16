@@ -104,6 +104,16 @@ const inlineRichText = (html) =>
     allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
   }).trim();
 
+// Industry descriptions are rich text rendered as a content block (paragraphs, lists, basic emphasis).
+const blockRichText = (html) =>
+  sanitizeHtml(String(html ?? ""), {
+    allowedTags: ["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "span"],
+    allowedAttributes: { span: ["style"] },
+    allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
+  })
+    .replace(/<p>\s*<\/p>/gi, "")
+    .trim();
+
 class HomeService {
   static async index() {
     const [cmsData, commonContent] = await Promise.all([models.HomeCms.findOne({}), models.CommonContent.findOne({})]);
@@ -178,7 +188,10 @@ class HomeService {
       models.Products.findAll({
         attributes: homeProductAttributes,
         where: { is_active: true, show_in_home: true },
-        include: [{ model: models.ProductLabels, as: "badge", attributes: ["id", "slug", "title", "title_ar"], required: false }],
+        include: [
+          { model: models.ProductLabels, as: "badge", attributes: ["id", "slug", "title", "title_ar"], required: false },
+          { model: models.ProductCategories, as: "category", attributes: ["id", "slug", "title", "title_ar"], required: false },
+        ],
         order: [["sort_order", "ASC"]],
       }),
       MetaTagService.getOtherMetaForPage("home"),
@@ -188,11 +201,12 @@ class HomeService {
       banner_section: this.buildBannerSection(homeBanners),
       milestones_section: this.buildMilestonesSection(milestones),
       discover_section: this.buildCategoriesSection(cmsData, homeCategories),
-      industries_section: this.buildIndustriesSection(industries),
+      industries_section: this.buildIndustriesSection(cmsData, industries),
       testimonials_section: this.buildTestimonialsSection(testimonials, cmsData),
       brands_section: this.buildBrandsSection(brands, cmsData),
       faqs_section: this.buildFaqsSection(faqs, cmsData),
       side_images_section: this.buildSideImagesSection(sideImages),
+      space_section: { title: cmsData?.space_section_title ?? "", title_ar: cmsData?.space_section_title_ar ?? "" },
       premium_section: this.buildPremiumSection(cmsData),
       features_section: this.buildFeaturesSection(features, commonContent),
       side_section: this.buildSideSection(commonContent),
@@ -270,15 +284,17 @@ class HomeService {
     };
   }
 
-  static buildIndustriesSection(industries) {
+  static buildIndustriesSection(cmsData, industries) {
     return {
+      title: cmsData?.space_section_title ?? "",
+      title_ar: cmsData?.space_section_title_ar ?? "",
       list: industries.map((item) => ({
         id: item?.id,
         slug: item?.slug ?? "",
         title: item?.title ?? "",
         title_ar: item?.title_ar ?? "",
-        description: item?.description ?? "",
-        description_ar: item?.description_ar ?? "",
+        description: blockRichText(item?.description),
+        description_ar: blockRichText(item?.description_ar),
         link: item?.link ?? "",
         categories: (item?.categories ?? []).map((cat) => ({
           id: cat?.id,
@@ -347,8 +363,8 @@ class HomeService {
     return {
       title: cmsData?.premium_title ?? "",
       title_ar: cmsData?.premium_title_ar ?? "",
-      description: cmsData?.premium_description ?? "",
-      description_ar: cmsData?.premium_description_ar ?? "",
+      description: blockRichText(cmsData?.premium_description),
+      description_ar: blockRichText(cmsData?.premium_description_ar),
     };
   }
 
@@ -370,6 +386,10 @@ class HomeService {
     return {
       title: commonContent?.how_section_title ?? "",
       title_ar: commonContent?.how_section_title_ar ?? "",
+      bg_title: commonContent?.how_section_bg_title ?? "",
+      bg_title_ar: commonContent?.how_section_bg_title_ar ?? "",
+      media: singleMediaWithType(commonContent ?? {}, "how_section_media_type", "how_section_media_path"),
+      thumbnail: singleMediaWithoutType(commonContent ?? {}, "how_section_thumbnail"),
       list: howItWorks.map((item) => ({
         id: item?.id,
         title: item?.title ?? "",
@@ -396,10 +416,10 @@ class HomeService {
 
   static buildCtaSection(cmsData) {
     return {
-      title: cmsData?.cta_title ?? "",
-      title_ar: cmsData?.cta_title_ar ?? "",
-      description: cmsData?.cta_description ?? "",
-      description_ar: cmsData?.cta_description_ar ?? "",
+      title: inlineRichText(cmsData?.cta_title),
+      title_ar: inlineRichText(cmsData?.cta_title_ar),
+      description: blockRichText(cmsData?.cta_description),
+      description_ar: blockRichText(cmsData?.cta_description_ar),
       media: singleMediaWithoutType(cmsData, "cta_media_path"),
     };
   }
@@ -418,6 +438,9 @@ class HomeService {
         price: item?.price ?? null,
         media: singleMediaWithoutType(item, "list_media_path", "list_media_alt", "list_media_alt_ar"),
         badge: item?.badge ? { id: item.badge.id, slug: item.badge.slug, title: item.badge.title, title_ar: item.badge.title_ar } : null,
+        category: item?.category
+          ? { id: item.category.id, slug: item.category.slug, title: item.category.title, title_ar: item.category.title_ar }
+          : null,
       })),
     };
   }

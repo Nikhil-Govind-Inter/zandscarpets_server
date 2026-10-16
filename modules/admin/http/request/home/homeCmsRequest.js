@@ -17,6 +17,8 @@ const validationRequestPost = [
     body('cta_description_ar').notEmpty().withMessage('CTA description (Arabic) is required').isString().withMessage('CTA description (Arabic) must be a string'),
     body('faq_title').notEmpty().withMessage('FAQ title is required').isString().withMessage('FAQ title must be a string'),
     body('faq_title_ar').notEmpty().withMessage('FAQ title (Arabic) is required').isString().withMessage('FAQ title (Arabic) must be a string'),
+    body('space_section_title').notEmpty().withMessage('Space section title is required').isString().withMessage('Space section title must be a string'),
+    body('space_section_title_ar').notEmpty().withMessage('Space section title (Arabic) is required').isString().withMessage('Space section title (Arabic) must be a string'),
     body('premium_title').notEmpty().withMessage('Premium title is required').isString().withMessage('Premium title must be a string'),
     body('premium_title_ar').notEmpty().withMessage('Premium title (Arabic) is required').isString().withMessage('Premium title (Arabic) must be a string'),
     body('premium_description').notEmpty().withMessage('Premium description is required').isString().withMessage('Premium description must be a string'),

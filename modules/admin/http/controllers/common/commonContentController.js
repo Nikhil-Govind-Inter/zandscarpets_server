@@ -8,7 +8,10 @@ const {
   validateId,
   validationRequestPost,
 } = require("../../request/common/commonContentRequest");
+const { handleFileUploadUpdate, deleteOldFile } = require("../../middleware/multerMiddleware");
 const { validationResult } = require("express-validator");
+
+const fileFields = ["how_section_media_path", "how_section_thumbnail"];
 
 class CommonContentController {
   static async get(req, res) {
@@ -32,6 +35,15 @@ class CommonContentController {
 
     try {
       let commonContent = await models.CommonContent.findOne();
+
+      await handleFileUploadUpdate(req, commonContent, fileFields);
+      // Image media carries no thumbnail; drop a stale one when switching.
+      if (req.body.how_section_media_type !== "video") {
+        req.body.how_section_thumbnail = null;
+        if (commonContent?.how_section_thumbnail) {
+          await deleteOldFile(commonContent.how_section_thumbnail);
+        }
+      }
 
       if (!commonContent) {
         commonContent = await models.CommonContent.create(req.body);

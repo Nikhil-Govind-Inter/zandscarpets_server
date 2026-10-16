@@ -15,6 +15,11 @@ const validationRequestPost = [
     required("button_link", "Button link"),
     required("how_section_title", "How section title"),
     required("how_section_title_ar", "How section title (Arabic)"),
+    body("how_section_media_type").isIn(["image", "video"]).withMessage("How section media type must be image or video"),
+    required("how_section_media_path", "How section media"),
+    body("how_section_thumbnail")
+        .if(body("how_section_media_type").equals("video"))
+        .notEmpty().withMessage("Thumbnail is required for video media"),
 ]
 
 const validateId = [

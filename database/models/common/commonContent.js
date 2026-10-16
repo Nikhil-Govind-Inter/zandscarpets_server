@@ -22,6 +22,17 @@ module.exports = (sequelize) => {
       button_link: { type: DataTypes.STRING, allowNull: false },
       how_section_title: { type: DataTypes.TEXT, allowNull: false },
       how_section_title_ar: { type: DataTypes.TEXT, allowNull: false },
+      // Large faint text behind the how-it-works heading (optional; the storefront falls back to its translation)
+      how_section_bg_title: { type: DataTypes.STRING, allowNull: true },
+      how_section_bg_title_ar: { type: DataTypes.STRING, allowNull: true },
+      how_section_media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        allowNull: false,
+        defaultValue: "image",
+      },
+      how_section_media_path: { type: DataTypes.STRING, allowNull: true },
+      // Poster image for video media; null for images.
+      how_section_thumbnail: { type: DataTypes.STRING, allowNull: true },
     },
     {
       tableName: "common_content",
