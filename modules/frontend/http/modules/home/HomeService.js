@@ -1,3 +1,4 @@
+const sanitizeHtml = require("sanitize-html");
 const { models } = require("../../../../../database/models");
 const { link } = require("../../../routes/home");
 const { singleMediaWithType, singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
@@ -5,6 +6,7 @@ const MetaTagService = require("../metaTag/MetaTagService");
 
 const orderedActive = { where: { is_active: true }, order: [["sort_order", "ASC"]] };
 const homeBannerAttributes = [
+  "id",
   "title",
   "title_ar",
   "description",
@@ -18,6 +20,7 @@ const homeBannerAttributes = [
   "is_active",
 ];
 const commonMilestonesAttributes = [
+  "id",
   "media_path",
   "media_alt",
   "media_alt_ar",
@@ -77,7 +80,10 @@ const homeProductAttributes = [
   "sort_order",
 ];
 
-const stripHtml = (value) => String(value ?? "").replace(/<[^>]*>/g, "").trim();
+const stripHtml = (value) =>
+  String(value ?? "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
 
 // Adds `is_visible` so the client can skip a section: sections with a list need at least one item,
 // text-only sections (premium, cta, side) need a title or description in either language.
@@ -87,6 +93,16 @@ const withVisibility = (section) => {
     : ["title", "title_ar", "description", "description_ar"].some((key) => stripHtml(section[key]));
   return { ...section, is_visible: isVisible };
 };
+
+// Banner heading/description are authored in a rich text editor ("<p>Line one<br>Line two</p>").
+// They render inside <h1>/<h2>, so paragraphs become line breaks and only inline formatting
+// (bold/italic/underline/line break/colour) is kept.
+const inlineRichText = (html) =>
+  sanitizeHtml(String(html ?? "").replace(/<\/p>\s*<p[^>]*>/gi, "<br>"), {
+    allowedTags: ["br", "strong", "b", "em", "i", "u", "span"],
+    allowedAttributes: { span: ["style"] },
+    allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
+  }).trim();
 
 class HomeService {
   static async index() {
@@ -108,7 +124,19 @@ class HomeService {
       residentialProducts = [],
       otherMeta,
     ] = await Promise.all([
-      models.HomeBanner.findAll({ ...orderedActive, attributes: homeBannerAttributes }),
+      models.HomeBanner.findAll({
+        ...orderedActive,
+        attributes: homeBannerAttributes,
+        include: [
+          {
+            model: models.Industry,
+            as: "industry",
+            attributes: ["id", "slug", "title", "title_ar", "link"],
+            where: { is_active: true },
+            required: true,
+          },
+        ],
+      }),
       models.CommonMilestones.findAll({
         attributes: commonMilestonesAttributes,
         where: { is_active: true, show_in_home: true },
@@ -181,14 +209,35 @@ class HomeService {
   }
 
   static buildBannerSection(homeBanners) {
+    console.log(
+      "homeBanners",
+      (homeBanners ?? []).map((b) => ({
+        title: b.title,
+        title_ar: b.title_ar,
+        industry: b.industry
+          ? { id: b.industry.id, slug: b.industry.slug, title: b.industry.title, title_ar: b.industry.title_ar, link: b.industry.link }
+          : null,
+      })),
+    );
+
     return {
       list: homeBanners.map((item) => ({
-        title: item?.title ?? "",
-        title_ar: item?.title_ar ?? "",
-        description: item?.description ?? "",
-        description_ar: item?.description_ar ?? "",
+        id: item?.id,
+        title: inlineRichText(item?.title),
+        title_ar: inlineRichText(item?.title_ar),
+        description: inlineRichText(item?.description),
+        description_ar: inlineRichText(item?.description_ar),
         media: singleMediaWithType(item, "media_type", "media_path", "media_alt", "media_alt_ar"),
         thumbnail: singleMediaWithoutType(item, "thumbnail", "media_alt", "media_alt_ar"),
+        industry: item?.industry
+          ? {
+              id: item.industry.id,
+              slug: item.industry.slug,
+              title: item.industry.title ?? "",
+              title_ar: item.industry.title_ar ?? "",
+              link: item.industry.link ?? "",
+            }
+          : null,
       })),
     };
   }
@@ -196,6 +245,7 @@ class HomeService {
   static buildMilestonesSection(milestones) {
     return {
       list: milestones.map((item) => ({
+        id: item?.id,
         value: item?.value ?? "",
         value_ar: item?.value_ar ?? "",
         label: item?.label ?? "",
