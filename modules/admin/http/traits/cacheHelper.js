@@ -202,6 +202,19 @@ const cacheKeys = {
   commonMilestoneListPattern: () => "admin:cache:commonmilestone:list:*",
   commonMilestoneItem: (id) => `admin:cache:commonmilestone:item:${id}`,
 
+  // COMMON CONTENT (singleton)
+  commonContent: () => "admin:cache:commoncontent",
+
+  // COMMON FEATURES
+  commonFeatureList: (req) => `admin:cache:commonfeature:list:${stableStringify(req.query)}`,
+  commonFeatureListPattern: () => "admin:cache:commonfeature:list:*",
+  commonFeatureItem: (id) => `admin:cache:commonfeature:item:${id}`,
+
+  // COMMON HOW IT WORKS
+  commonHowItWorksList: (req) => `admin:cache:commonhowitworks:list:${stableStringify(req.query)}`,
+  commonHowItWorksListPattern: () => "admin:cache:commonhowitworks:list:*",
+  commonHowItWorksItem: (id) => `admin:cache:commonhowitworks:item:${id}`,
+
   // CONTACT CMS
   contactCms: () => "admin:cache:contactcms",
 

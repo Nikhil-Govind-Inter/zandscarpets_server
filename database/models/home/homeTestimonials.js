@@ -31,11 +31,11 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       message: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       message_ar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       sort_order: {

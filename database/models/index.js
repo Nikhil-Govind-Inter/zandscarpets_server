@@ -56,6 +56,9 @@ const defineServices = require("./services/services");
 const defineServiceCms = require("./services/serviceCms");
 // common
 const defineCommonMilestones = require("./common/commonMilestones");
+const defineCommonContent = require("./common/commonContent");
+const defineCommonFeatures = require("./common/commonFeatures");
+const defineCommonHowItWorks = require("./common/commonHowItWorks");
 
 // product masters
 const models = {
@@ -133,6 +136,9 @@ const models = {
 
   // COMMON
   CommonMilestones: defineCommonMilestones(sequelize),
+  CommonContent: defineCommonContent(sequelize),
+  CommonFeatures: defineCommonFeatures(sequelize),
+  CommonHowItWorks: defineCommonHowItWorks(sequelize),
 };
 
 Object.keys(models).forEach((modelName) => {

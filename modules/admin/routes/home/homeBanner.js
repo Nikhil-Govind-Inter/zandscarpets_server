@@ -5,8 +5,10 @@ const authMiddleware = require("../../http/middleware/authMiddleware");
 
 const router = express.Router();
 
-const uploadFields = [{ name: "media_path" }];
-const upload = createUploadMiddleware("home-banner", uploadFields);
+const uploadFields = [{ name: "media_path" }, { name: "thumbnail" }];
+const upload = createUploadMiddleware("home-banner", uploadFields, {
+  maxFileSizeBytes: 10 * 1024 * 1024, // room for video banners
+});
 
 router.use(authMiddleware(["admin", "user"]));
 router.get("/", Controller.list);

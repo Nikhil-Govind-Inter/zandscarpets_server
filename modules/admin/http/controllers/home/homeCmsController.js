@@ -1,5 +1,9 @@
 const { models } = require("../../../../../database/models");
 const {
+  handleFileUploadUpdate,
+  handleFileUploadStore,
+} = require("../../middleware/multerMiddleware");
+const {
   sendErrorResponse,
   sendSuccessResponse,
   sendValidationError,
@@ -15,6 +19,8 @@ const {
   validationRequestPost,
 } = require("../../request/home/homeCmsRequest");
 const { validationResult } = require("express-validator");
+
+const fileFields = ["cta_media_path"];
 
 class HomeCmsController {
   static async get(req, res) {
@@ -51,8 +57,10 @@ class HomeCmsController {
       let homeCms = await models.HomeCms.findOne();
 
       if (!homeCms) {
+        handleFileUploadStore(req, fileFields);
         homeCms = await models.HomeCms.create(req.body);
       } else {
+        await handleFileUploadUpdate(req, homeCms, fileFields);
         await homeCms.update(req.body);
       }
       await invalidateCache(req, cacheKeys.homeCms());

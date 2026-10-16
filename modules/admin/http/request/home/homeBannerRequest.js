@@ -1,6 +1,10 @@
 const { body, param } = require("express-validator");
 
 const validationRequestPost = [
+    body("media_type").isIn(["image", "video"]).withMessage("Media type must be image or video"),
+    body("thumbnail")
+        .if(body("media_type").equals("video"))
+        .notEmpty().withMessage("Thumbnail is required for video banners"),
     body("media_path").notEmpty().withMessage("Media path is required").isString().withMessage("Media path must be a string"),
     body("media_alt").notEmpty().withMessage("Media alt is required").isString().withMessage("Media alt must be a string"),
     body("media_alt_ar").notEmpty().withMessage("Media alt (Arabic) is required").isString().withMessage("Media alt (Arabic) must be a string"),

@@ -25,7 +25,7 @@ const { validationResult } = require("express-validator");
 const { Op } = require("sequelize");
 
 const dataModel = models.HomeBanner;
-const fileFields = ["media_path"];
+const fileFields = ["media_path", "thumbnail"];
 
 class HomeBannerController {
   static async list(req, res) {
@@ -101,6 +101,7 @@ class HomeBannerController {
       if (isItemExist) throw `${isItemExist?.industry?.title} already exist`;
 
       handleFileUploadStore(req, fileFields);
+      if (req.body.media_type !== "video") req.body.thumbnail = null;
       const item = await dataModel.create(req.body, { transaction: t });
 
       await t.commit();
@@ -143,6 +144,11 @@ class HomeBannerController {
       if (isItemExist) throw `${req.body.page} already exist`;
 
       await handleFileUploadUpdate(req, item, fileFields);
+      // Image banners carry no thumbnail; drop a stale one when switching.
+      if (req.body.media_type !== "video") {
+        req.body.thumbnail = null;
+        if (item.thumbnail) await deleteOldFile(item.thumbnail);
+      }
       await item.update(req.body, { transaction: t });
 
       await t.commit();
@@ -176,6 +182,7 @@ class HomeBannerController {
       await t.commit();
 
       if (item.media_path) await deleteOldFile(item.media_path);
+      if (item.thumbnail) await deleteOldFile(item.thumbnail);
 
       await invalidateCache(req, cacheKeys.homeBannerItem(id));
       await invalidateCache(req, cacheKeys.homeBannerListPattern());

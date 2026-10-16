@@ -1,58 +1,140 @@
 const { models } = require("../../../../../database/models");
-const {
-  mediaWithType,
-  singleMediaWithoutType,
-  button,
-} = require("../../traits/mediaButtonHelper");
+const { link } = require("../../../routes/home");
+const { singleMediaWithType, singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
 
-const orderedActive = { where: { status: true }, order: [["sort_order", "ASC"]] };
+const orderedActive = { where: { is_active: true }, order: [["sort_order", "ASC"]] };
+const homeBannerAttributes = [
+  "title",
+  "title_ar",
+  "description",
+  "description_ar",
+  "media_type",
+  "media_path",
+  "thumbnail",
+  "media_alt",
+  "media_alt_ar",
+  "sort_order",
+  "is_active",
+];
+const commonMilestonesAttributes = [
+  "media_path",
+  "media_alt",
+  "media_alt_ar",
+  "value",
+  "value_ar",
+  "label",
+  "label_ar",
+  "sort_order",
+  "is_active",
+  "show_in_home",
+];
+
+const homeCategoryAttributes = ["id", "slug", "title", "title_ar", "media_path", "sort_order"];
+
+const homeIndustryAttributes = ["id", "slug", "title", "title_ar", "description", "description_ar", "sort_order"];
+const industryCategoryAttributes = ["id", "slug", "title", "title_ar", "media_path", "sort_order"];
+
+const homeTestimonialAttributes = [
+  "id",
+  "profile_media_path",
+  "name",
+  "name_ar",
+  "designation",
+  "designation_ar",
+  "message",
+  "message_ar",
+  "sort_order",
+];
+
+const homeBrandAttributes = ["id", "media_path", "media_alt", "media_alt_ar", "sort_order"];
+
+const homeFaqAttributes = ["id", "question", "question_ar", "answer", "answer_ar", "sort_order"];
+const homeSideImageAttributes = [
+  "id",
+  "before_media_path",
+  "after_media_path",
+  "before_media_alt",
+  "before_media_alt_ar",
+  "after_media_alt",
+  "after_media_alt_ar",
+  "sort_order",
+];
+
+const commonListAttributes = ["id", "title", "title_ar", "description", "description_ar", "sort_order"];
 
 class HomeService {
   static async index() {
-    const cmsData = await models.HomeCms.findOne({});
+    const [cmsData, commonContent] = await Promise.all([models.HomeCms.findOne({}), models.CommonContent.findOne({})]);
     if (!cmsData) {
       throw new Error("No CMS data found for About page");
     }
     const [
       homeBanners = [],
-      homeMap = [],
-      homeExploreOurExpertise = [],
-      homeAppFeatures = [],
-      homeInvestment = [],
-      partners = [],
-      news = [],
-      blogs = [],
+      milestones = [],
+      homeCategories = [],
+      industries = [],
+      testimonials = [],
+      brands = [],
+      faqs = [],
+      sideImages = [],
+      features = [],
+      howItWorks = [],
     ] = await Promise.all([
-      models.HomeBanner.findAll(orderedActive),
-      models.HomeMap.findAll(orderedActive),
-      models.HomeExploreOurExpertise.findAll(orderedActive),
-      models.HomeAppFeatures.findAll(orderedActive),
-      models.HomeInvestment.findAll(orderedActive),
-      models.Partner.findAll(orderedActive),
-      models.News.findAll(orderedActive),
-      models.Blogs.findAll(orderedActive),
+      models.HomeBanner.findAll({ ...orderedActive, attributes: homeBannerAttributes }),
+      models.CommonMilestones.findAll({
+        attributes: commonMilestonesAttributes,
+        where: { is_active: true, show_in_home: true },
+        order: [["sort_order", "ASC"]],
+      }),
+      models.ProductCategories.findAll({
+        attributes: homeCategoryAttributes,
+        where: { is_active: true, show_in_home: true },
+        order: [["sort_order", "ASC"]],
+      }),
+      models.Industry.findAll({
+        attributes: homeIndustryAttributes,
+        where: { is_active: true },
+        include: [
+          {
+            model: models.ProductCategories,
+            as: "categories",
+            attributes: industryCategoryAttributes,
+            where: { is_active: true },
+            required: false,
+            through: { attributes: [] },
+          },
+        ],
+        order: [
+          ["sort_order", "ASC"],
+          [{ model: models.ProductCategories, as: "categories" }, "sort_order", "ASC"],
+        ],
+      }),
+      models.HomeTestimonials.findAll({ ...orderedActive, attributes: homeTestimonialAttributes }),
+      models.HomeBrands.findAll({ ...orderedActive, attributes: homeBrandAttributes }),
+      models.Faqs.findAll({
+        attributes: homeFaqAttributes,
+        where: { is_active: true, product_id: null },
+        order: [["sort_order", "ASC"]],
+      }),
+      models.HomeSideImages.findAll({ ...orderedActive, attributes: homeSideImageAttributes }),
+      models.CommonFeatures.findAll({ ...orderedActive, attributes: commonListAttributes }),
+      models.CommonHowItWorks.findAll({ ...orderedActive, attributes: commonListAttributes }),
     ]);
 
-
     const data = {
-      banner_section: this.buildBannerSection(homeBanners),
-      company_growth_section: this.buildCompanyGrowthSection(homeMap),
-      make_ride_section: this.buildMakeRideSection(cmsData),
-      explore_section: this.buildExploreSection(
-        cmsData,
-        homeExploreOurExpertise
-      ),
-      app_feature_section: this.buildAppFeatureSection(
-        cmsData,
-        homeAppFeatures
-      ),
-      investment_section: this.buildInvestmentSection(
-        cmsData,
-        homeInvestment
-      ),
-      partners_section: this.buildPartnersSection(cmsData, partners),
-      news_section: this.buildNewsSection(cmsData, news),
-      blog_section: this.buildBlogSection(cmsData, blogs),
+      // banner_section: this.buildBannerSection(homeBanners),
+      // milestones_section: this.buildMilestonesSection(milestones),
+      // discover_section: this.buildCategoriesSection(cmsData, homeCategories),
+      // industries_section: this.buildIndustriesSection(industries),
+      // testimonials_section: this.buildTestimonialsSection(testimonials, cmsData),
+      // brands_section: this.buildBrandsSection(brands, cmsData),
+      // faqs_section: this.buildFaqsSection(faqs, cmsData),
+      // side_images_section: this.buildSideImagesSection(sideImages),
+      // premium_section: this.buildPremiumSection(cmsData),
+      features_section: this.buildFeaturesSection(features, commonContent),
+      side_section: this.buildSideSection(commonContent),
+      how_it_works_section: this.buildHowItWorksSection(howItWorks, commonContent),
+      cta_section: this.buildCtaSection(cmsData),
     };
 
     return data;
@@ -60,144 +142,175 @@ class HomeService {
 
   static buildBannerSection(homeBanners) {
     return {
-      list:
-        homeBanners.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-          buttons: [
-            button(item, "button_text_one", "button_text_one_link"),
-            button(item, "button_text_two", "button_text_two_link"),
-          ].filter((btn) => btn.text),
-          media: mediaWithType(
-            item,
-            "media_type",
-            "media_desktop_path",
-            "media_mobile_path",
-            "media_alt"
-          ),
-        })) || [],
+      list: homeBanners.map((item) => ({
+        title: item?.title ?? "",
+        title_ar: item?.title_ar ?? "",
+        description: item?.description ?? "",
+        description_ar: item?.description_ar ?? "",
+        media: singleMediaWithType(item, "media_type", "media_path", "media_alt", "media_alt_ar"),
+        thumbnail: singleMediaWithoutType(item, "thumbnail", "media_alt", "media_alt_ar"),
+      })),
     };
   }
 
-  static buildCompanyGrowthSection(homeMap) {
+  static buildMilestonesSection(milestones) {
     return {
-      list:
-        homeMap.map((item) => ({
-          year: item?.year ?? "",
-          title: item?.title ?? "",
-          media: singleMediaWithoutType(item, "media_path", "media_alt"),
-        })) || [],
+      list: milestones.map((item) => ({
+        value: item?.value ?? "",
+        value_ar: item?.value_ar ?? "",
+        label: item?.label ?? "",
+        label_ar: item?.label_ar ?? "",
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
+      })),
     };
   }
 
-  static buildMakeRideSection(cmsData) {
+  static buildCategoriesSection(cmsData, homeCategories) {
     return {
-      title: cmsData?.make_ride_title ?? "",
-      highlight_title: cmsData?.make_ride_highlight_title ?? "",
-      description: cmsData?.make_ride_description ?? "",
-      media: mediaWithType(
-        cmsData,
-        "make_ride_media_type",
-        "make_ride_media_desktop_path",
-        "make_ride_media_mobile_path",
-        "make_ride_media_alt"
-      ),
+      title: cmsData?.discover_title ?? "",
+      title_ar: cmsData?.discover_title_ar ?? "",
+      list: homeCategories.map((item) => ({
+        id: item?.id,
+        slug: item?.slug ?? "",
+        title: item?.title ?? "",
+        title_ar: item?.title_ar ?? "",
+        link: `products?category=${item?.slug}`,
+        media: singleMediaWithoutType(item, "media_path"),
+      })),
     };
   }
 
-  static buildExploreSection(cmsData, homeExploreOurExpertise) {
+  static buildIndustriesSection(industries) {
     return {
-      title: cmsData?.explore_title ?? "",
-      description: cmsData?.explore_description ?? "",
-      list:
-        homeExploreOurExpertise.map((item) => ({
-          title: item?.title ?? "",
-          description: item?.description ?? "",
-          buttons: [button(item, "button_text", "button_text_link")].filter(
-            (btn) => btn.text
-          ),
-          media: singleMediaWithoutType(item, "media_path", "media_alt"),
-        })) || [],
+      list: industries.map((item) => ({
+        id: item?.id,
+        slug: item?.slug ?? "",
+        title: item?.title ?? "",
+        title_ar: item?.title_ar ?? "",
+        description: item?.description ?? "",
+        description_ar: item?.description_ar ?? "",
+        link: item?.link ?? "",
+        categories: (item?.categories ?? []).map((cat) => ({
+          id: cat?.id,
+          slug: cat?.slug ?? "",
+          title: cat?.title ?? "",
+          title_ar: cat?.title_ar ?? "",
+          media: singleMediaWithoutType(cat, "media_path"),
+        })),
+      })),
     };
   }
 
-  static buildAppFeatureSection(cmsData, homeAppFeatures) {
+  static buildTestimonialsSection(testimonials, cmsData) {
     return {
-      title: cmsData?.app_feature_title ?? "",
-      sub_title: cmsData?.app_feature_sub_title ?? "",
-      description: cmsData?.app_feature_description ?? "",
-      hand_image: cmsData?.app_feature_hand_image ?? "",
-      hand_image_alt: cmsData?.app_feature_hand_image_alt ?? "",
-      hand_video: cmsData?.app_feature_hand_video ?? "",
-      hand_video_alt: cmsData?.app_feature_hand_video_alt ?? "",
-      list:
-        homeAppFeatures.map((item) => ({
-          title: item?.title ?? "",
-          icon: item?.icon ?? "",
-          icon_alt: item?.icon_alt ?? "",
-        })) || [],
+      title: cmsData?.testimonial_title ?? "",
+      title_ar: cmsData?.testimonial_title_ar ?? "",
+      list: testimonials.map((item) => ({
+        id: item?.id,
+        name: item?.name ?? "",
+        name_ar: item?.name_ar ?? "",
+        designation: item?.designation ?? "",
+        designation_ar: item?.designation_ar ?? "",
+        message: item?.message ?? "",
+        message_ar: item?.message_ar ?? "",
+        profile: singleMediaWithoutType(item, "profile_media_path"),
+      })),
     };
   }
 
-  static buildInvestmentSection(cmsData, homeInvestment) {
+  static buildBrandsSection(brands, cmsData) {
     return {
-      milestone_description: cmsData?.investment_title ?? "",
-      media: mediaWithType(
-        cmsData,
-        "investment_media_type",
-        "investment_media_desktop_path",
-        "investment_media_mobile_path",
-        "investment_media_alt"
-      ),
-      list:
-        homeInvestment.map((item) => ({
-          title: item?.title ?? "",
-          subtitle: item?.subtitle ?? "",
-          description: item?.description ?? "",
-          buttons: [button(item, "button_text", "button_text_link")].filter(
-            (btn) => btn.text
-          ),
-        })) || [],
+      title: cmsData?.brand_title ?? "",
+      title_ar: cmsData?.brand_title_ar ?? "",
+      list: brands.map((item) => ({
+        id: item?.id,
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
+      })),
     };
   }
 
-  static buildPartnersSection(cmsData, partners) {
+  static buildFaqsSection(faqs, cmsData) {
     return {
-      title: cmsData?.partners_title ?? "",
-      list:
-        partners.map((item) => ({
-          name: cmsData?.name ?? "",
-          media: singleMediaWithoutType(item, "media_path", "media_alt"),
-        })) || [],
+      title: cmsData?.faq_title ?? "",
+      title_ar: cmsData?.faq_title_ar ?? "",
+      list: faqs.map((item) => ({
+        id: item?.id,
+        question: item?.question ?? "",
+        question_ar: item?.question_ar ?? "",
+        answer: item?.answer ?? "",
+        answer_ar: item?.answer_ar ?? "",
+      })),
     };
   }
 
-  static buildNewsSection(cmsData, news) {
+  static buildSideImagesSection(sideImages) {
     return {
-      title: cmsData?.news_title ?? "",
-      list:
-        news.map((item) => ({
-          title: item?.title ?? "",
-          slug: item?.slug ?? "",
-          description: item?.description ?? "",
-          reading_time: item?.reading_time ?? "",
-          published_on: item?.published_on ?? "",
-          media: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
-        })) || [],
+      list: sideImages.map((item) => ({
+        id: item?.id,
+        before: singleMediaWithoutType(item, "before_media_path", "before_media_alt", "before_media_alt_ar"),
+        after: singleMediaWithoutType(item, "after_media_path", "after_media_alt", "after_media_alt_ar"),
+      })),
     };
   }
 
-  static buildBlogSection(cmsData, blogs) {
+  static buildPremiumSection(cmsData) {
     return {
-      title: cmsData?.blog_title ?? "",
-      list:
-        blogs.map((item) => ({
-          title: item?.title ?? "",
-          slug: item?.slug ?? "",
-          description: item?.description ?? "",
-          published_on: item?.published_on ?? "",
-          media: singleMediaWithoutType(item, "thumbnail", "thumbnail_alt"),
-        })) || [],
+      title: cmsData?.premium_title ?? "",
+      title_ar: cmsData?.premium_title_ar ?? "",
+      description: cmsData?.premium_description ?? "",
+      description_ar: cmsData?.premium_description_ar ?? "",
+    };
+  }
+
+  static buildFeaturesSection(features, commonContent) {
+    return {
+      title: commonContent?.why_choose_title ?? "",
+      title_ar: commonContent?.why_choose_title_ar ?? "",
+      list: features.map((item) => ({
+        id: item?.id,
+        title: item?.title ?? "",
+        title_ar: item?.title_ar ?? "",
+        description: item?.description ?? "",
+        description_ar: item?.description_ar ?? "",
+      })),
+    };
+  }
+
+  static buildHowItWorksSection(howItWorks, commonContent) {
+    return {
+      title: commonContent?.how_section_title ?? "",
+      title_ar: commonContent?.how_section_title_ar ?? "",
+      list: howItWorks.map((item) => ({
+        id: item?.id,
+        title: item?.title ?? "",
+        title_ar: item?.title_ar ?? "",
+        description: item?.description ?? "",
+        description_ar: item?.description_ar ?? "",
+      })),
+    };
+  }
+
+  static buildSideSection(commonContent) {
+    return {
+      title: commonContent?.side_section_title ?? "",
+      title_ar: commonContent?.side_section_title_ar ?? "",
+      description: commonContent?.side_section_description ?? "",
+      description_ar: commonContent?.side_section_description_ar ?? "",
+      button: {
+        text: commonContent?.button_text ?? "",
+        text_ar: commonContent?.button_text_ar ?? "",
+        link: commonContent?.button_link ?? "#",
+      },
+    };
+  }
+
+  static buildCtaSection(cmsData) {
+    return {
+      title: cmsData?.cta_title ?? "",
+      title_ar: cmsData?.cta_title_ar ?? "",
+      description: cmsData?.cta_description ?? "",
+      description_ar: cmsData?.cta_description_ar ?? "",
+      media: singleMediaWithoutType(cmsData, "cta_media_path"),
     };
   }
 }

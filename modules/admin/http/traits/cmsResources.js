@@ -39,6 +39,8 @@ const cmsResources = {
   },
   "home-banner": { model: "HomeBanner", cachePrefix: "homebanner" },
   "common-milestones": { model: "CommonMilestones", cachePrefix: "commonmilestone" },
+  "common-features": { model: "CommonFeatures", cachePrefix: "commonfeature" },
+  "common-how-it-works": { model: "CommonHowItWorks", cachePrefix: "commonhowitworks" },
   "home-brands": { model: "HomeBrands", cachePrefix: "homebrands" },
   "home-testimonials": {
     model: "HomeTestimonials",

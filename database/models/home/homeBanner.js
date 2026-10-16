@@ -30,7 +30,17 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      media_type: {
+        type: DataTypes.ENUM("image", "video"),
+        allowNull: false,
+        defaultValue: "image",
+      },
       media_path: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      // Poster image for video banners; null for image banners.
+      thumbnail: {
         type: DataTypes.STRING,
         allowNull: true,
       },
