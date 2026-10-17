@@ -9,7 +9,9 @@ const router = express.Router();
 
 const uploadFields = [{ name: "media_path" }];
 
-const upload = createUploadMiddleware("floating-icons", uploadFields);
+const upload = createUploadMiddleware("floating-icons", uploadFields, {
+  iconOnly: true,
+});
 
 router.use(authMiddleware(["admin", "user"]));
 router.get("/", Controller.list);

@@ -44,7 +44,9 @@ const updateField = (validators, field, label) => async (req, res) => {
     if (!item) return sendNotFoundError(res, resource);
 
     // Some models name the home flag differently (e.g. projects: is_show_in_home).
-    const column = field === "show_in_home" && config.homeField ? config.homeField : field;
+    let column = field;
+    if (field === "show_in_home" && config.homeField) column = config.homeField;
+    if (field === "show_in_navbar" && config.navbarField) column = config.navbarField;
     await item.update({ [column]: req.body[field] });
 
     return sendSuccessResponse(res, { id: item.id, [field]: item[column] }, `${label} updated successfully`);

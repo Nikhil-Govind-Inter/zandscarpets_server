@@ -65,7 +65,7 @@ const cmsResources = {
   "product-variants": {
     model: "ProductVariants",
   },
-  products: { model: "Products" },
+  products: { model: "Products", navbarField: "list_in_navbar" },
   "detail-fields": { model: "DetailFields" },
 };
 

@@ -60,7 +60,7 @@ const detailInclude = [
 const listSelectColumns = `
   p.id, p.title, p.title_ar, p.slug, p.price,
   p.main_media_path, p.media_alt,
-  p.sort_order, p.is_active, p.show_in_home, p.show_in_footer, p.product_category_id,
+  p.sort_order, p.is_active, p.show_in_home, p.show_in_footer, p.list_in_navbar, p.product_category_id,
   c.id AS category_id, c.title AS category_title,
   COALESCE((
     SELECT json_agg(json_build_object(
@@ -234,6 +234,12 @@ class ProductController {
         where.push("p.show_in_home = TRUE");
       } else if (showInHome === "false") {
         where.push("p.show_in_home = FALSE");
+      }
+      const listInNavbar = req.query.list_in_navbar;
+      if (listInNavbar === "true") {
+        where.push("p.list_in_navbar = TRUE");
+      } else if (listInNavbar === "false") {
+        where.push("p.list_in_navbar = FALSE");
       }
       const showInFooter = req.query.show_in_footer;
       if (showInFooter === "true") {

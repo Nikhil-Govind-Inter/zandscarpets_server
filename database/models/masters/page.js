@@ -13,10 +13,30 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      page_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       page_slug: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+      },
+      link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      show_in_nav: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      show_in_footer: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      sort_order: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
       is_active: {
         type: DataTypes.BOOLEAN,

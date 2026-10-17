@@ -19,8 +19,11 @@ class PagesController {
   static async list(req, res) {
     try {
       const result = await paginate(dataModel, req, {
-        order: [["page", "ASC"]],
-        searchFields: ["page", "page_slug"],
+        order: [
+          ["sort_order", "ASC"],
+          ["page", "ASC"],
+        ],
+        searchFields: ["page", "page_ar", "page_slug", "link"],
       });
 
       sendSuccessResponse(res, result, "Pages list retrieved successfully");
@@ -69,7 +72,7 @@ class PagesController {
 
       const isItemExist = await dataModel.findOne({
         where: { page_slug: req.body.page_slug, deleted_at: null },
-        attrubutes: ["page_slug"],
+        attributes: ["page_slug"],
       });
       if (isItemExist)
         return sendErrorResponse(res, `${req.body.page} already exist`);
@@ -103,7 +106,7 @@ class PagesController {
             [Op.ne]: id,
           },
         },
-        attrubutes: ["page_slug"],
+        attributes: ["page_slug"],
       });
 
       if (isItemExist)
