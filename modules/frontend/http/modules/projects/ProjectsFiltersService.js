@@ -8,8 +8,11 @@ class ProjectsFiltersService {
     // Querying Projects (not Industry with an include) avoids the duplicate-row
     // trap of an inner join on a one-to-many relation — one row per project,
     // de-duplicated into industries in JS below.
+    // `?show_in_home=1|true`: only industries that have projects flagged for the home page
+    const showInHome = ["1", "true"].includes(String(req?.query?.show_in_home).toLowerCase());
+
     const projects = await models.Projects.findAll({
-      where: { is_active: true },
+      where: { is_active: true, ...(showInHome && { is_show_in_home: true }) },
       attributes: ["industry_id"],
       include: [
         {

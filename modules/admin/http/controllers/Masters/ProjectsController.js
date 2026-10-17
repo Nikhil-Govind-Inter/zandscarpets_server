@@ -170,6 +170,12 @@ class ProjectsController {
       } else if (status === "inactive") {
         where.is_active = false;
       }
+      const showInHome = req.query.show_in_home;
+      if (showInHome === "true") {
+        where.is_show_in_home = true;
+      } else if (showInHome === "false") {
+        where.is_show_in_home = false;
+      }
 
       const result = await paginate(dataModel, req, {
         where,

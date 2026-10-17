@@ -1,10 +1,13 @@
 const { models } = require("../../../../../database/models");
 const AboutSectionBuilder = require("./AboutSectionBuilder");
+const CommonSections = require("../common/CommonSections");
+const MetaTagService = require("../metaTag/MetaTagService");
+const { withVisibility } = require("../../traits/sectionHelpers");
 
 class AboutService {
-  static async index(req) {
-    const normalizedLang = req?.query?.lang === "ar" ? "ar" : "en";
-
+  // Same convention as the home API: both languages in one response (no `?lang=`),
+  // each section carries `is_visible`, plus the page's JSON-LD / extra scripts (`other_meta`).
+  static async index() {
     const cmsData = await models.AboutCms.findOne({});
 
     if (!cmsData) {
@@ -18,12 +21,13 @@ class AboutService {
 
     const [
       banner = [],
+      milestones = [],
       coreValues = [],
       history = [],
       messages = [],
-      worksPlans = [],
-      aboutFeatures = [],
       industries = [],
+      common,
+      otherMeta,
     ] = await Promise.all([
       models.Banners.findAll({
         include: [
@@ -36,68 +40,36 @@ class AboutService {
           },
         ],
       }),
+      models.CommonMilestones.findAll(activeQuery),
       models.CoreValues.findAll(activeQuery),
       models.History.findAll(activeQuery),
       models.Messages.findAll({
         ...activeQuery,
         attributes: {
-          exclude: [
-            "createdAt",
-            "updatedAt",
-            "deleted_at",
-            "sort_order",
-            "is_active",
-          ],
+          exclude: ["createdAt", "updatedAt", "deleted_at", "sort_order", "is_active"],
         },
       }),
-      models.WorkPlan.findAll(activeQuery),
-      models.OurFeatures.findAll(activeQuery),
       models.AboutIndustries.findAll(activeQuery),
+      CommonSections.fetch(),
+      MetaTagService.getOtherMetaForPage("about"),
     ]);
 
+    const sections = {
+      banner_section: AboutSectionBuilder.buildBannerSection(banner),
+      introduction_section: AboutSectionBuilder.buildIntroductionSection(cmsData, milestones),
+      history_section: AboutSectionBuilder.buildHistorySection(cmsData, history),
+      messages_section: AboutSectionBuilder.buildMessagesSection(cmsData, messages),
+      core_value_section: AboutSectionBuilder.buildCoreValueSection(cmsData, coreValues),
+      industry_section: AboutSectionBuilder.buildIndustrySection(cmsData, industries),
+      how_it_works_section: CommonSections.buildHowItWorksSection(common.howItWorks, common.commonContent),
+      features_section: CommonSections.buildFeaturesSection(common.features, common.commonContent),
+      side_section: CommonSections.buildSideSection(common.commonContent),
+    };
+
     const data = {
-
-      // cmsData,
-
-      banner_section: AboutSectionBuilder.buildBannerSection(
-        banner,
-        normalizedLang,
-      ),
-      introduction_section: AboutSectionBuilder.buildIntroductionSection(
-        cmsData,
-        [],
-        normalizedLang,
-      ),
-      history_section: AboutSectionBuilder.buildHistorySection(
-        cmsData,
-        history,
-        normalizedLang,
-      ),
-      messages_section: AboutSectionBuilder.buildMessagesSection(
-        cmsData,
-        messages,
-        normalizedLang,
-      ),
-      process_section: AboutSectionBuilder.buildProcessSection(
-        cmsData,
-        worksPlans,
-        normalizedLang,
-      ),
-      core_value_section: AboutSectionBuilder.buildCoreValueSection(
-        cmsData,
-        coreValues,
-        normalizedLang,
-      ),
-      client_section: AboutSectionBuilder.buildClientSection(
-        cmsData,
-        aboutFeatures,
-        normalizedLang,
-      ),
-      industry_section: AboutSectionBuilder.buildIndustrySection(
-        cmsData,
-        industries,
-        normalizedLang,
-      ),
+      other_meta: otherMeta.other_meta,
+      other_meta_ar: otherMeta.other_meta_ar,
+      ...Object.fromEntries(Object.entries(sections).map(([key, section]) => [key, withVisibility(section)])),
     };
 
     return { data };

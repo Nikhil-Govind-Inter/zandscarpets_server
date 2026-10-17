@@ -1,218 +1,124 @@
-const {
-  mediaWithoutType,
-  singleMediaWithoutType,
-} = require("../../traits/mediaButtonHelper");
+const { singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
+const { blockRichText } = require("../../traits/sectionHelpers");
 
-const { t, localizeMedia } = require("../../traits/localeHelper");
+// Same convention as the home API: every text field comes back in both languages
+// (`title` / `title_ar`) and the storefront picks one by locale. Rich-text fields are sanitized.
+const text = (value) => value ?? "";
 
 class AboutSectionBuilder {
-  static buildBannerSection(banner, lang) {
+  static buildBannerSection(banner) {
     return {
-      title: t(lang, banner[0]?.title, banner[0]?.title_ar),
-      sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
-      media: localizeMedia(
-        singleMediaWithoutType(
-          banner[0],
-          "media_path",
-          "media_alt",
-          "media_alt_ar",
-        ),
-        lang,
-      ),
+      title: text(banner[0]?.title),
+      title_ar: text(banner[0]?.title_ar),
+      sub_title: text(banner[0]?.sub_title),
+      sub_title_ar: text(banner[0]?.sub_title_ar),
+      media: singleMediaWithoutType(banner[0], "media_path", "media_alt", "media_alt_ar"),
     };
   }
 
-  static buildIntroductionSection(cmsData, stats, lang) {
+  static buildIntroductionSection(cmsData, stats) {
     return {
-      title: t(lang, cmsData?.about_title, cmsData?.about_title_ar),
-      description: t(
-        lang,
-        cmsData?.about_description,
-        cmsData?.about_description_ar,
-      ),
+      title: text(cmsData?.about_title),
+      title_ar: text(cmsData?.about_title_ar),
+      description: blockRichText(cmsData?.about_description),
+      description_ar: blockRichText(cmsData?.about_description_ar),
 
-      trust_title: t(lang, cmsData?.trust_title, cmsData?.trust_title_ar),
-      trust_description: t(
-        lang,
-        cmsData?.trust_description,
-        cmsData?.trust_description_ar,
-      ),
-      media: localizeMedia(
-        singleMediaWithoutType(
-          cmsData,
-          "media_path",
-          "media_alt",
-          "media_alt_ar",
-        ),
-        lang,
-      ),
+      trust_title: text(cmsData?.trust_title),
+      trust_title_ar: text(cmsData?.trust_title_ar),
+      trust_description: blockRichText(cmsData?.trust_description),
+      trust_description_ar: blockRichText(cmsData?.trust_description_ar),
+
+      media: singleMediaWithoutType(cmsData, "media_path", "media_alt", "media_alt_ar"),
 
       mission: {
-        title: t(lang, cmsData?.mission_title, cmsData?.mission_title_ar),
-        description: t(
-          lang,
-          cmsData?.mission_description,
-          cmsData?.mission_description_ar,
-        ),
+        title: text(cmsData?.mission_title),
+        title_ar: text(cmsData?.mission_title_ar),
+        description: blockRichText(cmsData?.mission_description),
+        description_ar: blockRichText(cmsData?.mission_description_ar),
       },
       vision: {
-        title: t(lang, cmsData?.vision_title, cmsData?.vision_title_ar),
-        description: t(
-          lang,
-          cmsData?.vision_description,
-          cmsData?.vision_description_ar,
-        ),
+        title: text(cmsData?.vision_title),
+        title_ar: text(cmsData?.vision_title_ar),
+        description: blockRichText(cmsData?.vision_description),
+        description_ar: blockRichText(cmsData?.vision_description_ar),
       },
 
       stats: stats.map((item) => ({
-        value: t(lang, item?.value, item?.value_ar),
-        label: t(lang, item?.label, item?.label_ar),
+        id: item?.id,
+        value: text(item?.value),
+        value_ar: text(item?.value_ar),
+        label: text(item?.label),
+        label_ar: text(item?.label_ar),
       })),
     };
   }
 
-  static buildHistorySection(cmsData, history, lang) {
+  static buildHistorySection(cmsData, history) {
     return {
-      title: t(lang, cmsData?.history_title, cmsData?.history_title_ar),
-      items: history.map((item) => ({
+      title: text(cmsData?.history_title),
+      title_ar: text(cmsData?.history_title_ar),
+      list: history.map((item) => ({
+        id: item?.id,
         year: item?.year ?? "",
-        title: t(lang, item?.title, item?.title_ar),
-        description: t(lang, item?.description, item?.description_ar),
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
+        description: blockRichText(item?.description),
+        description_ar: blockRichText(item?.description_ar),
       })),
     };
   }
 
-  static buildMessagesSection(cmsData, associates, lang) {
+  static buildMessagesSection(cmsData, associates) {
     return {
-      title: t(lang, cmsData?.message_title, cmsData?.message_title_ar),
-      sub_title: t(
-        lang,
-        cmsData?.message_subtitle,
-        cmsData?.message_subtitle_ar,
-      ),
-      items: associates.map((item) => ({
+      title: text(cmsData?.message_title),
+      title_ar: text(cmsData?.message_title_ar),
+      sub_title: text(cmsData?.message_subtitle),
+      sub_title_ar: text(cmsData?.message_subtitle_ar),
+      list: associates.map((item) => ({
         id: item.id,
-        quotes: t(lang, item.quotes, item.quotes_ar),
-        name: t(lang, item.name, item.name_ar),
-        designation: t(lang, item.designation, item.designation_ar),
-        organization: t(lang, item.Organization, item.organization_ar),
-        media: localizeMedia(
-          singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt",
-            "media_alt_ar",
-          ),
-          lang,
-        ),
+        quotes: blockRichText(item.quotes),
+        quotes_ar: blockRichText(item.quotes_ar),
+        name: text(item.name),
+        name_ar: text(item.name_ar),
+        designation: text(item.designation),
+        designation_ar: text(item.designation_ar),
+        organization: text(item.Organization),
+        organization_ar: text(item.organization_ar),
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
       })),
     };
   }
 
-  static buildProcessSection(cmsData, worksPlans, lang) {
+  static buildCoreValueSection(cmsData, coreValues) {
     return {
-      title: t(lang, cmsData?.work_title, cmsData?.work_title_ar),
-      media: localizeMedia(
-        singleMediaWithoutType(
-          cmsData,
-          "work_media_path",
-          "work_media_alt",
-          "work_media_alt_ar",
-        ),
-        lang,
-      ),
-      items: worksPlans.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
-        short_description: t(
-          lang,
-          item?.short_description,
-          item?.short_description_ar,
-        ),
+      title: text(cmsData?.about_core_title),
+      title_ar: text(cmsData?.about_core_title_ar),
+      description: blockRichText(cmsData?.about_core_description),
+      description_ar: blockRichText(cmsData?.about_core_description_ar),
+      media: singleMediaWithoutType(cmsData, "about_core_media_path", "about_core_media_alt", "about_core_media_alt_ar"),
+      list: coreValues.map((item) => ({
+        id: item?.id,
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
       })),
     };
   }
 
-  static buildCoreValueSection(cmsData, coreValues, lang) {
+  static buildIndustrySection(cmsData, industries) {
     return {
-      title: t(lang, cmsData?.about_core_title, cmsData?.about_core_title_ar),
-      description: t(
-        lang,
-        cmsData?.about_core_description,
-        cmsData?.about_core_description_ar,
-      ),
-      media: localizeMedia(
-        singleMediaWithoutType(
-          cmsData,
-          "about_code_media_path",
-          "about_code_media_alt",
-          "about_code_media_alt_ar",
-        ),
-        lang,
-      ),
-      items: coreValues.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
-        media: localizeMedia(
-          singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt",
-            "media_alt_ar",
-          ),
-          lang,
-        ),
-      })),
-    };
-  }
-
-  static buildClientSection(cmsData, features, lang) {
-    return {
-      title: t(lang, cmsData?.features_title, cmsData?.features_title_ar),
-      sub_title: t(
-        lang,
-        cmsData?.features_sub_title,
-        cmsData?.features_sub_title_ar,
-      ),
-      description: t(
-        lang,
-        cmsData?.features_description,
-        cmsData?.features_description_ar,
-      ),
-      items: features.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
-        description: t(lang, item?.description, item?.description_ar),
-      })),
-    };
-  }
-
-  static buildIndustrySection(cmsData, industries, lang) {
-    return {
-      title: t(lang, cmsData?.industry_title, cmsData?.industry_title_ar),
-      description: t(
-        lang,
-        cmsData?.industry_description,
-        cmsData?.industry_description_ar,
-      ),
-      media: localizeMedia(
-        singleMediaWithoutType(
-          cmsData,
-          "industry_media_path",
-          "industry_media_alt",
-          "industry_media_alt_ar",
-        ),
-        lang,
-      ),
-      items: industries.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
-        description: t(lang, item?.description, item?.description_ar),
-        media: localizeMedia(
-          singleMediaWithoutType(
-            item,
-            "media_path",
-            "media_alt",
-            "media_alt_ar",
-          ),
-          lang,
-        ),
+      title: text(cmsData?.industry_title),
+      title_ar: text(cmsData?.industry_title_ar),
+      description: blockRichText(cmsData?.industry_description),
+      description_ar: blockRichText(cmsData?.industry_description_ar),
+      media: singleMediaWithoutType(cmsData, "industry_media_path", "industry_media_alt", "industry_media_alt_ar"),
+      list: industries.map((item) => ({
+        id: item?.id,
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
+        description: blockRichText(item?.description),
+        description_ar: blockRichText(item?.description_ar),
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
       })),
     };
   }

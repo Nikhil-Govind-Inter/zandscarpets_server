@@ -1,8 +1,9 @@
-const sanitizeHtml = require("sanitize-html");
 const { models } = require("../../../../../database/models");
 const { link } = require("../../../routes/home");
 const { singleMediaWithType, singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
 const MetaTagService = require("../metaTag/MetaTagService");
+const CommonSections = require("../common/CommonSections");
+const { withVisibility, inlineRichText, blockRichText } = require("../../traits/sectionHelpers");
 
 const orderedActive = { where: { is_active: true }, order: [["sort_order", "ASC"]] };
 const homeBannerAttributes = [
@@ -80,40 +81,6 @@ const homeProductAttributes = [
   "sort_order",
 ];
 
-const stripHtml = (value) =>
-  String(value ?? "")
-    .replace(/<[^>]*>/g, "")
-    .trim();
-
-// Adds `is_visible` so the client can skip a section: sections with a list need at least one item,
-// text-only sections (premium, cta, side) need a title or description in either language.
-const withVisibility = (section) => {
-  const isVisible = Array.isArray(section.list)
-    ? section.list.length > 0
-    : ["title", "title_ar", "description", "description_ar"].some((key) => stripHtml(section[key]));
-  return { ...section, is_visible: isVisible };
-};
-
-// Banner heading/description are authored in a rich text editor ("<p>Line one<br>Line two</p>").
-// They render inside <h1>/<h2>, so paragraphs become line breaks and only inline formatting
-// (bold/italic/underline/line break/colour) is kept.
-const inlineRichText = (html) =>
-  sanitizeHtml(String(html ?? "").replace(/<\/p>\s*<p[^>]*>/gi, "<br>"), {
-    allowedTags: ["br", "strong", "b", "em", "i", "u", "span"],
-    allowedAttributes: { span: ["style"] },
-    allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
-  }).trim();
-
-// Industry descriptions are rich text rendered as a content block (paragraphs, lists, basic emphasis).
-const blockRichText = (html) =>
-  sanitizeHtml(String(html ?? ""), {
-    allowedTags: ["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "span"],
-    allowedAttributes: { span: ["style"] },
-    allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
-  })
-    .replace(/<p>\s*<\/p>/gi, "")
-    .trim();
-
 class HomeService {
   static async index() {
     const [cmsData, commonContent] = await Promise.all([models.HomeCms.findOne({}), models.CommonContent.findOne({})]);
@@ -190,7 +157,7 @@ class HomeService {
         where: { is_active: true, show_in_home: true },
         include: [
           { model: models.ProductLabels, as: "badge", attributes: ["id", "slug", "title", "title_ar"], required: false },
-          { model: models.ProductCategories, as: "category", attributes: ["id", "slug", "title", "title_ar"], required: false },
+          { model: models.ProductCategories, as: "category", attributes: ["id", "slug", "title", "title_ar"], where: { is_active: true }, required: true },
         ],
         order: [["sort_order", "ASC"]],
       }),
@@ -208,6 +175,7 @@ class HomeService {
       side_images_section: this.buildSideImagesSection(sideImages),
       space_section: { title: cmsData?.space_section_title ?? "", title_ar: cmsData?.space_section_title_ar ?? "" },
       premium_section: this.buildPremiumSection(cmsData),
+      works_section: this.buildWorksSection(cmsData),
       features_section: this.buildFeaturesSection(features, commonContent),
       side_section: this.buildSideSection(commonContent),
       how_it_works_section: this.buildHowItWorksSection(howItWorks, commonContent),
@@ -359,6 +327,14 @@ class HomeService {
     };
   }
 
+  // Heading of the projects ("Explore Our Work") block; the projects themselves come from /api/frontend/projects
+  static buildWorksSection(cmsData) {
+    return {
+      title: cmsData?.project_title ?? "",
+      title_ar: cmsData?.project_title_ar ?? "",
+    };
+  }
+
   static buildPremiumSection(cmsData) {
     return {
       title: cmsData?.premium_title ?? "",
@@ -369,49 +345,15 @@ class HomeService {
   }
 
   static buildFeaturesSection(features, commonContent) {
-    return {
-      title: commonContent?.why_choose_title ?? "",
-      title_ar: commonContent?.why_choose_title_ar ?? "",
-      list: features.map((item) => ({
-        id: item?.id,
-        title: item?.title ?? "",
-        title_ar: item?.title_ar ?? "",
-        description: item?.description ?? "",
-        description_ar: item?.description_ar ?? "",
-      })),
-    };
+    return CommonSections.buildFeaturesSection(features, commonContent);
   }
 
   static buildHowItWorksSection(howItWorks, commonContent) {
-    return {
-      title: commonContent?.how_section_title ?? "",
-      title_ar: commonContent?.how_section_title_ar ?? "",
-      bg_title: commonContent?.how_section_bg_title ?? "",
-      bg_title_ar: commonContent?.how_section_bg_title_ar ?? "",
-      media: singleMediaWithType(commonContent ?? {}, "how_section_media_type", "how_section_media_path"),
-      thumbnail: singleMediaWithoutType(commonContent ?? {}, "how_section_thumbnail"),
-      list: howItWorks.map((item) => ({
-        id: item?.id,
-        title: item?.title ?? "",
-        title_ar: item?.title_ar ?? "",
-        description: item?.description ?? "",
-        description_ar: item?.description_ar ?? "",
-      })),
-    };
+    return CommonSections.buildHowItWorksSection(howItWorks, commonContent);
   }
 
   static buildSideSection(commonContent) {
-    return {
-      title: commonContent?.side_section_title ?? "",
-      title_ar: commonContent?.side_section_title_ar ?? "",
-      description: commonContent?.side_section_description ?? "",
-      description_ar: commonContent?.side_section_description_ar ?? "",
-      button: {
-        text: commonContent?.button_text ?? "",
-        text_ar: commonContent?.button_text_ar ?? "",
-        link: commonContent?.button_link ?? "#",
-      },
-    };
+    return CommonSections.buildSideSection(commonContent);
   }
 
   static buildCtaSection(cmsData) {

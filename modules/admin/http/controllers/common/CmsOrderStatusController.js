@@ -43,12 +43,11 @@ const updateField = (validators, field, label) => async (req, res) => {
     const item = await models[config.model].findByPk(id);
     if (!item) return sendNotFoundError(res, resource);
 
-    await item.update({ [field]: req.body[field] });
+    // Some models name the home flag differently (e.g. projects: is_show_in_home).
+    const column = field === "show_in_home" && config.homeField ? config.homeField : field;
+    await item.update({ [column]: req.body[field] });
 
-    for (const pattern of config.frontend || []) {
-    }
-
-    return sendSuccessResponse(res, { id: item.id, [field]: item[field] }, `${label} updated successfully`);
+    return sendSuccessResponse(res, { id: item.id, [field]: item[column] }, `${label} updated successfully`);
   } catch (error) {
     console.error(`Error updating ${field}:`, error);
     return sendErrorResponse(res, error);

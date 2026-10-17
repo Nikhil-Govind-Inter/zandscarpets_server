@@ -15,6 +15,9 @@ const toPositiveInt = (value, fallback) => {
 
 const localized = (column, alias) => `CASE WHEN :lang = 'ar' THEN COALESCE(${column}_ar, ${column}) ELSE ${column} END AS ${alias}`;
 
+// `?show_in_home=1|true` limits the list to projects flagged for the home page
+const isTruthyFlag = (value) => ["1", "true"].includes(String(value).toLowerCase());
+
 const parseIndustrySlugs = (value) => {
   const values = Array.isArray(value) ? value : [value];
   return values
@@ -31,6 +34,10 @@ class ProjectsListService {
 
     const where = ["p.deleted_at IS NULL", "p.is_active = true", "i.deleted_at IS NULL", "i.is_active = true"];
     const replacements = { limit, offset: (page - 1) * limit };
+
+    if (isTruthyFlag(req?.query?.show_in_home)) {
+      where.push("p.is_show_in_home = true");
+    }
 
     if (industrySlugs.length) {
       where.push("i.slug IN (:industrySlugs)");

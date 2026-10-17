@@ -38,7 +38,7 @@ const cmsResources = {
   },
   messages: { model: "Messages" },
   connections: { model: "Connections" },
-  projects: { model: "Projects" },
+  projects: { model: "Projects", homeField: "is_show_in_home" },
   services: { model: "Services" },
   "process-steps": { model: "ProcessSteps" },
   "product-categories": {

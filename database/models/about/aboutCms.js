@@ -62,22 +62,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      work_title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      work_media_path: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      work_media_alt: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      work_media_alt_ar: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       about_core_title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -86,25 +70,13 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      about_code_media_path: {
+      about_core_media_path: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      about_code_media_alt: {
+      about_core_media_alt: {
         type: DataTypes.STRING,
         allowNull: true,
-      },
-      features_title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      features_sub_title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      features_description: {
-        type: DataTypes.TEXT,
-        allowNull: false,
       },
       industry_title: {
         type: DataTypes.STRING,
@@ -170,10 +142,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      work_title_ar: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       about_core_title_ar: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -182,20 +150,8 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      about_code_media_alt_ar: {
+      about_core_media_alt_ar: {
         type: DataTypes.STRING,
-        allowNull: false,
-      },
-      features_title_ar: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      features_sub_title_ar: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      features_description_ar: {
-        type: DataTypes.TEXT,
         allowNull: false,
       },
       industry_title_ar: {
