@@ -9,7 +9,10 @@ const router = express.Router();
 
 const uploadFields = [{ name: "media_path" }, { name: "footer_media_path" }];
 
-const upload = createUploadMiddleware("social-media", uploadFields);
+const upload = createUploadMiddleware("social-media", uploadFields, {
+  iconOnly: true,
+  maxFileSizeBytes: 100 * 1024,
+});
 
 router.use(authMiddleware(["admin", 'user']));
 router.get("/", Controller.list);

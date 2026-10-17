@@ -33,6 +33,10 @@ module.exports = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      show_in_footer: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       deleted_at: {
         type: DataTypes.DATE,
       },

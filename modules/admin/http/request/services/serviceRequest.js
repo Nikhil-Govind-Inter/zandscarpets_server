@@ -10,6 +10,7 @@ const validationRequestPost = [
     
     body("sort_order").notEmpty().withMessage("Sort order is required").isInt({ min: 1 }).withMessage("Sort order must be an integer"),
     body("is_active").notEmpty().withMessage("Is active is required").isBoolean().withMessage("Is active must be a boolean"),
+    body("show_in_footer").optional().isBoolean().withMessage("Show in footer must be a boolean"),
 
 ];
 

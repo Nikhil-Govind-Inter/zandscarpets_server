@@ -20,7 +20,20 @@ const dataModel = models.Services;
 class ServiceController {
   static async list(req, res) {
     try {
+      const where = {};
+      if (req.query.status === "active") {
+        where.is_active = true;
+      } else if (req.query.status === "inactive") {
+        where.is_active = false;
+      }
+      if (req.query.show_in_footer === "true") {
+        where.show_in_footer = true;
+      } else if (req.query.show_in_footer === "false") {
+        where.show_in_footer = false;
+      }
+
       const result = await paginate(dataModel, req, {
+        where,
         order: [["sort_order", "ASC"]],
         searchFields: ["title"],
       });

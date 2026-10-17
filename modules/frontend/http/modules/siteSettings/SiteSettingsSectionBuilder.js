@@ -16,7 +16,14 @@ class SiteSettingsSectionBuilder {
     };
   }
 
-  static buildFooter(cmsData, lang, socialMedia = [], footerMedia = []) {
+  static buildFooter(
+    cmsData,
+    lang,
+    socialMedia = [],
+    footerMedia = [],
+    footerProducts = [],
+    footerServices = [],
+  ) {
     return {
       logo: localizeMedia(
         singleMediaWithoutType(
@@ -35,6 +42,16 @@ class SiteSettingsSectionBuilder {
       social_media: socialMedia.map((item) => ({
         media: this.buildMedia(item, lang, "footer_media_path"),
         link: item?.link ?? "",
+      })),
+
+      products: footerProducts.map((item) => ({
+        title: t(lang, item.title, item.title_ar),
+        slug: item.slug,
+      })),
+
+      services: footerServices.map((item) => ({
+        id: item.id,
+        title: t(lang, item.title, item.title_ar),
       })),
 
       footer_media: footerMedia.map((item) => ({

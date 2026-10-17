@@ -104,6 +104,10 @@ module.exports = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      show_in_footer: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       sort_order: {
         type: DataTypes.SMALLINT,
         defaultValue: 0,

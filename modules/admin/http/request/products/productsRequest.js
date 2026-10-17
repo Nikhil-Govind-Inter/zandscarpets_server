@@ -85,6 +85,10 @@ const validationRequestPost = [
     .optional()
     .isBoolean()
     .withMessage("Show in home must be a boolean"),
+  body("show_in_footer")
+    .optional()
+    .isBoolean()
+    .withMessage("Show in footer must be a boolean"),
 ];
 
 const validateId = [
