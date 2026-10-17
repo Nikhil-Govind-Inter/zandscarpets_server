@@ -10,11 +10,11 @@ module.exports = (sequelize) => {
         autoIncrement: true,
       },
       title: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       title_ar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true
       },
       description: {
@@ -26,11 +26,11 @@ module.exports = (sequelize) => {
         allowNull: true
       },
       service_title: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       service_title_ar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true
       },
       process_steps_title: {
@@ -38,6 +38,15 @@ module.exports = (sequelize) => {
         allowNull: false
       },
       process_steps_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      // faint text behind the process steps heading
+      process_steps_bg_title: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      process_steps_bg_title_ar: {
         type: DataTypes.STRING,
         allowNull: true
       },

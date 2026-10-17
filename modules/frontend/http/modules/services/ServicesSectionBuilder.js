@@ -1,63 +1,65 @@
 const { singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
+const { blockRichText, inlineRichText } = require("../../traits/sectionHelpers");
 
-const { t, localizeMedia } = require("../../traits/localeHelper");
-
-// Localized single media in the `{ media_path, media_alt }` shape.
-const buildMedia = (data, pathKey, altKey, altArKey, lang) => {
-  const media = localizeMedia(
-    singleMediaWithoutType(data ?? {}, pathKey, altKey, altArKey),
-    lang,
-  );
-  return { media_path: media.path, media_alt: media.alt };
-};
+// Same convention as the home / about APIs: every text field comes back in both languages
+// (`title` / `title_ar`) and the storefront picks one by locale. Rich-text fields are sanitized.
+const text = (value) => value ?? "";
 
 class ServicesSectionBuilder {
-  static buildBannerSection(banner, lang) {
+  static buildBannerSection(banner) {
     return {
-      title: t(lang, banner[0]?.title, banner[0]?.title_ar),
-      sub_title: t(lang, banner[0]?.sub_title, banner[0]?.sub_title_ar),
-      media: buildMedia(
-        banner[0],
-        "media_path",
-        "media_alt",
-        "media_alt_ar",
-        lang,
-      ),
+      title: text(banner[0]?.title),
+      title_ar: text(banner[0]?.title_ar),
+      sub_title: text(banner[0]?.sub_title),
+      sub_title_ar: text(banner[0]?.sub_title_ar),
+      media: singleMediaWithoutType(banner[0], "media_path", "media_alt", "media_alt_ar"),
     };
   }
 
-  static buildIntroductionSection(cmsData, industries, lang) {
+  // Intro text + the industry links (they open the works page filtered by industry)
+  static buildIntroductionSection(cmsData, industries) {
     return {
-      title: t(lang, cmsData?.title, cmsData?.title_ar),
-      description: t(lang, cmsData?.description, cmsData?.description_ar),
+      // headings are authored in a rich-text editor
+      title: inlineRichText(cmsData?.title),
+      title_ar: inlineRichText(cmsData?.title_ar),
+      description: blockRichText(cmsData?.description),
+      description_ar: blockRichText(cmsData?.description_ar),
       items: industries.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
+        id: item?.id,
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
         slug: item?.slug ?? "",
       })),
     };
   }
 
-  static buildServiceSection(cmsData, services, lang) {
+  static buildServiceSection(cmsData, services) {
     return {
-      title: t(lang, cmsData?.service_title, cmsData?.service_title_ar),
-      features: services.map((item) => ({
-        title: t(lang, item?.title, item?.title_ar),
-        content: t(lang, item?.description, item?.description_ar),
+      title: inlineRichText(cmsData?.service_title),
+      title_ar: inlineRichText(cmsData?.service_title_ar),
+      list: services.map((item) => ({
+        id: item?.id,
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
+        description: blockRichText(item?.description),
+        description_ar: blockRichText(item?.description_ar),
       })),
     };
   }
 
-  static buildProcessStepsSection(cmsData, steps, lang) {
+  static buildProcessStepsSection(cmsData, steps) {
     return {
-      title: t(
-        lang,
-        cmsData?.process_steps_title,
-        cmsData?.process_steps_title_ar,
-      ),
-      items: steps.map((item) => ({
-        media: buildMedia(item, "media_path", "media_alt", "media_alt_ar", lang),
-        title: t(lang, item?.title, item?.title_ar),
-        description: t(lang, item?.description, item?.description_ar),
+      title: text(cmsData?.process_steps_title),
+      title_ar: text(cmsData?.process_steps_title_ar),
+      bg_title: text(cmsData?.process_steps_bg_title),
+      bg_title_ar: text(cmsData?.process_steps_bg_title_ar),
+      list: steps.map((item) => ({
+        id: item?.id,
+        title: text(item?.title),
+        title_ar: text(item?.title_ar),
+        description: blockRichText(item?.description),
+        description_ar: blockRichText(item?.description_ar),
+        media: singleMediaWithoutType(item, "media_path", "media_alt", "media_alt_ar"),
       })),
     };
   }

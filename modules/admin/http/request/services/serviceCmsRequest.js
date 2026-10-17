@@ -12,6 +12,9 @@ const validationRequestPost = [
     
     body('process_steps_title').notEmpty().withMessage('Process steps title is required').isString().withMessage('Process steps title must be a string'),
     body('process_steps_title_ar').optional().isString().withMessage('Arabic process steps title must be a string'),
+
+    body('process_steps_bg_title').optional({ nullable: true }).isString().withMessage('Process steps background title must be a string'),
+    body('process_steps_bg_title_ar').optional({ nullable: true }).isString().withMessage('Arabic process steps background title must be a string'),
 ]
 
 const validateId = [
