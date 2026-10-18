@@ -67,6 +67,9 @@ const cmsResources = {
   },
   products: { model: "Products", navbarField: "list_in_navbar" },
   "detail-fields": { model: "DetailFields" },
+  // blog posts are ordered by their publish date, so only the status can be changed here
+  blogs: { model: "Blogs", sortable: false },
+  "blog-tags": { model: "BlogTags" },
 };
 
 module.exports = { cmsResources };

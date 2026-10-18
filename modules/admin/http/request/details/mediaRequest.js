@@ -31,6 +31,11 @@ const textMetaValidators = [
     .custom(noHtmlTags("Description")),
 ];
 
+const arabicMetaValidators = ["alt_text_ar", "title_ar", "description_ar"].map((name) =>
+  body(name).optional({ nullable: true }).isString().withMessage(`${name} must be a string`).custom(noHtmlTags(name)),
+);
+textMetaValidators.push(...arabicMetaValidators);
+
 const validationRequestPost = [...textMetaValidators];
 
 const validationRequestPatch = [...textMetaValidators];

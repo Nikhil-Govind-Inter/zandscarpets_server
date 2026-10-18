@@ -97,6 +97,7 @@ class DetailFieldsController {
       const item = await dataModel.create(
         {
           name: req.body.name,
+          name_ar: req.body.name_ar || null,
           slug: req.body.slug,
           type: req.body.type,
           allows_multiple: req.body.allows_multiple ?? false,
@@ -152,6 +153,7 @@ class DetailFieldsController {
       await item.update(
         {
           name: req.body.name,
+          ...(req.body.name_ar !== undefined && { name_ar: req.body.name_ar || null }),
           slug: req.body.slug,
           type: req.body.type,
           allows_multiple: req.body.allows_multiple,

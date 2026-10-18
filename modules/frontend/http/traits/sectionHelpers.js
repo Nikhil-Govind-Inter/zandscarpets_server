@@ -34,4 +34,32 @@ const blockRichText = (html) =>
     .replace(/<p>\s*<\/p>/gi, "")
     .trim();
 
-module.exports = { stripHtml, withVisibility, inlineRichText, blockRichText };
+// Long-form article body written in the admin editor: headings, paragraphs, lists, quotes, links
+// and images. Links get `rel="noopener noreferrer"` (and open in a new tab when external);
+// classes, inline styles (except text colour) and scripts are dropped.
+const articleRichText = (html) =>
+  sanitizeHtml(String(html ?? ""), {
+    allowedTags: ["h2", "h3", "h4", "p", "br", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "blockquote", "a", "img", "span"],
+    allowedAttributes: {
+      a: ["href", "target", "rel"],
+      img: ["src", "alt", "title"],
+      span: ["style"],
+    },
+    allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: { img: ["http", "https"] },
+    allowProtocolRelative: false,
+    transformTags: {
+      a: (tagName, attribs) => {
+        const { target, ...rest } = attribs;
+        const external = /^https?:\/\//i.test(rest.href || "");
+        return { tagName, attribs: { ...rest, rel: "noopener noreferrer", ...(external ? { target: "_blank" } : {}) } };
+      },
+    },
+    // an image whose source was rejected (e.g. a data: URI) is dropped
+    exclusiveFilter: (frame) => frame.tag === "img" && !frame.attribs.src,
+  })
+    .replace(/<p>\s*<\/p>/gi, "")
+    .trim();
+
+module.exports = { stripHtml, withVisibility, inlineRichText, blockRichText, articleRichText };

@@ -21,6 +21,18 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      // where the banner leads when clicked
+      link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      // optional button drawn over the banner (shown only when a link is set)
+      button_text: { type: DataTypes.STRING, allowNull: true },
+      button_text_ar: { type: DataTypes.STRING, allowNull: true },
+      link_new_tab: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       sort_order: {
         type: DataTypes.SMALLINT,
         defaultValue: 0,

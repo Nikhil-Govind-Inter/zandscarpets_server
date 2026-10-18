@@ -26,7 +26,14 @@ const defineHistory = require("./about/history");
 const defineAboutIndustries = require("./about/aboutIndustries");
 const defineMessages = require("./about/messages");
 const defineContactCms = require("./contact/contactCms");
+const defineCategoryCms = require("./products/categoryCms");
 const defineConnections = require("./contact/connections");
+// blogs
+const defineBlogs = require("./blogs/blogs");
+const defineBlogImages = require("./blogs/blogImages");
+const defineBlogTags = require("./blogs/blogTags");
+const defineBlogCms = require("./blogs/blogCms");
+const defineBlogRelated = require("./blogs/blogRelated");
 const defineProjects = require("./projects/projects");
 const defineProjectMedia = require("./projects/projectMedia");
 // policies
@@ -96,11 +103,19 @@ const models = {
 
   // CONTACT
   ContactCms: defineContactCms(sequelize),
+  CategoryCms: defineCategoryCms(sequelize),
   Connections: defineConnections(sequelize),
   ContactEnquiry: defineContactEnquiry(sequelize),
 
   // POLICIES
   PrivacyPolicy: definePrivacyPolicy(sequelize),
+
+  // BLOGS
+  Blogs: defineBlogs(sequelize),
+  BlogImages: defineBlogImages(sequelize),
+  BlogTags: defineBlogTags(sequelize),
+  BlogCms: defineBlogCms(sequelize),
+  BlogRelated: defineBlogRelated(sequelize),
 
   // PROJECTS
   Projects: defineProjects(sequelize),

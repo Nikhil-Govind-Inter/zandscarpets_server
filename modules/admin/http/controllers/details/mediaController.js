@@ -133,6 +133,9 @@ class MediaController {
           alt_text: normalizeText(req.body.alt_text),
           title: normalizeText(req.body.title),
           description: normalizeText(req.body.description),
+          alt_text_ar: normalizeText(req.body.alt_text_ar),
+          title_ar: normalizeText(req.body.title_ar),
+          description_ar: normalizeText(req.body.description_ar),
           thumbnail_location: kind === "video" ? req.body.thumbnail || null : null,
         },
         { transaction: t },
@@ -165,7 +168,7 @@ class MediaController {
       // it to null, it never falls back to the old value. Applied the same
       // way to all three metadata fields.
       const fields = {};
-      for (const field of ["alt_text", "title", "description"]) {
+      for (const field of ["alt_text", "title", "description", "alt_text_ar", "title_ar", "description_ar"]) {
         if (Object.prototype.hasOwnProperty.call(req.body, field)) {
           fields[field] = normalizeText(req.body[field]);
         }

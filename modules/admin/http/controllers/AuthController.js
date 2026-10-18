@@ -25,6 +25,7 @@ const {
   ACCESS_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
   setAuthCookies,
+  setAccessCookie,
   clearAuthCookies,
 } = require("../traits/authCookies");
 const ms = require("ms");
@@ -43,7 +44,10 @@ const {
 const AdminUser = models.AdminUser;
 const AdminRefreshToken = models.AdminRefreshToken;
 
-const SAFE_USER_ATTRIBUTES = ["id", "username", "email", "role", "updatedAt"];
+// Window in which a just-rotated refresh token is tolerated (concurrent refreshes).
+const REFRESH_GRACE_MS = 15 * 1000;
+
+const SAFE_USER_ATTRIBUTES =["id", "username", "email", "role", "updatedAt"];
 
 const otpKey = (userId) => `pwreset:otp:${userId}`;
 const otpAttemptsKey = (userId) => `pwreset:attempts:${userId}`;
@@ -157,13 +161,20 @@ class AuthController {
       const accessToken = signAccessToken(safeUser);
       const { rawToken: refreshToken } = await issueRefreshToken(safeUser.id);
 
+      // Housekeeping: drop long-dead refresh rows so the table doesn't grow forever.
+      AdminRefreshToken.destroy({
+        where: {
+          [Op.or]: [
+            { expiresAt: { [Op.lt]: new Date() } },
+            { revokedAt: { [Op.lt]: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+          ],
+        },
+      }).catch((err) => Logger.error("refresh token cleanup failed", { message: err.message }));
+
       setAuthCookies(res, { accessToken, refreshToken });
 
-      sendSuccessResponse(
-        res,
-        { user: safeUser, token: accessToken },
-        "Login successful",
-      );
+      // Tokens travel only in httpOnly cookies, never in the body.
+      sendSuccessResponse(res, { user: safeUser }, "Login successful");
     } catch (error) {
       console.error("Login error:", error);
       sendErrorResponse(res, error);
@@ -186,7 +197,34 @@ class AuthController {
         return sendUnauthorizedError(res, "Invalid refresh token");
       }
 
+      if (existingRow.expiresAt.getTime() < Date.now()) {
+        clearAuthCookies(res);
+        return sendUnauthorizedError(res, "Refresh token expired");
+      }
+
+      // Grace path: this token was rotated moments ago by a concurrent request
+      // (two tabs / parallel 401s). The browser already holds the newer refresh
+      // cookie from that response, so just hand back a fresh access token and
+      // leave the refresh cookie alone. Not treated as theft.
+      const respondConcurrentRefresh = async () => {
+        const user = await AdminUser.findOne({
+          where: { id: existingRow.userId, is_active: true },
+          attributes: SAFE_USER_ATTRIBUTES,
+        });
+        if (!user) {
+          clearAuthCookies(res);
+          return sendUnauthorizedError(res, "User not found");
+        }
+        setAccessCookie(res, signAccessToken(user));
+        return sendSuccessResponse(res, { user }, "Token refreshed");
+      };
+
       if (existingRow.revokedAt) {
+        const rotatedRecently =
+          existingRow.replacedByTokenId &&
+          Date.now() - existingRow.revokedAt.getTime() < REFRESH_GRACE_MS;
+        if (rotatedRecently) return await respondConcurrentRefresh();
+
         // Reuse of an already-rotated/revoked refresh token — likely theft/replay.
         // Revoke every outstanding token for this user as a precaution.
         await AdminRefreshToken.update(
@@ -200,11 +238,6 @@ class AuthController {
         );
       }
 
-      if (existingRow.expiresAt.getTime() < Date.now()) {
-        clearAuthCookies(res);
-        return sendUnauthorizedError(res, "Refresh token expired");
-      }
-
       const user = await AdminUser.findOne({
         where: { id: existingRow.userId, is_active: true },
         attributes: SAFE_USER_ATTRIBUTES,
@@ -215,14 +248,37 @@ class AuthController {
         return sendUnauthorizedError(res, "User not found");
       }
 
-      const { rawToken: newRefreshToken, row: newRow } =
-        await issueRefreshToken(user.id);
-      existingRow.revokedAt = new Date();
-      existingRow.replacedByTokenId = newRow.id;
-      await existingRow.save();
+      // Atomically claim the token: only one concurrent request can flip
+      // revokedAt from NULL, the rest see 0 affected rows.
+      const rotated = await sequelize.transaction(async (t) => {
+        const [claimed] = await AdminRefreshToken.update(
+          { revokedAt: new Date() },
+          { where: { id: existingRow.id, revokedAt: null }, transaction: t },
+        );
+        if (!claimed) return null;
 
-      const accessToken = signAccessToken(user);
-      setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
+        const rawNew = crypto.randomBytes(40).toString("hex");
+        const newRow = await AdminRefreshToken.create(
+          {
+            userId: user.id,
+            tokenHash: hashToken(rawNew),
+            expiresAt: new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN)),
+          },
+          { transaction: t },
+        );
+        await AdminRefreshToken.update(
+          { replacedByTokenId: newRow.id },
+          { where: { id: existingRow.id }, transaction: t },
+        );
+        return rawNew;
+      });
+
+      if (!rotated) return await respondConcurrentRefresh();
+
+      setAuthCookies(res, {
+        accessToken: signAccessToken(user),
+        refreshToken: rotated,
+      });
 
       sendSuccessResponse(res, { user }, "Token refreshed");
     } catch (error) {

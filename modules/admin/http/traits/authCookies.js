@@ -14,16 +14,10 @@ const REFRESH_TOKEN_EXPIRES_IN = JWT_REFRESH_EXPIRES_IN;
 // sends it to the auth endpoints that need it, not to every API call.
 const REFRESH_COOKIE_PATH = "/api/backend/auth";
 
-// The admin SPA (localhost:8080) and API (localhost:5000) run on different
-// ports in dev, i.e. cross-site as far as cookies are concerned, so a plain
-// SameSite=Lax cookie would never be attached to the SPA's fetch() calls
-// (Lax only rides along on top-level GET navigations, not XHR/fetch). We use
-// SameSite=None + Secure everywhere instead — modern browsers treat
-// http://localhost as a secure context, so Secure cookies still work over
-// plain HTTP there. In production, where this is expected to be deployed
-// behind a single reverse-proxied origin, same-site Lax would also work, but
-// None+Secure works equally well for a same-origin deployment and avoids a
-// NODE_ENV-dependent behavior difference between dev and prod.
+// Dev: the SPA (localhost:8080) and API (localhost:5000) differ only by port,
+// which browsers still treat as same-site, so SameSite=Lax cookies are sent
+// on fetch() and no HTTPS is needed. Production: SameSite=None + Secure
+// (requires HTTPS) so a separately hosted admin domain can send the cookies.
 
 const sameSite = NODE_ENV === "production" ? "none" : "lax";
 const secure = NODE_ENV === "production";
@@ -49,6 +43,10 @@ const setAuthCookies = (res, { accessToken, refreshToken }) => {
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
 };
 
+const setAccessCookie = (res, accessToken) => {
+  res.cookie(ACCESS_COOKIE_NAME, accessToken, accessCookieOptions());
+};
+
 const clearAuthCookies = (res) => {
   res.clearCookie(ACCESS_COOKIE_NAME, {
     httpOnly: true,
@@ -70,5 +68,6 @@ module.exports = {
   ACCESS_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
   setAuthCookies,
+  setAccessCookie,
   clearAuthCookies,
 };

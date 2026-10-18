@@ -16,6 +16,7 @@ module.exports = (sequelize) => {
       tokenHash: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
       expiresAt: {
         type: DataTypes.DATE,
@@ -32,6 +33,7 @@ module.exports = (sequelize) => {
     },
     {
       tableName: 'admin_refresh_tokens',
+      indexes: [{ fields: ['userId'] }],
     }
   );
 

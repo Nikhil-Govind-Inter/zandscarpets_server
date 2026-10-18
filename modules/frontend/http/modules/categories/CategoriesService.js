@@ -5,7 +5,8 @@ const { withVisibility, inlineRichText } = require("../../traits/sectionHelpers"
 const MetaTagService = require("../metaTag/MetaTagService");
 
 const DEFAULT_LIMIT = 6;
-const MAX_LIMIT = 24;
+// the storefront can ask for the first N pages at once (a `?page=N` link), so allow a larger limit
+const MAX_LIMIT = 120;
 
 const text = (value) => value ?? "";
 
@@ -25,7 +26,7 @@ class CategoriesService {
   // Page-level content: banner (the banner linked to the `main-category` page), the page's
   // JSON-LD / extra scripts and the badge filter list (only badges that active categories use).
   static async page() {
-    const [banner = [], otherMeta, badged = []] = await Promise.all([
+    const [banner = [], otherMeta, badged = [], cmsData] = await Promise.all([
       models.Banners.findAll({
         include: [
           {
@@ -51,6 +52,7 @@ class CategoriesService {
           },
         ],
       }),
+      models.CategoryCms.findOne({ attributes: ["title", "title_ar"] }),
     ]);
 
     const badges = new Map();
@@ -72,6 +74,8 @@ class CategoriesService {
         other_meta: otherMeta.other_meta,
         other_meta_ar: otherMeta.other_meta_ar,
         banner_section: withVisibility(bannerSection),
+        // heading above the list (the storefront falls back to its translation when empty)
+        list_section: { title: text(cmsData?.title), title_ar: text(cmsData?.title_ar) },
         filters,
       },
     };
@@ -92,8 +96,10 @@ class CategoriesService {
           model: models.ProductLabels,
           as: "badge",
           attributes: ["id", "slug", "title", "title_ar"],
+          // a disabled badge is not shown (the category itself stays listed);
+          // filtering by a badge only matches categories whose badge is active
           required: Boolean(badge),
-          ...(badge && { where: { slug: badge } }),
+          where: { is_active: true, ...(badge && { slug: badge }) },
         },
         {
           model: models.ProductHighlights,

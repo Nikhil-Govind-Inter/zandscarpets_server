@@ -4,6 +4,7 @@ const FIELD_TYPES = ["rich_text", "image", "video"];
 
 const validationRequestPost = [
   body("name").notEmpty().withMessage("Name is required").isString().withMessage("Name must be a string"),
+  body("name_ar").optional({ nullable: true, checkFalsy: true }).isString().withMessage("Arabic name must be a string"),
   body("slug").optional({ checkFalsy: true }).isString().withMessage("Slug must be a string"),
   body("type")
     .notEmpty()

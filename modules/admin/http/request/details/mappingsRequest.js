@@ -21,6 +21,7 @@ const itemIdParam = [param("itemId").isInt({ min: 1 }).withMessage("Item ID must
 const addItemRequest = [
   ...mappingIdParam,
   body("text_content").optional({ nullable: true }).isString().withMessage("text_content must be a string"),
+  body("text_content_ar").optional({ nullable: true }).isString().withMessage("text_content_ar must be a string"),
   body("media_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("media_id must be an integer"),
   body("sort_order").optional({ nullable: true }).isInt({ min: 0 }).withMessage("sort_order must be an integer"),
 ];
@@ -29,6 +30,7 @@ const editItemRequest = [
   ...mappingIdParam,
   ...itemIdParam,
   body("text_content").optional({ nullable: true }).isString().withMessage("text_content must be a string"),
+  body("text_content_ar").optional({ nullable: true }).isString().withMessage("text_content_ar must be a string"),
   body("media_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("media_id must be an integer"),
 ];
 

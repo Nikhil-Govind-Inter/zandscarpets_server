@@ -230,6 +230,7 @@ class MappingsController {
         {
           mapping_id: mapping.id,
           text_content: field.type === "rich_text" ? req.body.text_content : null,
+          text_content_ar: field.type === "rich_text" ? req.body.text_content_ar || null : null,
           media_id: field.type === "rich_text" ? null : Number(req.body.media_id),
           sort_order: req.body.sort_order ?? Number(maxSort) + 1,
         },
@@ -302,6 +303,7 @@ class MappingsController {
       await item.update(
         {
           text_content: field.type === "rich_text" ? req.body.text_content : null,
+          text_content_ar: field.type === "rich_text" ? req.body.text_content_ar || null : null,
           media_id: field.type === "rich_text" ? null : Number(req.body.media_id),
         },
         { transaction: t },
@@ -435,6 +437,7 @@ class MappingsController {
           {
             mapping_id: newMapping.id,
             text_content: item.text_content,
+            text_content_ar: item.text_content_ar,
             media_id: item.media_id,
             sort_order: index,
           },

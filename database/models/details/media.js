@@ -46,6 +46,9 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      alt_text_ar: { type: DataTypes.STRING, allowNull: true },
+      title_ar: { type: DataTypes.STRING, allowNull: true },
+      description_ar: { type: DataTypes.TEXT, allowNull: true },
       thumbnail_location: {
         type: DataTypes.TEXT,
         allowNull: true,

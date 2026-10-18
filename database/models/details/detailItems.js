@@ -23,6 +23,11 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      // Arabic version of the rich text (the storefront falls back to `text_content` when empty)
+      text_content_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       media_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
