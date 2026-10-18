@@ -518,18 +518,10 @@ class ProductsService {
       ? await resolveVariantDetails({ productId: id, variantId: selected.id })
       : await resolveProductDetails({ productId: id });
 
-    // product FAQs, or the general ones when the product has none
-    let faqs = faqRows;
-    let faqTitle = null;
-    if (!faqs.length) {
-      faqs = await models.Faqs.findAll({
-        attributes: ["id", "question", "question_ar", "answer", "answer_ar"],
-        where: { is_active: true, product_id: null },
-        order: [["sort_order", "ASC"], ["id", "ASC"]],
-        raw: true,
-      });
-    }
-    if (faqs.length) faqTitle = await models.HomeCms.findOne({ attributes: ["faq_title", "faq_title_ar"], raw: true });
+    // only the product's own FAQs (the page hides the section when there are none)
+    const faqTitle = faqRows.length
+      ? await models.HomeCms.findOne({ attributes: ["faq_title", "faq_title_ar"], raw: true })
+      : null;
 
     const labelsOfType = (type) => labelRows.filter((row) => row.type === type).map(toOption);
 
@@ -563,7 +555,7 @@ class ProductsService {
         faqs_section: {
           title: text(faqTitle?.faq_title),
           title_ar: text(faqTitle?.faq_title_ar),
-          list: faqs.map((item) => ({
+          list: faqRows.map((item) => ({
             id: item.id,
             question: text(item.question),
             question_ar: text(item.question_ar),
