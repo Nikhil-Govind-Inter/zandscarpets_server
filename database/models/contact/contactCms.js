@@ -45,7 +45,108 @@ module.exports = (sequelize) => {
       map_url: {
         type: DataTypes.TEXT,
         allowNull: false,
-      }
+      },
+      // phone / email / office detail cards (icon upload, title, description, value)
+      phone_title: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      phone_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      phone_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      phone_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      phone_value: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      phone_icon_media_path: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      phone_icon_media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      phone_icon_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_title: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      email_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      email_value: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_icon_media_path: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_icon_media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      email_icon_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      office_title: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      office_title_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      office_description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      office_description_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      office_value: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      office_value_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      office_icon_media_path: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      office_icon_media_alt: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      office_icon_media_alt_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       tableName: "contact_cms",

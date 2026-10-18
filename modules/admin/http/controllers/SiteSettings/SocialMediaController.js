@@ -18,7 +18,7 @@ const {
 const { validationResult } = require("express-validator");
 
 const dataModel = models.SocialMedia;
-const fileFields = ["media_path", "footer_media_path"];
+const fileFields = ["media_path"];
 
 // Site settings response embeds social/footer media
 // Contact page response embeds social media

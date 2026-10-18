@@ -4,9 +4,10 @@ const fs = require("fs");
 const fsPromises = require("fs").promises;
 const { ApiResponse } = require("../traits/response");
 const { HttpError } = require("../traits/HttpError");
+const { message } = require("../modules/contactEnquiry/contactEnquiryMessages");
 
 const UPLOAD_SUBFOLDER = "contact-enquiries";
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB — documents run larger than the admin image uploads' 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const getStorage = () => {
   const uploadPath = path.join("uploads", UPLOAD_SUBFOLDER);
@@ -39,7 +40,7 @@ const upload = multer({
     if (extname && mimetype) {
       return cb(null, true);
     }
-    cb(new HttpError("Only PDF, DOC, or DOCX files are allowed", 400, "INVALID_FILE_TYPE"));
+    cb(new HttpError(message(req, "fileInvalid"), 400, "INVALID_FILE_TYPE"));
   },
   limits: {
     fileSize: MAX_FILE_SIZE,
@@ -53,13 +54,20 @@ const upload = multer({
 const contactEnquiryUpload = (req, res, next) => {
   upload.single("file")(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      return ApiResponse.error(res, { message: err.message, status: 400, error_code: "MULTER_ERROR" });
+      const tooLarge = err.code === "LIMIT_FILE_SIZE";
+      return ApiResponse.error(res, {
+        message: message(req, tooLarge ? "fileTooLarge" : "uploadFailed"),
+        status: tooLarge ? 413 : 400,
+        error_code: tooLarge ? "FILE_TOO_LARGE" : "MULTER_ERROR",
+        errors: [{ field: "file", message: message(req, tooLarge ? "fileTooLarge" : "uploadFailed") }],
+      });
     }
     if (err) {
       return ApiResponse.error(res, {
         message: err.message,
         status: err.statusCode || 400,
         error_code: err.errorCode || "UPLOAD_ERROR",
+        errors: [{ field: "file", message: err.message }],
       });
     }
     next();

@@ -87,7 +87,7 @@ class SiteSettingsSectionBuilder {
       pages: this.buildPages(pages, lang),
 
       social_media: socialMedia.map((item) => ({
-        media: this.buildMedia(item, lang, "footer_media_path"),
+        media: this.buildMedia(item, lang),
         link: item?.link ?? "",
       })),
 

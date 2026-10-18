@@ -10,7 +10,7 @@ class ProjectsPageService {
   // and the page's JSON-LD / extra scripts. Same conventions as the home / about APIs
   // (both languages per field, `is_visible` on the section).
   static async index() {
-    const [banner = [], otherMeta] = await Promise.all([
+    const [banner = [], otherMeta, homeCms] = await Promise.all([
       models.Banners.findAll({
         include: [
           {
@@ -23,6 +23,8 @@ class ProjectsPageService {
         ],
       }),
       MetaTagService.getOtherMetaForPage("our-work"),
+      // the works heading is the same one the home page uses for its works section
+      models.HomeCms.findOne({ attributes: ["project_title", "project_title_ar"] }),
     ]);
 
     const bannerSection = {
@@ -38,6 +40,10 @@ class ProjectsPageService {
         other_meta: otherMeta.other_meta,
         other_meta_ar: otherMeta.other_meta_ar,
         banner_section: withVisibility(bannerSection),
+        works_section: {
+          title: text(homeCms?.project_title),
+          title_ar: text(homeCms?.project_title_ar),
+        },
       },
     };
   }
