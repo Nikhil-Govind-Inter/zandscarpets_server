@@ -18,6 +18,9 @@ const transporter = nodemailer.createTransport({
   auth: { user: SMTP_USER, pass: SMTP_PASS },
 });
 
+const escapeHtml = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+
 class MailerService {
   /**
    * Resolves the "from" address for all outgoing admin emails: the
@@ -122,6 +125,54 @@ class MailerService {
           <h2>Thanks for reaching out, ${enquiry.name}!</h2>
           <p>We've received your enquiry and our team will get back to you shortly.</p>
           <p style="color:#555;">Your message: "${enquiry.requirements}"</p>
+        </div>
+      `,
+    });
+  }
+
+  /**
+   * Notifies the site admin of a new sample request (reply-to is the requester).
+   */
+  static async sendSampleRequestAdminNotification(request) {
+    const adminEmail = await MailerService.getFromEmail();
+    const row = (label, value) =>
+      value
+        ? `<tr><td style="padding:6px 0;"><strong>${label}</strong></td><td>${escapeHtml(value)}</td></tr>`
+        : "";
+    return MailerService.sendEmail({
+      toEmail: adminEmail,
+      subject: `New Sample Request from ${request.name}`.replace(/[\r\n]+/g, " "),
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
+          <h2>New sample request received</h2>
+          <table style="width:100%; border-collapse: collapse;">
+            ${row("Name", request.name)}
+            ${row("Phone", request.phone)}
+            ${row("Email", request.email)}
+            ${row("Company", request.company_name)}
+            ${row("Category", request.category_title)}
+            ${row("Product", request.product_title)}
+          </table>
+          <p>Submitted on ${new Date(request.createdAt || Date.now()).toLocaleString()}.</p>
+        </div>
+      `,
+      replyTo: request.email,
+    });
+  }
+
+  /**
+   * Sends a "we've received your sample request" confirmation to the requester.
+   */
+  static async sendSampleRequestConfirmation(request) {
+    return MailerService.sendEmail({
+      toEmail: request.email,
+      toName: request.name,
+      subject: "We've received your sample request",
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2>Thanks, ${escapeHtml(request.name)}!</h2>
+          <p>We've received your sample request and our team will get in touch shortly.</p>
+          ${request.product_title ? `<p style="color:#555;">Product: ${escapeHtml(request.product_title)}</p>` : ""}
         </div>
       `,
     });

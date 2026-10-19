@@ -40,6 +40,7 @@ const defineProjectMedia = require("./projects/projectMedia");
 const definePrivacyPolicy = require("./policies/privacyPolicy");
 // enquiries
 const defineContactEnquiry = require("./enquiries/contactEnquiry");
+const defineSampleRequest = require("./enquiries/sampleRequest");
 // products
 const defineProductCategories = require("./products/productCategory");
 const defineProductHighlights = require("./products/productHightlights");
@@ -106,6 +107,7 @@ const models = {
   CategoryCms: defineCategoryCms(sequelize),
   Connections: defineConnections(sequelize),
   ContactEnquiry: defineContactEnquiry(sequelize),
+  SampleRequest: defineSampleRequest(sequelize),
 
   // POLICIES
   PrivacyPolicy: definePrivacyPolicy(sequelize),

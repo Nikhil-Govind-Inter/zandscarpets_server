@@ -379,9 +379,9 @@ class ProductsService {
   }
 
   // One active product with everything the detail page renders. `?attrs=size:small,color:oak`
-  // picks the variant: the one matching the most chosen values (so a combination that doesn't
-  // exist falls back to the closest variant, never to an error). Tab content (`details`) is
-  // resolved for that variant with the usual override rules.
+  // picks the variant when it names a value for every attribute of the product and such a variant
+  // exists; anything else selects no variant, never an error. Tab content (`details`) is resolved for the
+  // selected variant with the usual override rules, or for the product itself when none is selected.
   static async detail(req) {
     const slug = String(req?.params?.slug ?? "");
     if (!SLUG.test(slug)) throw new HttpError("Product not found", 404, "NOT_FOUND");
@@ -480,17 +480,15 @@ class ProductsService {
     }
     const variants = [...variantMap.values()];
 
-    // the variant with the most chosen values in common (first one wins a tie / no choice)
+    // A variant is selected only when the chosen values pick exactly one: every attribute of the
+    // product has a chosen value and some variant has all of them. Nothing chosen (or a partial /
+    // impossible choice) selects no variant, so the page shows the product-level content.
     const chosen = Object.fromEntries(parseAttributes(req?.query?.attrs).map(([attribute, values]) => [attribute, values[0]]));
-    let selected = variants[0] ?? null;
-    let bestScore = -1;
-    for (const variant of variants) {
-      const score = Object.entries(chosen).filter(([attribute, value]) => variant.values[attribute] === value).length;
-      if (score > bestScore) {
-        bestScore = score;
-        selected = variant;
-      }
-    }
+    const attributeSlugs = [...new Set(attributeRows.map((row) => row.attribute_slug))];
+    const selected =
+      attributeSlugs.length > 0 && attributeSlugs.every((slug) => chosen[slug])
+        ? (variants.find((variant) => attributeSlugs.every((slug) => variant.values[slug] === chosen[slug])) ?? null)
+        : null;
 
     const attributes = [];
     for (const row of attributeRows) {
