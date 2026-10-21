@@ -2,7 +2,7 @@ const { sequelize, models } = require("../../../../../database/models");
 const { deleteOldFile } = require("../../middleware/multerMiddleware");
 const { sendSuccessResponse, sendErrorResponse, sendNotFoundError } = require("../../traits/responseHandler");
 const { paginate } = require("../../traits/datatablePaginationHelper");
-// const { validateId } = require("../../request/enquiries/contactEnquiryRequest");
+const { validateId } = require("../../request/enquiries/contactEnquiryRequest");
 const { idValidationCheck } = require("../../traits/validationHelper");
 
 const dataModel = models.ContactEnquiry;
