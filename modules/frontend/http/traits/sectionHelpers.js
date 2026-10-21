@@ -44,7 +44,11 @@ const articleRichText = (html) =>
       a: ["href", "target", "rel"],
       img: ["src", "alt", "title"],
       span: ["style"],
+      // the admin editor marks an icon-style bullet list with this class; the storefront
+      // renders it with a check-icon marker instead of a native bullet
+      ul: ["class"],
     },
+    allowedClasses: { ul: ["icon-bullet-list"] },
     allowedStyles: { span: { color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/i] } },
     allowedSchemes: ["http", "https", "mailto", "tel"],
     allowedSchemesByTag: { img: ["http", "https"] },

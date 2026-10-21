@@ -39,13 +39,13 @@ const defaultMetaTags = [
         meta_keywords: "zandscarpets blog, carpet trends, flooring tips",
     },
     {
-        page_name: "resources",
+        page_name: "downloads",
         meta_title: "Resources | Zandscarpets",
         meta_description: "Browse Zandscarpets' guides, brochures, and helpful resources on carpets and flooring.",
         meta_keywords: "zandscarpets resources, carpet guides, flooring brochures",
     },
     {
-        page_name: "privacy",
+        page_name: "privacy-policy",
         meta_title: "Privacy Policy | Zandscarpets",
         meta_description: "Understand how Zandscarpets collects, uses, and protects your personal data.",
         meta_keywords: "zandscarpets privacy policy, data protection, user privacy",

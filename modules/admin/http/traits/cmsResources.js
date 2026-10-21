@@ -70,6 +70,7 @@ const cmsResources = {
   // blog posts are ordered by their publish date, so only the status can be changed here
   blogs: { model: "Blogs", sortable: false },
   "blog-tags": { model: "BlogTags" },
+  downloads: { model: "Downloads" },
 };
 
 module.exports = { cmsResources };

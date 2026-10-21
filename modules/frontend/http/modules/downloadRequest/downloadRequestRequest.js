@@ -1,0 +1,46 @@
+const { body } = require("express-validator");
+const { message } = require("./downloadRequestMessages");
+
+const PHONE_PATTERN = /^[0-9\s\-()+]{7,20}$/;
+
+// Same rules as the contact form / sample request for name, phone, email
+const validationRequestPost = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "nameRequired"))
+    .bail()
+    .isLength({ min: 4 })
+    .withMessage((_, { req }) => message(req, "nameMin"))
+    .bail()
+    .isLength({ max: 100 })
+    .withMessage((_, { req }) => message(req, "nameMax")),
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "phoneRequired"))
+    .bail()
+    .matches(PHONE_PATTERN)
+    .withMessage((_, { req }) => message(req, "phoneInvalid")),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "emailRequired"))
+    .bail()
+    .isEmail()
+    .withMessage((_, { req }) => message(req, "emailInvalid"))
+    .customSanitizer((value) => String(value).toLowerCase()),
+  body("company_name")
+    .optional({ values: "falsy" })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage((_, { req }) => message(req, "companyMax")),
+  body("download_id")
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "downloadRequired"))
+    .bail()
+    .isInt({ min: 1 })
+    .withMessage((_, { req }) => message(req, "downloadInvalid")),
+];
+
+module.exports = { validationRequestPost };

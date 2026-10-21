@@ -177,6 +177,53 @@ class MailerService {
       `,
     });
   }
+
+  /**
+   * Notifies the site admin of a new download request (reply-to is the requester).
+   */
+  static async sendDownloadRequestAdminNotification(request) {
+    const adminEmail = await MailerService.getFromEmail();
+    const row = (label, value) =>
+      value
+        ? `<tr><td style="padding:6px 0;"><strong>${label}</strong></td><td>${escapeHtml(value)}</td></tr>`
+        : "";
+    return MailerService.sendEmail({
+      toEmail: adminEmail,
+      subject: `New Download Request from ${request.name}`.replace(/[\r\n]+/g, " "),
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
+          <h2>New download request received</h2>
+          <table style="width:100%; border-collapse: collapse;">
+            ${row("Name", request.name)}
+            ${row("Phone", request.phone)}
+            ${row("Email", request.email)}
+            ${row("Company", request.company_name)}
+            ${row("File", request.download_title)}
+          </table>
+          <p>Submitted on ${new Date(request.createdAt || Date.now()).toLocaleString()}.</p>
+        </div>
+      `,
+      replyTo: request.email,
+    });
+  }
+
+  /**
+   * Sends a "we've received your download request" confirmation to the requester.
+   */
+  static async sendDownloadRequestConfirmation(request) {
+    return MailerService.sendEmail({
+      toEmail: request.email,
+      toName: request.name,
+      subject: "We've received your request",
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2>Thanks, ${escapeHtml(request.name)}!</h2>
+          <p>We've received your request and our team will send you the file shortly.</p>
+          ${request.download_title ? `<p style="color:#555;">File: ${escapeHtml(request.download_title)}</p>` : ""}
+        </div>
+      `,
+    });
+  }
 }
 
 module.exports = MailerService;
