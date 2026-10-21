@@ -34,6 +34,15 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      // optional button drawn under the trust description; shown only when a link is set
+      trust_button_text: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      trust_button_link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       mission_title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -113,6 +122,10 @@ module.exports = (sequelize) => {
       trust_description_ar: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      trust_button_text_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       mission_title_ar: {
         type: DataTypes.STRING,

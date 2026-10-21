@@ -27,6 +27,14 @@ class AboutSectionBuilder {
       trust_title_ar: text(cmsData?.trust_title_ar),
       trust_description: blockRichText(cmsData?.trust_description),
       trust_description_ar: blockRichText(cmsData?.trust_description_ar),
+      // only shown by the client when a link is configured
+      trust_button: cmsData?.trust_button_link
+        ? {
+            text: text(cmsData?.trust_button_text),
+            text_ar: text(cmsData?.trust_button_text_ar),
+            link: cmsData.trust_button_link,
+          }
+        : null,
 
       media: singleMediaWithoutType(cmsData, "media_path", "media_alt", "media_alt_ar"),
 

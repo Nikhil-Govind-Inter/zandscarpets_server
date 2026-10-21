@@ -104,6 +104,19 @@ module.exports = (sequelize) => {
         allowNull: false,
         defaultValue: "",
       },
+      // optional button drawn next to the "Built for Every Space" title; shown only when a link is set
+      space_button_text: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      space_button_text_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      space_button_link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       tableName: "home_cms",

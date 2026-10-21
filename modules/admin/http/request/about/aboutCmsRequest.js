@@ -15,6 +15,7 @@ const optionalTextFields = [
   "media_path", "media_alt", "media_alt_ar", "about_core_media_path",
   "about_core_media_alt", "about_core_media_alt_ar", "industry_media_path",
   "industry_media_alt", "industry_media_alt_ar",
+  "trust_button_text", "trust_button_text_ar", "trust_button_link",
 ];
 
 const validationRequestPost = [

@@ -253,25 +253,41 @@ class HomeService {
   }
 
   static buildIndustriesSection(cmsData, industries) {
+    const buttonLink = cmsData?.space_button_link;
+
     return {
       title: cmsData?.space_section_title ?? "",
       title_ar: cmsData?.space_section_title_ar ?? "",
-      list: industries.map((item) => ({
-        id: item?.id,
-        slug: item?.slug ?? "",
-        title: item?.title ?? "",
-        title_ar: item?.title_ar ?? "",
-        description: blockRichText(item?.description),
-        description_ar: blockRichText(item?.description_ar),
-        link: item?.link ?? "",
-        categories: (item?.categories ?? []).map((cat) => ({
+      list: industries.map((item) => {
+        const categories = (item?.categories ?? []).map((cat) => ({
           id: cat?.id,
           slug: cat?.slug ?? "",
           title: cat?.title ?? "",
           title_ar: cat?.title_ar ?? "",
           media: singleMediaWithoutType(cat, "media_path"),
-        })),
-      })),
+        }));
+
+        return {
+          id: item?.id,
+          slug: item?.slug ?? "",
+          title: item?.title ?? "",
+          title_ar: item?.title_ar ?? "",
+          description: blockRichText(item?.description),
+          description_ar: blockRichText(item?.description_ar),
+          link: item?.link ?? "",
+          // only shown by the client when a link is configured and this industry has
+          // at least one category to filter by; otherwise the CTA is hidden entirely
+          button:
+            buttonLink && categories.length
+              ? {
+                  text: cmsData?.space_button_text ?? "",
+                  text_ar: cmsData?.space_button_text_ar ?? "",
+                  link: `${buttonLink}${buttonLink.includes("?") ? "&" : "?"}category=${categories[0].slug}`,
+                }
+              : null,
+          categories,
+        };
+      }),
     };
   }
 
