@@ -35,7 +35,8 @@ const validationRequestPost = [
   optionalJsonArray("attribute_value_ids", "Attribute value ids"),
   optionalString("label", "Label"),
   optionalString("label_ar", "Label (Arabic)"),
-  body("sku").notEmpty().withMessage("SKU is required").isString().withMessage("SKU must be a string"),
+  // Auto-generated from product + attribute values when left blank.
+  optionalString("sku", "SKU"),
   body("media_path").notEmpty().withMessage("Variant image is required").isString().withMessage("Media path must be a string"),
   optionalString("media_alt", "Media alt"),
   optionalString("media_alt_ar", "Media alt (Arabic)"),

@@ -52,11 +52,11 @@ async function validateProductVariants(rows, { models, transaction }) {
     ]),
   );
 
-  const attributeValues = await models.AttributeValues.findAll({ attributes: ["id", "attribute_id", "value", "value_ar"], transaction });
+  const attributeValues = await models.AttributeValues.findAll({ attributes: ["id", "attribute_id", "value", "value_ar", "slug"], transaction });
   const valuesByAttributeId = new Map();
   attributeValues.forEach((v) => {
     const map = valuesByAttributeId.get(v.attribute_id) || new Map();
-    map.set(lookupKey(v.value), { id: v.id, value: v.value, value_ar: v.value_ar });
+    map.set(lookupKey(v.value), { id: v.id, value: v.value, value_ar: v.value_ar, slug: v.slug });
     valuesByAttributeId.set(v.attribute_id, map);
   });
 
@@ -138,6 +138,7 @@ async function validateProductVariants(rows, { models, transaction }) {
           valueId: value.id,
           valueText: value.value,
           valueTextAr: value.value_ar,
+          valueSlug: value.slug,
         });
       });
 
@@ -218,7 +219,9 @@ async function validateProductVariants(rows, { models, transaction }) {
     normalizedRows.push({
       rowNumber,
       product_id: product.id,
+      product_slug: product.slug,
       attribute_value_pairs: resolvedValues.map((v) => ({ attribute_id: v.attributeId, attribute_value_id: v.valueId })),
+      attribute_value_slugs: resolvedValues.map((v) => v.valueSlug),
       combination_key: combinationKey,
       label,
       label_ar: labelAr,

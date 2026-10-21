@@ -15,7 +15,7 @@ module.exports = {
     },
     { key: "label", header: "label", required: false, type: "text", example: "", notes: "Auto-generated from the resolved values if blank" },
     { key: "label_ar", header: "label_ar", required: false, type: "text", example: "" },
-    { key: "sku", header: "sku", required: false, type: "text", example: "" },
+    { key: "sku", header: "sku", required: false, type: "text", example: "", notes: "Auto-generated from the product and resolved values if blank" },
     { key: "media_path", header: "media_path", required: false, type: "text", example: "", notes: "Stored path from the Media bulk-upload step (products-variants)" },
     { key: "sort_order", header: "sort_order", required: false, type: "int", min: 0, default: 0, example: "0" },
     { key: "is_active", header: "is_active", required: false, type: "bool", default: true, example: "TRUE" },

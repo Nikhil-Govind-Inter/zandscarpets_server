@@ -7,6 +7,7 @@
 
 const { lookupKey } = require("./validators/shared");
 const { generateUniqueSlug } = require("../../../utils/slugHelper");
+const { buildSkuBase, generateUniqueSku } = require("../../../utils/skuHelper");
 const { buildCombinationKey, buildLabel, cartesian } = require("./resolvers");
 
 async function importCategories(normalizedRows, { models, transaction }) {
@@ -190,12 +191,19 @@ async function importProducts(normalizedRows, { models, transaction }) {
 
 async function importProductVariants(normalizedRows, { models, transaction }) {
   for (const row of normalizedRows) {
+    const sku = row.sku
+      ? row.sku
+      : await generateUniqueSku(
+          models.ProductVariants,
+          buildSkuBase({ slug: row.product_slug }, row.attribute_value_slugs.map((slug) => ({ slug }))),
+          { transaction },
+        );
     const created = await models.ProductVariants.create(
       {
         product_id: row.product_id,
         label: row.label,
         label_ar: row.label_ar,
-        sku: row.sku,
+        sku,
         media_path: row.media_path,
         combination_key: row.combination_key,
         sort_order: row.sort_order,
@@ -301,7 +309,7 @@ async function importProductMain(normalizedRows, { models, transaction }) {
     });
     if (existing) {
       valueByKey.set(valueKey, existing.id);
-      valueDetailsById.set(existing.id, { value: existing.value, value_ar: existing.value_ar });
+      valueDetailsById.set(existing.id, { value: existing.value, value_ar: existing.value_ar, slug: existing.slug });
       return existing.id;
     }
 
@@ -311,7 +319,7 @@ async function importProductMain(normalizedRows, { models, transaction }) {
     const createdValue = await models.AttributeValues.create({ ...fields, slug }, { transaction });
     attributeValuesCreated += 1;
     valueByKey.set(valueKey, createdValue.id);
-    valueDetailsById.set(createdValue.id, { value: createdValue.value, value_ar: createdValue.value_ar });
+    valueDetailsById.set(createdValue.id, { value: createdValue.value, value_ar: createdValue.value_ar, slug: createdValue.slug });
     return createdValue.id;
   };
 
@@ -418,11 +426,17 @@ async function importProductMain(normalizedRows, { models, transaction }) {
         const combinations = cartesian(orderedValueIdLists);
         for (const [index, combo] of combinations.entries()) {
           const comboValues = combo.map((id) => valueDetailsById.get(id));
+          const sku = await generateUniqueSku(
+            models.ProductVariants,
+            buildSkuBase({ slug: fields.slug }, comboValues),
+            { transaction },
+          );
           const createdVariant = await models.ProductVariants.create(
             {
               product_id: productId,
               label: buildLabel(comboValues, "value"),
               label_ar: buildLabel(comboValues, "value_ar"),
+              sku,
               combination_key: buildCombinationKey(combo),
               sort_order: index,
               is_active: true,

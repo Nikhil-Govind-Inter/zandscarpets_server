@@ -65,7 +65,19 @@ const messages = {
     `Features/Tags/Specifications are ignored when updating an existing product — labels aren't changed via bulk upload; edit them from the product's screen instead`,
 
   TOO_MANY_VARIANT_COMBINATIONS: ({ count, max }) =>
-    `These attributes would generate ${count} variant combinations, over the limit of ${max} per row — list fewer values, or split this into multiple uploads`,
+    `These attributes would generate ${count} variant combinations, more than the suggested ${max} per product — consider splitting this product into a smaller set of options`,
+
+  DUPLICATE_ATTRIBUTE_IN_ROW: ({ attributeTitle }) =>
+    `Attribute ${quote(attributeTitle)} is listed more than once in Attributes — list each attribute only once`,
+
+  DUPLICATE_VALUE_IN_GROUP: ({ attributeTitle, value }) =>
+    `Value ${quote(value)} is listed more than once for attribute ${quote(attributeTitle)} — list each value only once`,
+
+  DUPLICATE_TITLE_IN_SHEET: ({ value, otherRow }) =>
+    `title ${quote(value)} is the same as row ${otherRow}, under a different category — check this is intentional`,
+
+  PLACEHOLDER_TEXT_IGNORED: ({ column, value }) =>
+    `${column} ${quote(value)} looks like placeholder text, not a real category — it was treated as blank`,
 
   ATTRIBUTE_VALUE_REF_FORMAT: ({ value }) =>
     `${quote(value)} must be in the form Attribute=Value, e.g. Size=120cm`,

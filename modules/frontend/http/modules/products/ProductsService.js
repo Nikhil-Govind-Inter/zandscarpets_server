@@ -60,6 +60,30 @@ const setGroupReplacements = (replacements, groups) =>
     replacements[`vals${index}`] = valueSlugs;
   });
 
+// Auto-fills attributes that have no real alternative given what's already chosen: if exactly one
+// value of an unpicked attribute still appears on a variant matching the current choices, that
+// value is picked too. Runs until nothing more can be resolved this way (picking one attribute can
+// narrow another the same way, e.g. Colour -> Size -> Material). Never guesses between two or more
+// still-possible values.
+const narrowChosen = (variants, attributeSlugs, initialChosen) => {
+  const chosen = { ...initialChosen };
+  const matches = (variant) => Object.entries(chosen).every(([slug, value]) => variant.values[slug] === value);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const slug of attributeSlugs) {
+      if (chosen[slug]) continue;
+      const possible = new Set(variants.filter(matches).map((variant) => variant.values[slug]).filter(Boolean));
+      if (possible.size === 1) {
+        chosen[slug] = [...possible][0];
+        changed = true;
+      }
+    }
+  }
+  return chosen;
+};
+
 const CARD_COLUMNS = `
         p.id,
         p.slug,
@@ -481,10 +505,15 @@ class ProductsService {
     const variants = [...variantMap.values()];
 
     // A variant is selected only when the chosen values pick exactly one: every attribute of the
-    // product has a chosen value and some variant has all of them. Nothing chosen (or a partial /
-    // impossible choice) selects no variant, so the page shows the product-level content.
-    const chosen = Object.fromEntries(parseAttributes(req?.query?.attrs).map(([attribute, values]) => [attribute, values[0]]));
+    // product has a chosen value and some variant has all of them. An attribute left unpicked is
+    // auto-filled when, given what IS picked, only one of its values is still possible (e.g. the
+    // product only has one Material, or picking a Colour leaves only one Size in stock) — this is
+    // run to a fixed point, since filling one attribute can narrow another the same way. A genuine
+    // choice between two or more values is never auto-made; the page then shows product-level
+    // content until the visitor picks.
+    const rawChosen = Object.fromEntries(parseAttributes(req?.query?.attrs).map(([attribute, values]) => [attribute, values[0]]));
     const attributeSlugs = [...new Set(attributeRows.map((row) => row.attribute_slug))];
+    const chosen = narrowChosen(variants, attributeSlugs, rawChosen);
     const selected =
       attributeSlugs.length > 0 && attributeSlugs.every((slug) => chosen[slug])
         ? (variants.find((variant) => attributeSlugs.every((slug) => variant.values[slug] === chosen[slug])) ?? null)

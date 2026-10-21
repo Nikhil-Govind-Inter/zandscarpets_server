@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { sequelize, models } = require("../../../../../database/models");
+const { buildSkuBase, generateUniqueSku } = require("../../../../../utils/skuHelper");
 const {
   handleFileUploadUpdate,
   handleFileUploadStore,
@@ -354,12 +355,15 @@ class VariantsController {
       handleFileUploadStore(req, fileFields);
 
       const values = selection.links.map((l) => l.value);
+      const sku = req.body.sku
+        ? req.body.sku
+        : await generateUniqueSku(dataModel, buildSkuBase(product, values), { transaction: t });
       const item = await dataModel.create(
         {
           product_id: product.id,
           label: req.body.label || buildLabel(values, "value"),
           label_ar: req.body.label_ar || buildLabel(values, "value_ar"),
-          sku: req.body.sku || null,
+          sku,
           media_path: req.body.media_path || null,
           media_alt: req.body.media_alt || null,
           media_alt_ar: req.body.media_alt_ar || null,
@@ -606,11 +610,13 @@ class VariantsController {
           attribute_value_id: combo[index],
         }));
 
+        const sku = await generateUniqueSku(dataModel, buildSkuBase(product, comboValues), { transaction: t });
         const item = await dataModel.create(
           {
             product_id: product.id,
             label: buildLabel(comboValues, "value"),
             label_ar: buildLabel(comboValues, "value_ar"),
+            sku,
             combination_key: key,
             sort_order: ++sortOrder,
             is_active: true,

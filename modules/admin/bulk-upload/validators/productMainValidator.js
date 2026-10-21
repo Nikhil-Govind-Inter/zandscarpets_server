@@ -22,6 +22,12 @@
 // main_media_path/list_media_path: null, sort_order: 0, is_active: true;
 // an image is added afterward via the product's edit screen.
 //
+// v12: unlike the other bulk-upload sheets, this one DOES have _ar columns
+// (title_ar/short_description_ar/product_description_ar/meta_title_ar/
+// meta_description_ar/meta_keywords_ar) — each optional, defaulting to its
+// English counterpart when left blank, same fallback the other sheets
+// always apply unconditionally.
+//
 // Category (v7): 3 plain columns — Category, Sub-Category 1,
 // Sub-Category 2 — instead of one ">"-separated category_path column. A
 // deeper column filled in while a shallower one is blank is rejected
@@ -52,10 +58,19 @@
 // blank this way is filled in later via the Attribute Values edit screen —
 // nothing here requires it up front, unlike the dedicated Attribute Values
 // sheet (which still enforces the real missingForType() rules). A stray
-// |#RRGGBB on a non-color ref is ignored with a warning. Total combination
-// count is capped (MAX_VARIANT_COMBINATIONS) to guard against an
-// accidental huge cross product — see importer.js for where variants
-// actually get created (validate-time only computes the count).
+// |#RRGGBB on a non-color ref is ignored with a warning. A repeated
+// attribute name within one row, or a repeated value within one
+// attribute's group, is an error (DUPLICATE_ATTRIBUTE_IN_ROW /
+// DUPLICATE_VALUE_IN_GROUP) — not silently de-duped. Total combination
+// count over MAX_VARIANT_COMBINATIONS is a non-blocking warning (v11; was
+// a hard error) — see importer.js for where variants actually get created
+// (validate-time only computes the count).
+//
+// v11 also added: placeholder text ("if any" etc.) in Sub-Category 1/2 is
+// auto-treated as blank (PLACEHOLDER_TEXT_IGNORED warning), and the same
+// `title` appearing more than once in the file under different categories
+// gets a non-blocking DUPLICATE_TITLE_IN_SHEET warning (the stricter
+// same-category case is still the hard DUPLICATE_IN_FILE error below).
 //
 // Features/Tags/Specifications (v8 added Tags/Specifications, v9 added
 // Features): plain comma-separated label names, attached to the shared
@@ -72,7 +87,18 @@ const { messages } = require("../messages");
 const { isBlankRow, isExampleRow, trimOrUndefined, lookupKey } = require("./shared");
 const config = require("../config/productMain.config");
 
-const MAX_VARIANT_COMBINATIONS = 200;
+const MAX_VARIANT_COMBINATIONS = 100;
+
+// Guards against a copied-forward example row creating a real category
+// literally named "if any" — treated as blank, not as real input.
+const PLACEHOLDER_CATEGORY_TEXTS = new Set(["if any", "n/a", "na", "none", "-", "nil"]);
+const stripPlaceholder = (value) => {
+  if (!value) return { value, wasPlaceholder: false };
+  if (PLACEHOLDER_CATEGORY_TEXTS.has(value.toLowerCase().trim())) {
+    return { value: undefined, wasPlaceholder: true, original: value };
+  }
+  return { value, wasPlaceholder: false };
+};
 
 const err = (rowNumber, column, code, params) => ({
   row: rowNumber,
@@ -133,6 +159,7 @@ async function validateProductMain(rows, { models, transaction }) {
 
   let nextPlaceholder = -1;
   const seenProductPathKeys = new Map(); // `${pathString}:${titleKey}` -> rowNumber
+  const seenTitleKeysAnyCategory = new Map(); // titleKey -> rowNumber, regardless of category
 
   liveRows.forEach((row) => {
     const rowNumber = row.__rowNumber;
@@ -148,11 +175,11 @@ async function validateProductMain(rows, { models, transaction }) {
     const productDescription = trimOrUndefined(row.product_description);
     if (!productDescription) rowErrors.push(err(rowNumber, "product_description", "REQUIRED_FIELD", { column: "product_description" }));
 
-    // No _ar columns in this sheet — each Arabic field defaults to its
-    // English counterpart.
-    const titleAr = title;
-    const shortDescriptionAr = shortDescription;
-    const productDescriptionAr = productDescription;
+    // title_ar/short_description_ar/product_description_ar are optional —
+    // a blank one defaults to its English counterpart.
+    const titleAr = trimOrUndefined(row.title_ar) || title;
+    const shortDescriptionAr = trimOrUndefined(row.short_description_ar) || shortDescription;
+    const productDescriptionAr = trimOrUndefined(row.product_description_ar) || productDescription;
 
     const metaTitle = trimOrUndefined(row.meta_title);
     if (!metaTitle) rowErrors.push(err(rowNumber, "meta_title", "REQUIRED_FIELD", { column: "meta_title" }));
@@ -163,20 +190,30 @@ async function validateProductMain(rows, { models, transaction }) {
     const metaKeywords = trimOrUndefined(row.meta_keywords);
     if (!metaKeywords) rowErrors.push(err(rowNumber, "meta_keywords", "REQUIRED_FIELD", { column: "meta_keywords" }));
 
-    // No meta_*_ar columns in this sheet — each defaults to its English
+    // meta_*_ar are optional — a blank one defaults to its English
     // counterpart (MetaData's *_ar columns are nullable, but mirroring is
     // more useful than leaving them blank).
-    const metaTitleAr = metaTitle || null;
-    const metaDescriptionAr = metaDescription || null;
-    const metaKeywordsAr = metaKeywords || null;
+    const metaTitleAr = trimOrUndefined(row.meta_title_ar) || metaTitle || null;
+    const metaDescriptionAr = trimOrUndefined(row.meta_description_ar) || metaDescription || null;
+    const metaKeywordsAr = trimOrUndefined(row.meta_keywords_ar) || metaKeywords || null;
 
     // Category: 3 plain columns instead of one ">"-separated path. A
     // deeper column filled in while a shallower one is blank is rejected.
     const category = trimOrUndefined(row.category);
     if (!category) rowErrors.push(err(rowNumber, "category", "REQUIRED_FIELD", { column: "Category" }));
 
-    const subCategory1 = trimOrUndefined(row.sub_category_1);
-    const subCategory2 = trimOrUndefined(row.sub_category_2);
+    const subCategory1Raw = stripPlaceholder(trimOrUndefined(row.sub_category_1));
+    if (subCategory1Raw.wasPlaceholder) {
+      rowWarnings.push(warn(rowNumber, "sub_category_1", "PLACEHOLDER_TEXT_IGNORED", { column: "Sub-Category 1", value: subCategory1Raw.original }));
+    }
+    const subCategory1 = subCategory1Raw.value;
+
+    const subCategory2Raw = stripPlaceholder(trimOrUndefined(row.sub_category_2));
+    if (subCategory2Raw.wasPlaceholder) {
+      rowWarnings.push(warn(rowNumber, "sub_category_2", "PLACEHOLDER_TEXT_IGNORED", { column: "Sub-Category 2", value: subCategory2Raw.original }));
+    }
+    const subCategory2 = subCategory2Raw.value;
+
     if (subCategory2 && !subCategory1) {
       rowErrors.push(err(rowNumber, "sub_category_2", "CATEGORY_LEVEL_GAP", { column: "Sub-Category 2", previousColumn: "Sub-Category 1" }));
     }
@@ -217,6 +254,17 @@ async function validateProductMain(rows, { models, transaction }) {
         rowErrors.push(err(rowNumber, "title", "DUPLICATE_IN_FILE", { column: "title", value: title, otherRow: seenProductPathKeys.get(pathKey) }));
       } else {
         seenProductPathKeys.set(pathKey, rowNumber);
+
+        // Same title under a DIFFERENT category — softer than the
+        // same-(category,title) case above, which is already a hard
+        // error; this is just a heads-up in case it's a mistake.
+        const titleKey = lookupKey(title);
+        if (seenTitleKeysAnyCategory.has(titleKey)) {
+          rowWarnings.push(warn(rowNumber, "title", "DUPLICATE_TITLE_IN_SHEET", { value: title, otherRow: seenTitleKeysAnyCategory.get(titleKey) }));
+        } else {
+          seenTitleKeysAnyCategory.set(titleKey, rowNumber);
+        }
+
         if (finalCategoryKeyId < 0) {
           mode = "create";
         } else {
@@ -281,7 +329,10 @@ async function validateProductMain(rows, { models, transaction }) {
           }
 
           const attrKey = lookupKey(attributeTitle);
-          if (seenAttrKeys.has(attrKey)) return; // same attribute named twice in one row — first wins
+          if (seenAttrKeys.has(attrKey)) {
+            rowErrors.push(err(rowNumber, "attribute_names", "DUPLICATE_ATTRIBUTE_IN_ROW", { attributeTitle }));
+            return;
+          }
           seenAttrKeys.add(attrKey);
 
           const rawItems = rawValueList
@@ -312,12 +363,18 @@ async function validateProductMain(rows, { models, transaction }) {
           if (formatError) return;
 
           const seenValueKeys = new Set();
-          const dedupedItems = parsedItems.filter((item) => {
+          let duplicateValueError = false;
+          parsedItems.forEach((item) => {
             const key = lookupKey(item.valueText);
-            if (seenValueKeys.has(key)) return false; // same value named twice — first wins
+            if (seenValueKeys.has(key)) {
+              rowErrors.push(err(rowNumber, "attribute_values", "DUPLICATE_VALUE_IN_GROUP", { attributeTitle, value: item.valueText }));
+              duplicateValueError = true;
+              return;
+            }
             seenValueKeys.add(key);
-            return true;
           });
+          if (duplicateValueError) return;
+          const dedupedItems = parsedItems;
 
           let attribute = attributeIndex.get(attrKey);
           if (!attribute) {
@@ -353,8 +410,8 @@ async function validateProductMain(rows, { models, transaction }) {
         if (!rowErrors.length && attributeValueGroups.length) {
           const combinationCount = attributeValueGroups.reduce((total, group) => total * group.items.length, 1);
           if (combinationCount > MAX_VARIANT_COMBINATIONS) {
-            rowErrors.push(
-              err(rowNumber, "attribute_values", "TOO_MANY_VARIANT_COMBINATIONS", {
+            rowWarnings.push(
+              warn(rowNumber, "attribute_values", "TOO_MANY_VARIANT_COMBINATIONS", {
                 count: combinationCount,
                 max: MAX_VARIANT_COMBINATIONS,
               }),

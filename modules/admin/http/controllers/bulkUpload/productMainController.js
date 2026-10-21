@@ -10,11 +10,9 @@ module.exports = buildBulkUploadController({
   validateFn: validateProductMain,
   importFn: importProductMain,
   buildReferenceData: async () => {
-    const industries = await models.Industry.findAll({ attributes: ["slug"], where: { is_active: true }, order: [["slug", "ASC"]] });
     const categories = await models.ProductCategories.findAll({ attributes: ["title"], order: [["title", "ASC"]] });
     const attributes = await models.Attributes.findAll({ attributes: ["title", "type"], order: [["title", "ASC"]] });
     return {
-      "Existing industry slugs": industries.map((i) => i.slug),
       "Existing category titles": categories.map((c) => c.title),
       "Existing attribute titles (type)": attributes.map((a) => `${a.title} (${a.type})`),
     };
