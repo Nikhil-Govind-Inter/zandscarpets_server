@@ -43,6 +43,8 @@ const definePrivacyPolicy = require("./policies/privacyPolicy");
 const defineContactEnquiry = require("./enquiries/contactEnquiry");
 const defineSampleRequest = require("./enquiries/sampleRequest");
 const defineDownloadRequest = require("./enquiries/downloadRequest");
+const defineQuoteRequest = require("./enquiries/quoteRequest");
+const defineQuoteRequestItem = require("./enquiries/quoteRequestItem");
 const defineDownloads = require("./downloads/downloads");
 // products
 const defineProductCategories = require("./products/productCategory");
@@ -113,6 +115,8 @@ const models = {
   ContactEnquiry: defineContactEnquiry(sequelize),
   SampleRequest: defineSampleRequest(sequelize),
   DownloadRequest: defineDownloadRequest(sequelize),
+  QuoteRequest: defineQuoteRequest(sequelize),
+  QuoteRequestItem: defineQuoteRequestItem(sequelize),
   Downloads: defineDownloads(sequelize),
 
   // POLICIES

@@ -224,6 +224,92 @@ class MailerService {
       `,
     });
   }
+
+  /**
+   * Notifies the site admin of a new quote request (reply-to is the requester).
+   * Builds one row per line item, unlike the single-product siblings above.
+   */
+  static async sendQuoteRequestAdminNotification(quoteRequest) {
+    const adminEmail = await MailerService.getFromEmail();
+    const itemRows = (quoteRequest.items || [])
+      .map(
+        (item) => `
+          <tr>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.product_title)}</td>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.variant_label || "-")}</td>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${item.quantity}</td>
+          </tr>`,
+      )
+      .join("");
+
+    return MailerService.sendEmail({
+      toEmail: adminEmail,
+      subject: `New Quote Request (${quoteRequest.reference_code}) from ${quoteRequest.name}`.replace(/[\r\n]+/g, " "),
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
+          <h2>New quote request received</h2>
+          <p>Reference: <strong>${escapeHtml(quoteRequest.reference_code)}</strong></p>
+          <table style="width:100%; border-collapse: collapse;">
+            <tr><td style="padding:6px 0;"><strong>Name</strong></td><td>${escapeHtml(quoteRequest.name)}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Phone</strong></td><td>${escapeHtml(quoteRequest.phone)}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Email</strong></td><td>${escapeHtml(quoteRequest.email)}</td></tr>
+            ${quoteRequest.company_name ? `<tr><td style="padding:6px 0;"><strong>Company</strong></td><td>${escapeHtml(quoteRequest.company_name)}</td></tr>` : ""}
+            ${quoteRequest.message ? `<tr><td style="padding:6px 0;"><strong>Message</strong></td><td>${escapeHtml(quoteRequest.message)}</td></tr>` : ""}
+          </table>
+          <h3>Items</h3>
+          <table style="width:100%; border-collapse: collapse;">
+            <tr>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Product</th>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Variant</th>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Qty</th>
+            </tr>
+            ${itemRows}
+          </table>
+          <p>Submitted on ${new Date(quoteRequest.createdAt || Date.now()).toLocaleString()}.</p>
+        </div>
+      `,
+      replyTo: quoteRequest.email,
+    });
+  }
+
+  /**
+   * Sends a "we've received your quote request" confirmation to the requester,
+   * including the generated reference code so they can quote it in follow-ups.
+   */
+  static async sendQuoteRequestConfirmation(quoteRequest) {
+    const itemRows = (quoteRequest.items || [])
+      .map(
+        (item) => `
+          <tr>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.product_title)}</td>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.variant_label || "-")}</td>
+            <td style="padding:6px 0; border-bottom:1px solid #eee;">${item.quantity}</td>
+          </tr>`,
+      )
+      .join("");
+
+    return MailerService.sendEmail({
+      toEmail: quoteRequest.email,
+      toName: quoteRequest.name,
+      subject: `Inquiry Received (${quoteRequest.reference_code})`,
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2>Thanks, ${escapeHtml(quoteRequest.name)}!</h2>
+          <p>Hello, <strong>${escapeHtml(quoteRequest.name)}</strong><br/>(ID - ${escapeHtml(quoteRequest.reference_code)})</p>
+          <p>We've received your quote request. Our team will get back to you within 24 hours.</p>
+          <table style="width:100%; border-collapse: collapse;">
+            <tr>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Product</th>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Variant</th>
+              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Qty</th>
+            </tr>
+            ${itemRows}
+          </table>
+          ${quoteRequest.message ? `<p style="color:#555;">Your message: "${escapeHtml(quoteRequest.message)}"</p>` : ""}
+        </div>
+      `,
+    });
+  }
 }
 
 module.exports = MailerService;
