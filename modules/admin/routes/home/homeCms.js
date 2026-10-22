@@ -6,7 +6,10 @@ const { createUploadMiddleware } = require('../../http/middleware/multerMiddlewa
 
 const router = express.Router();
 
-const upload = createUploadMiddleware('home-cms', [{ name: 'cta_media_path' }]);
+const upload = createUploadMiddleware('home-cms', [
+  { name: 'cta_media_path' },
+  { name: 'space_bg_image' },
+]);
 
 router.use(authMiddleware(['admin', 'user']));
 router.get("/", Controller.get);

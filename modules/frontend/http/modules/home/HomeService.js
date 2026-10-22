@@ -258,6 +258,7 @@ class HomeService {
     return {
       title: cmsData?.space_section_title ?? "",
       title_ar: cmsData?.space_section_title_ar ?? "",
+      background: singleMediaWithoutType(cmsData ?? {}, "space_bg_image"),
       list: industries.map((item) => {
         const categories = (item?.categories ?? []).map((cat) => ({
           id: cat?.id,

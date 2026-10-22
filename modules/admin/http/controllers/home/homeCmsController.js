@@ -14,7 +14,7 @@ const {
 } = require("../../request/home/homeCmsRequest");
 const { validationResult } = require("express-validator");
 
-const fileFields = ["cta_media_path"];
+const fileFields = ["cta_media_path", "space_bg_image"];
 
 class HomeCmsController {
   static async get(req, res) {

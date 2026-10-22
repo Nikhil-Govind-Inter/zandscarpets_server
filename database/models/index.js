@@ -10,6 +10,7 @@ const defineFooterMedia = require("./siteSettings/footerMedia");
 const definePage = require("./masters/page");
 const defineBanners = require("./siteSettings/banners");
 const defineAdsBanner = require("./masters/AdsBanner");
+const defineSeasonalOffer = require("./masters/seasonalOffer");
 const defineFaqs = require("./masters/faqs");
 const defineIndustry = require("./masters/industry");
 const defineOurFeatures = require("./masters/ourFeatures");
@@ -84,6 +85,7 @@ const models = {
   Page: definePage(sequelize),
   Banners: defineBanners(sequelize),
   AdsBanner: defineAdsBanner(sequelize),
+  SeasonalOffer: defineSeasonalOffer(sequelize),
   Faqs: defineFaqs(sequelize),
   Industry: defineIndustry(sequelize),
 

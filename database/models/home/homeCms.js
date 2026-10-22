@@ -117,6 +117,11 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      // background image for the "Built for Every Space" section; falls back to a static image on the storefront when not set
+      space_bg_image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       tableName: "home_cms",
