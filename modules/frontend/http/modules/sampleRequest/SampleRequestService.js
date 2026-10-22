@@ -2,6 +2,7 @@ const { QueryTypes } = require("sequelize");
 const { models, sequelize } = require("../../../../../database/models");
 const Mailer = require("../../../../../services/mailerServices");
 const Logger = require("../../../../../config/logger");
+const { verifyRecaptchaToken } = require("../../../../../services/recaptchaService");
 const { HttpError } = require("../../traits/HttpError");
 const { message } = require("./sampleRequestMessages");
 
@@ -51,6 +52,8 @@ class SampleRequestService {
   }
 
   static async create(payload, lang = "en") {
+    await verifyRecaptchaToken(payload.recaptcha_token, { action: "sample_request" });
+
     const [category] = await sequelize.query(
       `SELECT id, title FROM product_categories
        WHERE slug = :slug AND is_active = true AND deleted_at IS NULL`,

@@ -39,6 +39,9 @@ const validationRequestPost = [
     .bail()
     .isLength({ max: 2000 })
     .withMessage((_, { req }) => message(req, "requirementsMax")),
+  body("recaptcha_token")
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "recaptchaRequired")),
 ];
 
 module.exports = { validationRequestPost };

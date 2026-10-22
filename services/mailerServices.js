@@ -1,12 +1,24 @@
 const Logger = require("../config/logger");
 const { models } = require("../database/models");
 const { createMailTransport } = require("./mailTransportFactory");
-const { EMAIL_FROM, EMAIL_FROM_NAME } = require("../constants");
+const { EMAIL_FROM, EMAIL_FROM_NAME, BASE_URL } = require("../constants");
 
 const { transporter, options: transportOptions } = createMailTransport();
 
-const escapeHtml = (value) =>
-  String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+const { renderEmailLayout } = require("./mailTemplates/layout");
+const { escapeHtml, oneLine, formatDateTime } = require("./mailTemplates/utils");
+const { formatReferenceId } = require("./mailTemplates/referenceId");
+
+// Quote line items -> the layout's Product / Variant / Qty table.
+const quoteItems = (items) =>
+  (items || []).map((item) => ({ product: item.product_title, variant: item.variant_label, qty: item.quantity }));
+
+// "<strong>Acacia Deck Tiles</strong>" for a single product, "<strong>3 products</strong>" otherwise.
+const quoteProductsHtml = (items) => {
+  const list = items || [];
+  if (list.length === 1) return `<strong>${escapeHtml(list[0].product_title)}</strong>`;
+  return `<strong>${list.length} products</strong>`;
+};
 
 // Transient network/soft-bounce errors worth a bounded retry; permanent
 // failures (bad auth 535, invalid recipient 550, etc.) fail fast instead.
@@ -80,14 +92,14 @@ class MailerService {
     return MailerService.sendEmail({
       toEmail,
       subject: "Your password reset code",
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Password reset code</h2>
-          <p>Use the code below to reset your admin password. This code expires in 5 minutes.</p>
-          <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px;">${escapeHtml(otp)}</p>
-          <p>If you did not request this, you can safely ignore this email.</p>
-        </div>
-      `,
+      htmlContent: renderEmailLayout({
+        title: "Password Reset Code",
+        preheader: "Your Z&S admin password reset code",
+        introHtml: "Use the code below to reset your admin password. This code expires in 5 minutes.",
+        bodyHtml: `<p style="margin: 0 0 25px; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #0066b3">${escapeHtml(otp)}</p>
+                <p style="margin: 0 0 25px; font-size: 13px; color: #555555">If you did not request this, you can safely ignore this email.</p>`,
+        cta: null,
+      }),
     });
   }
 
@@ -98,22 +110,28 @@ class MailerService {
    */
   static async sendContactEnquiryAdminNotification(enquiry) {
     const adminEmail = await MailerService.getFromEmail();
+    const referenceId = formatReferenceId("contact", enquiry.id);
     return MailerService.sendEmail({
       toEmail: adminEmail,
-      subject: `New Contact Enquiry from ${enquiry.name}`.replace(/[\r\n]+/g, " "),
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
-          <h2>New contact enquiry received</h2>
-          <table style="width:100%; border-collapse: collapse;">
-            <tr><td style="padding:6px 0;"><strong>Name</strong></td><td>${escapeHtml(enquiry.name)}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Email</strong></td><td>${escapeHtml(enquiry.email)}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Phone</strong></td><td>${escapeHtml(enquiry.phone)}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Requirements</strong></td><td>${escapeHtml(enquiry.requirements)}</td></tr>
-            ${enquiry.file ? `<tr><td style="padding:6px 0;"><strong>Attachment</strong></td><td>Attached</td></tr>` : ""}
-          </table>
-          <p>Submitted on ${new Date(enquiry.createdAt || Date.now()).toLocaleString()}.</p>
-        </div>
-      `,
+      subject: oneLine(`New Contact Enquiry (${referenceId}) from ${enquiry.name}`),
+      htmlContent: renderEmailLayout({
+        title: "New Contact Enquiry",
+        preheader: `New contact enquiry from ${enquiry.name}`,
+        introHtml: `A new enquiry has been submitted through the website contact form. Reference <strong>${escapeHtml(referenceId)}</strong>.`,
+        detailsTitle: "Enquiry Details",
+        details: [
+          { label: "Name", value: enquiry.name },
+          { label: "Mobile", value: enquiry.phone },
+          { label: "Email", value: enquiry.email, href: `mailto:${enquiry.email}` },
+          enquiry.file
+            ? { label: "Attachment", value: "Download file", href: `${BASE_URL}/${enquiry.file}` }
+            : { label: "Attachment", value: "None" },
+          { label: "Submitted on", value: formatDateTime(enquiry.createdAt) },
+        ],
+        messageTitle: "Requirements",
+        message: enquiry.requirements,
+        cta: { label: `Reply to ${enquiry.name}`, href: `mailto:${enquiry.email}` },
+      }),
       replyTo: enquiry.email,
     });
   }
@@ -122,17 +140,24 @@ class MailerService {
    * Sends a "we've received your enquiry" confirmation to the submitter.
    */
   static async sendContactEnquiryConfirmation(enquiry) {
+    const referenceId = formatReferenceId("contact", enquiry.id);
     return MailerService.sendEmail({
       toEmail: enquiry.email,
       toName: enquiry.name,
-      subject: "We've received your enquiry",
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Thanks for reaching out, ${escapeHtml(enquiry.name)}!</h2>
-          <p>We've received your enquiry and our team will get back to you shortly.</p>
-          <p style="color:#555;">Your message: "${escapeHtml(enquiry.requirements)}"</p>
-        </div>
-      `,
+      subject: `Enquiry Received (${referenceId})`,
+      htmlContent: renderEmailLayout({
+        title: "Enquiry Received",
+        preheader: "Thank you for contacting Z&S Carpets",
+        greeting: { name: enquiry.name, referenceId },
+        introHtml: "Thank you for reaching out to us. Our team will review your requirements and get back to you within 24 hours.",
+        details: [
+          { label: "Mobile", value: enquiry.phone },
+          { label: "Email", value: enquiry.email },
+          { label: "Attachment", value: enquiry.file ? "Received" : "None" },
+        ],
+        messageTitle: "Your Requirements",
+        message: enquiry.requirements,
+      }),
     });
   }
 
@@ -141,27 +166,26 @@ class MailerService {
    */
   static async sendSampleRequestAdminNotification(request) {
     const adminEmail = await MailerService.getFromEmail();
-    const row = (label, value) =>
-      value
-        ? `<tr><td style="padding:6px 0;"><strong>${label}</strong></td><td>${escapeHtml(value)}</td></tr>`
-        : "";
+    const referenceId = formatReferenceId("sample", request.id);
     return MailerService.sendEmail({
       toEmail: adminEmail,
-      subject: `New Sample Request from ${request.name}`.replace(/[\r\n]+/g, " "),
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
-          <h2>New sample request received</h2>
-          <table style="width:100%; border-collapse: collapse;">
-            ${row("Name", request.name)}
-            ${row("Phone", request.phone)}
-            ${row("Email", request.email)}
-            ${row("Company", request.company_name)}
-            ${row("Category", request.category_title)}
-            ${row("Product", request.product_title)}
-          </table>
-          <p>Submitted on ${new Date(request.createdAt || Date.now()).toLocaleString()}.</p>
-        </div>
-      `,
+      subject: oneLine(`New Sample Request (${referenceId}) from ${request.name}`),
+      htmlContent: renderEmailLayout({
+        title: "New Sample Request",
+        preheader: `Sample request for ${request.product_title} from ${request.name}`,
+        introHtml: `A new sample request has been submitted for <strong>${escapeHtml(request.product_title)}</strong>. Reference <strong>${escapeHtml(referenceId)}</strong>.`,
+        detailsTitle: "Request Details",
+        details: [
+          { label: "Category", value: request.category_title },
+          { label: "Product", value: request.product_title },
+          { label: "Name", value: request.name },
+          { label: "Company", value: request.company_name },
+          { label: "Mobile", value: request.phone },
+          { label: "Email", value: request.email, href: `mailto:${request.email}` },
+          { label: "Submitted on", value: formatDateTime(request.createdAt) },
+        ],
+        cta: { label: `Reply to ${request.name}`, href: `mailto:${request.email}` },
+      }),
       replyTo: request.email,
     });
   }
@@ -170,17 +194,25 @@ class MailerService {
    * Sends a "we've received your sample request" confirmation to the requester.
    */
   static async sendSampleRequestConfirmation(request) {
+    const referenceId = formatReferenceId("sample", request.id);
     return MailerService.sendEmail({
       toEmail: request.email,
       toName: request.name,
-      subject: "We've received your sample request",
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Thanks, ${escapeHtml(request.name)}!</h2>
-          <p>We've received your sample request and our team will get in touch shortly.</p>
-          ${request.product_title ? `<p style="color:#555;">Product: ${escapeHtml(request.product_title)}</p>` : ""}
-        </div>
-      `,
+      subject: `Sample Request Received (${referenceId})`,
+      htmlContent: renderEmailLayout({
+        title: "Sample Request Received",
+        preheader: `We've received your sample request for ${request.product_title}`,
+        greeting: { name: request.name, referenceId },
+        introHtml: `Thank you for requesting a sample of our <strong>${escapeHtml(request.product_title)}</strong>. Our team will get in touch within 24 hours to arrange it.`,
+        detailsTitle: "Your Request Details",
+        details: [
+          { label: "Category", value: request.category_title },
+          { label: "Product", value: request.product_title },
+          { label: "Mobile", value: request.phone },
+          { label: "Email", value: request.email },
+          { label: "Company", value: request.company_name },
+        ],
+      }),
     });
   }
 
@@ -189,26 +221,27 @@ class MailerService {
    */
   static async sendDownloadRequestAdminNotification(request) {
     const adminEmail = await MailerService.getFromEmail();
-    const row = (label, value) =>
-      value
-        ? `<tr><td style="padding:6px 0;"><strong>${label}</strong></td><td>${escapeHtml(value)}</td></tr>`
-        : "";
+    const referenceId = formatReferenceId("download", request.id);
+    const file = request.download_title || request.product_title;
     return MailerService.sendEmail({
       toEmail: adminEmail,
-      subject: `New Download Request from ${request.name}`.replace(/[\r\n]+/g, " "),
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
-          <h2>New download request received</h2>
-          <table style="width:100%; border-collapse: collapse;">
-            ${row("Name", request.name)}
-            ${row("Phone", request.phone)}
-            ${row("Email", request.email)}
-            ${row("Company", request.company_name)}
-            ${row("File", request.download_title || request.product_title)}
-          </table>
-          <p>Submitted on ${new Date(request.createdAt || Date.now()).toLocaleString()}.</p>
-        </div>
-      `,
+      subject: oneLine(`New Download Request (${referenceId}) from ${request.name}`),
+      htmlContent: renderEmailLayout({
+        title: "New Download Request",
+        preheader: `Download request for ${file} from ${request.name}`,
+        introHtml: `A new download request has been submitted for <strong>${escapeHtml(file)}</strong>. Please send the file to the requester. Reference <strong>${escapeHtml(referenceId)}</strong>.`,
+        detailsTitle: "Request Details",
+        details: [
+          { label: "File", value: file },
+          { label: "Source", value: request.download_id ? "Downloads library" : "Product datasheet" },
+          { label: "Name", value: request.name },
+          { label: "Company", value: request.company_name },
+          { label: "Mobile", value: request.phone },
+          { label: "Email", value: request.email, href: `mailto:${request.email}` },
+          { label: "Submitted on", value: formatDateTime(request.createdAt) },
+        ],
+        cta: { label: `Reply to ${request.name}`, href: `mailto:${request.email}` },
+      }),
       replyTo: request.email,
     });
   }
@@ -217,63 +250,53 @@ class MailerService {
    * Sends a "we've received your download request" confirmation to the requester.
    */
   static async sendDownloadRequestConfirmation(request) {
+    const referenceId = formatReferenceId("download", request.id);
+    const file = request.download_title || request.product_title;
     return MailerService.sendEmail({
       toEmail: request.email,
       toName: request.name,
-      subject: "We've received your request",
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Thanks, ${escapeHtml(request.name)}!</h2>
-          <p>We've received your request and our team will send you the file shortly.</p>
-          ${request.download_title || request.product_title ? `<p style="color:#555;">File: ${escapeHtml(request.download_title || request.product_title)}</p>` : ""}
-        </div>
-      `,
+      subject: `Download Request Received (${referenceId})`,
+      htmlContent: renderEmailLayout({
+        title: "Download Request Received",
+        preheader: `We've received your request for ${file}`,
+        greeting: { name: request.name, referenceId },
+        introHtml: `Thank you for your interest${file ? ` in <strong>${escapeHtml(file)}</strong>` : ""}. Our team will send the file to your email shortly.`,
+        detailsTitle: "Your Request Details",
+        details: [
+          { label: "File", value: file },
+          { label: "Company", value: request.company_name },
+          { label: "Mobile", value: request.phone },
+          { label: "Email", value: request.email },
+        ],
+      }),
     });
   }
 
   /**
    * Notifies the site admin of a new quote request (reply-to is the requester).
-   * Builds one row per line item, unlike the single-product siblings above.
+   * Lists every line item, unlike the single-product siblings above.
    */
   static async sendQuoteRequestAdminNotification(quoteRequest) {
     const adminEmail = await MailerService.getFromEmail();
-    const itemRows = (quoteRequest.items || [])
-      .map(
-        (item) => `
-          <tr>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.product_title)}</td>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.variant_label || "-")}</td>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${item.quantity}</td>
-          </tr>`,
-      )
-      .join("");
-
     return MailerService.sendEmail({
       toEmail: adminEmail,
-      subject: `New Quote Request (${quoteRequest.reference_code}) from ${quoteRequest.name}`.replace(/[\r\n]+/g, " "),
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
-          <h2>New quote request received</h2>
-          <p>Reference: <strong>${escapeHtml(quoteRequest.reference_code)}</strong></p>
-          <table style="width:100%; border-collapse: collapse;">
-            <tr><td style="padding:6px 0;"><strong>Name</strong></td><td>${escapeHtml(quoteRequest.name)}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Phone</strong></td><td>${escapeHtml(quoteRequest.phone)}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Email</strong></td><td>${escapeHtml(quoteRequest.email)}</td></tr>
-            ${quoteRequest.company_name ? `<tr><td style="padding:6px 0;"><strong>Company</strong></td><td>${escapeHtml(quoteRequest.company_name)}</td></tr>` : ""}
-            ${quoteRequest.message ? `<tr><td style="padding:6px 0;"><strong>Message</strong></td><td>${escapeHtml(quoteRequest.message)}</td></tr>` : ""}
-          </table>
-          <h3>Items</h3>
-          <table style="width:100%; border-collapse: collapse;">
-            <tr>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Product</th>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Variant</th>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Qty</th>
-            </tr>
-            ${itemRows}
-          </table>
-          <p>Submitted on ${new Date(quoteRequest.createdAt || Date.now()).toLocaleString()}.</p>
-        </div>
-      `,
+      subject: oneLine(`New Quote Request (${quoteRequest.reference_code}) from ${quoteRequest.name}`),
+      htmlContent: renderEmailLayout({
+        title: "New Quote Request",
+        preheader: `Quote request ${quoteRequest.reference_code} from ${quoteRequest.name}`,
+        introHtml: `A new quote request has been submitted for ${quoteProductsHtml(quoteRequest.items)}. Reference <strong>${escapeHtml(quoteRequest.reference_code)}</strong>.`,
+        detailsTitle: "Inquiry Details",
+        details: [
+          { label: "Name", value: quoteRequest.name },
+          { label: "Company", value: quoteRequest.company_name },
+          { label: "Mobile", value: quoteRequest.phone },
+          { label: "Email", value: quoteRequest.email, href: `mailto:${quoteRequest.email}` },
+          { label: "Submitted on", value: formatDateTime(quoteRequest.createdAt) },
+        ],
+        items: quoteItems(quoteRequest.items),
+        message: quoteRequest.message,
+        cta: { label: `Reply to ${quoteRequest.name}`, href: `mailto:${quoteRequest.email}` },
+      }),
       replyTo: quoteRequest.email,
     });
   }
@@ -283,37 +306,23 @@ class MailerService {
    * including the generated reference code so they can quote it in follow-ups.
    */
   static async sendQuoteRequestConfirmation(quoteRequest) {
-    const itemRows = (quoteRequest.items || [])
-      .map(
-        (item) => `
-          <tr>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.product_title)}</td>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${escapeHtml(item.variant_label || "-")}</td>
-            <td style="padding:6px 0; border-bottom:1px solid #eee;">${item.quantity}</td>
-          </tr>`,
-      )
-      .join("");
-
     return MailerService.sendEmail({
       toEmail: quoteRequest.email,
       toName: quoteRequest.name,
       subject: `Inquiry Received (${quoteRequest.reference_code})`,
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Thanks, ${escapeHtml(quoteRequest.name)}!</h2>
-          <p>Hello, <strong>${escapeHtml(quoteRequest.name)}</strong><br/>(ID - ${escapeHtml(quoteRequest.reference_code)})</p>
-          <p>We've received your quote request. Our team will get back to you within 24 hours.</p>
-          <table style="width:100%; border-collapse: collapse;">
-            <tr>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Product</th>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Variant</th>
-              <th style="text-align:left; padding:6px 0; border-bottom:2px solid #ddd;">Qty</th>
-            </tr>
-            ${itemRows}
-          </table>
-          ${quoteRequest.message ? `<p style="color:#555;">Your message: "${escapeHtml(quoteRequest.message)}"</p>` : ""}
-        </div>
-      `,
+      htmlContent: renderEmailLayout({
+        title: "Inquiry Received",
+        preheader: "Thank you for your inquiry with Z&S Carpets",
+        greeting: { name: quoteRequest.name, referenceId: quoteRequest.reference_code },
+        introHtml: `Thank you for your inquiry about our ${quoteProductsHtml(quoteRequest.items)}. Our team will get back to you within 24 hours with a detailed response.`,
+        details: [
+          { label: "Mobile", value: quoteRequest.phone },
+          { label: "Email", value: quoteRequest.email },
+          { label: "Company", value: quoteRequest.company_name },
+        ],
+        items: quoteItems(quoteRequest.items),
+        message: quoteRequest.message,
+      }),
     });
   }
 }

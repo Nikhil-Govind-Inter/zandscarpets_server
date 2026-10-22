@@ -2,6 +2,7 @@ const { QueryTypes } = require("sequelize");
 const { models, sequelize } = require("../../../../../database/models");
 const Mailer = require("../../../../../services/mailerServices");
 const Logger = require("../../../../../config/logger");
+const { verifyRecaptchaToken } = require("../../../../../services/recaptchaService");
 const { HttpError } = require("../../traits/HttpError");
 const { message } = require("./downloadRequestMessages");
 
@@ -15,6 +16,8 @@ class DownloadRequestService {
   // Same "lead capture, no automatic file" flow as SampleRequest: saved, the admin is notified,
   // the requester gets a confirmation — the file itself is sent by hand, never auto-attached.
   static async create(payload, lang = "en") {
+    await verifyRecaptchaToken(payload.recaptcha_token, { action: "download_request" });
+
     let download_id = null;
     let download_title = null;
     let product_id = null;

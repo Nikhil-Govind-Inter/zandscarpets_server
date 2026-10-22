@@ -16,6 +16,8 @@ const MESSAGES = {
     alreadySubmitted: "We have already received an enquiry from this email. Our team will get back to you soon",
     created: "Thank you for contacting us. We will get back to you as soon as possible",
     validationFailed: "Please correct the highlighted fields",
+    recaptchaRequired: "reCAPTCHA verification is required",
+    recaptchaFailed: "We couldn't verify your request. Please try again",
     uploadFailed: "The file could not be uploaded",
   },
   ar: {
@@ -33,6 +35,8 @@ const MESSAGES = {
     alreadySubmitted: "لقد استلمنا استفسارًا سابقًا من هذا البريد الإلكتروني. سيتواصل معك فريقنا قريبًا",
     created: "شكرًا لتواصلك معنا. سنعاود التواصل معك في أقرب وقت ممكن",
     validationFailed: "يرجى تصحيح الحقول المحددة",
+    recaptchaRequired: "التحقق من reCAPTCHA مطلوب",
+    recaptchaFailed: "تعذّر التحقق من طلبك. يرجى المحاولة مرة أخرى",
     uploadFailed: "تعذّر رفع الملف",
   },
 };

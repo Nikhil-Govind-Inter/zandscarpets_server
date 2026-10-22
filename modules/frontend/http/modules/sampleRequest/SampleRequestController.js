@@ -57,6 +57,13 @@ class SampleRequestController {
         status: HTTP_STATUS.CREATED,
       });
     } catch (error) {
+      if (error.errorCode === "RECAPTCHA_FAILED") {
+        return ApiResponse.error(res, {
+          message: message(lang, "recaptchaFailed"),
+          status: error.statusCode,
+          error_code: error.errorCode,
+        });
+      }
       if (error.fieldErrors) {
         return ApiResponse.error(res, {
           message: message(lang, "validationFailed"),

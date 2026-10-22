@@ -43,6 +43,13 @@ class ContactEnquiryController {
         status: HTTP_STATUS.CREATED,
       });
     } catch (error) {
+      if (error.errorCode === "RECAPTCHA_FAILED") {
+        return ApiResponse.error(res, {
+          message: message(lang, "recaptchaFailed"),
+          status: error.statusCode,
+          error_code: error.errorCode,
+        });
+      }
       return ErrorHandler.handleControllerError(error, res, "ContactEnquiryController");
     }
   }

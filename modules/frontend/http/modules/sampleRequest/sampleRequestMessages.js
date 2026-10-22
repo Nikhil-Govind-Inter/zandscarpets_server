@@ -15,6 +15,8 @@ const MESSAGES = {
     productInvalid: "The selected product is not available in this category",
     created: "Thank you. We have received your sample request and will get back to you soon",
     validationFailed: "Please correct the highlighted fields",
+    recaptchaRequired: "reCAPTCHA verification is required",
+    recaptchaFailed: "We couldn't verify your request. Please try again",
   },
   ar: {
     nameRequired: "الاسم مطلوب",
@@ -31,6 +33,8 @@ const MESSAGES = {
     productInvalid: "المنتج المحدد غير متاح في هذه الفئة",
     created: "شكرًا لك. لقد استلمنا طلب العينة وسنتواصل معك قريبًا",
     validationFailed: "يرجى تصحيح الحقول المحددة",
+    recaptchaRequired: "التحقق من reCAPTCHA مطلوب",
+    recaptchaFailed: "تعذّر التحقق من طلبك. يرجى المحاولة مرة أخرى",
   },
 };
 

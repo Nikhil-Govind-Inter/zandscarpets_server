@@ -51,6 +51,9 @@ const validationRequestPost = [
     .bail()
     .matches(SLUG)
     .withMessage((_, { req }) => message(req, "productInvalid")),
+  body("recaptcha_token")
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "recaptchaRequired")),
 ];
 
 module.exports = { validationRequestPost };

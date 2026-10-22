@@ -56,6 +56,9 @@ const validationRequestPost = [
     }
     return true;
   }),
+  body("recaptcha_token")
+    .notEmpty()
+    .withMessage((_, { req }) => message(req, "recaptchaRequired")),
 ];
 
 module.exports = { validationRequestPost };
