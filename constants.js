@@ -19,6 +19,15 @@ export const SMTP_USER = process.env.SMTP_USER;
 export const SMTP_PASS = process.env.SMTP_PASS;
 export const EMAIL_FROM = process.env.EMAIL_FROM;
 export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME;
+
+export const MAIL_PROVIDER = process.env.MAIL_PROVIDER; // "smtp" (default) | "gmail" | "brevo"
+export const GMAIL_SMTP_USER = process.env.GMAIL_SMTP_USER;
+export const GMAIL_SMTP_PASS = process.env.GMAIL_SMTP_PASS;
+export const BREVO_SMTP_HOST = process.env.BREVO_SMTP_HOST;
+export const BREVO_SMTP_PORT = process.env.BREVO_SMTP_PORT;
+export const BREVO_SMTP_USER = process.env.BREVO_SMTP_USER;
+export const BREVO_SMTP_PASS = process.env.BREVO_SMTP_PASS;
+
 export const BASE_URL = process.env.BASE_URL;
 export const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 

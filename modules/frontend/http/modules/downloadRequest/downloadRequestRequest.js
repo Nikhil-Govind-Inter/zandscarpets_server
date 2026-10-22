@@ -2,6 +2,7 @@ const { body } = require("express-validator");
 const { message } = require("./downloadRequestMessages");
 
 const PHONE_PATTERN = /^[0-9\s\-()+]{7,20}$/;
+const SLUG = /^[a-z0-9-]+$/i;
 
 // Same rules as the contact form / sample request for name, phone, email
 const validationRequestPost = [
@@ -35,12 +36,26 @@ const validationRequestPost = [
     .trim()
     .isLength({ max: 100 })
     .withMessage((_, { req }) => message(req, "companyMax")),
+  // Exactly one of download_id (Downloads master list) or product (a product's own datasheet)
+  // must be present — the request is either "send me this file" or "send me this product's sheet".
   body("download_id")
-    .notEmpty()
-    .withMessage((_, { req }) => message(req, "downloadRequired"))
+    .optional({ values: "falsy" })
     .bail()
     .isInt({ min: 1 })
     .withMessage((_, { req }) => message(req, "downloadInvalid")),
+  body("product")
+    .optional({ values: "falsy" })
+    .trim()
+    .matches(SLUG)
+    .withMessage((_, { req }) => message(req, "productInvalid")),
+  body("download_id").custom((value, { req }) => {
+    const hasDownload = !!value;
+    const hasProduct = !!req.body.product;
+    if (hasDownload === hasProduct) {
+      throw new Error(message(req, "downloadRequired"));
+    }
+    return true;
+  }),
 ];
 
 module.exports = { validationRequestPost };

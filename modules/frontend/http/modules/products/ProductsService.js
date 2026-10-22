@@ -3,7 +3,7 @@ const { models, sequelize } = require("../../../../../database/models");
 const { singleMediaWithoutType } = require("../../traits/mediaButtonHelper");
 const { withVisibility, stripHtml, articleRichText } = require("../../traits/sectionHelpers");
 const { HttpError } = require("../../traits/HttpError");
-const { toPublicFields, absoluteUrl } = require("../../traits/detailFieldsPublic");
+const { toPublicFields } = require("../../traits/detailFieldsPublic");
 const { resolveVariantDetails, resolveProductDetails } = require("../../../../../services/detailsResolverService");
 const MetaTagService = require("../metaTag/MetaTagService");
 
@@ -415,7 +415,6 @@ class ProductsService {
          p.id, p.slug, p.title, p.title_ar, p.short_description, p.short_description_ar,
          p.product_description, p.product_description_ar,
          p.main_media_path, p.media_alt, p.media_alt_ar,
-         p.data_sheet_path, p.data_sheet_original_filename,
          p.product_category_id,
          b.slug AS badge_slug, b.title AS badge_title, b.title_ar AS badge_title_ar
        FROM products p
@@ -566,9 +565,6 @@ class ProductsService {
           media: singleMediaWithoutType(product, "main_media_path", "media_alt", "media_alt_ar"),
           badge: product.badge_slug
             ? { slug: product.badge_slug, title: text(product.badge_title), title_ar: text(product.badge_title_ar) }
-            : null,
-          data_sheet: product.data_sheet_path
-            ? { url: absoluteUrl(product.data_sheet_path), filename: text(product.data_sheet_original_filename) }
             : null,
           categories: categoryChain.map(toOption),
           features: labelsOfType("feature"),

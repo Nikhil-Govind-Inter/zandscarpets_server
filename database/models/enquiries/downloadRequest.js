@@ -15,6 +15,10 @@ module.exports = (sequelize) =>
       company_name: { type: DataTypes.STRING, allowNull: true },
       download_id: { type: DataTypes.INTEGER, allowNull: true },
       download_title: { type: DataTypes.STRING, allowNull: true },
+      // Set instead of download_id/download_title when the request comes from a product's own
+      // datasheet button rather than the Downloads master list (see DownloadRequestService).
+      product_id: { type: DataTypes.INTEGER, allowNull: true },
+      product_title: { type: DataTypes.STRING, allowNull: true },
       deleted_at: { type: DataTypes.DATE },
     },
     {

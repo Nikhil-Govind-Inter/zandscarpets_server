@@ -1,25 +1,31 @@
-const nodemailer = require("nodemailer");
 const Logger = require("../config/logger");
 const { models } = require("../database/models");
-const {
-  EMAIL_FROM,
-  EMAIL_FROM_NAME,
-  SMTP_HOST,
-  SMTP_PORT,
-  SMTP_SECURE,
-  SMTP_USER,
-  SMTP_PASS,
-} = require("../constants");
+const { createMailTransport } = require("./mailTransportFactory");
+const { EMAIL_FROM, EMAIL_FROM_NAME } = require("../constants");
 
-const transporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: Number(SMTP_PORT),
-  secure: SMTP_SECURE === "true",
-  auth: { user: SMTP_USER, pass: SMTP_PASS },
-});
+const { transporter, options: transportOptions } = createMailTransport();
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+
+// Transient network/soft-bounce errors worth a bounded retry; permanent
+// failures (bad auth 535, invalid recipient 550, etc.) fail fast instead.
+const RETRYABLE_ERROR = /ETIMEDOUT|ECONNRESET|ECONNREFUSED|EAI_AGAIN|ESOCKET|421|450|451/i;
+
+async function sendMailWithRetry(mailOptions, { attempts = 3, baseDelayMs = 500 } = {}) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await transporter.sendMail(mailOptions);
+    } catch (error) {
+      lastError = error;
+      const isRetryable = RETRYABLE_ERROR.test(error.code || error.responseCode || error.message || "");
+      if (attempt === attempts || !isRetryable) throw error;
+      await new Promise((resolve) => setTimeout(resolve, baseDelayMs * 2 ** (attempt - 1)));
+    }
+  }
+  throw lastError;
+}
 
 class MailerService {
   /**
@@ -44,12 +50,12 @@ class MailerService {
     const fromEmail = await MailerService.getFromEmail();
     const finalReplyTo = replyTo || fromEmail;
 
-    if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !fromEmail) {
-      throw new Error("Email provider is not configured (missing SMTP_HOST/SMTP_USER/SMTP_PASS/from address)");
+    if (!transportOptions.host || !transportOptions.auth?.user || !transportOptions.auth?.pass || !fromEmail) {
+      throw new Error("Email provider is not configured (missing host/credentials/from address)");
     }
 
     try {
-      const info = await transporter.sendMail({
+      const info = await sendMailWithRetry({
         from: { address: fromEmail, name: EMAIL_FROM_NAME || undefined },
         replyTo: finalReplyTo,
         to: toName ? { address: toEmail, name: toName } : toEmail,
@@ -78,7 +84,7 @@ class MailerService {
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
           <h2>Password reset code</h2>
           <p>Use the code below to reset your admin password. This code expires in 5 minutes.</p>
-          <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px;">${otp}</p>
+          <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px;">${escapeHtml(otp)}</p>
           <p>If you did not request this, you can safely ignore this email.</p>
         </div>
       `,
@@ -94,15 +100,15 @@ class MailerService {
     const adminEmail = await MailerService.getFromEmail();
     return MailerService.sendEmail({
       toEmail: adminEmail,
-      subject: `New Contact Enquiry from ${enquiry.name}`,
+      subject: `New Contact Enquiry from ${enquiry.name}`.replace(/[\r\n]+/g, " "),
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto;">
           <h2>New contact enquiry received</h2>
           <table style="width:100%; border-collapse: collapse;">
-            <tr><td style="padding:6px 0;"><strong>Name</strong></td><td>${enquiry.name}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Email</strong></td><td>${enquiry.email}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Phone</strong></td><td>${enquiry.phone}</td></tr>
-            <tr><td style="padding:6px 0;"><strong>Requirements</strong></td><td>${enquiry.requirements}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Name</strong></td><td>${escapeHtml(enquiry.name)}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Email</strong></td><td>${escapeHtml(enquiry.email)}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Phone</strong></td><td>${escapeHtml(enquiry.phone)}</td></tr>
+            <tr><td style="padding:6px 0;"><strong>Requirements</strong></td><td>${escapeHtml(enquiry.requirements)}</td></tr>
             ${enquiry.file ? `<tr><td style="padding:6px 0;"><strong>Attachment</strong></td><td>Attached</td></tr>` : ""}
           </table>
           <p>Submitted on ${new Date(enquiry.createdAt || Date.now()).toLocaleString()}.</p>
@@ -122,9 +128,9 @@ class MailerService {
       subject: "We've received your enquiry",
       htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>Thanks for reaching out, ${enquiry.name}!</h2>
+          <h2>Thanks for reaching out, ${escapeHtml(enquiry.name)}!</h2>
           <p>We've received your enquiry and our team will get back to you shortly.</p>
-          <p style="color:#555;">Your message: "${enquiry.requirements}"</p>
+          <p style="color:#555;">Your message: "${escapeHtml(enquiry.requirements)}"</p>
         </div>
       `,
     });
@@ -198,7 +204,7 @@ class MailerService {
             ${row("Phone", request.phone)}
             ${row("Email", request.email)}
             ${row("Company", request.company_name)}
-            ${row("File", request.download_title)}
+            ${row("File", request.download_title || request.product_title)}
           </table>
           <p>Submitted on ${new Date(request.createdAt || Date.now()).toLocaleString()}.</p>
         </div>
@@ -219,7 +225,7 @@ class MailerService {
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
           <h2>Thanks, ${escapeHtml(request.name)}!</h2>
           <p>We've received your request and our team will send you the file shortly.</p>
-          ${request.download_title ? `<p style="color:#555;">File: ${escapeHtml(request.download_title)}</p>` : ""}
+          ${request.download_title || request.product_title ? `<p style="color:#555;">File: ${escapeHtml(request.download_title || request.product_title)}</p>` : ""}
         </div>
       `,
     });

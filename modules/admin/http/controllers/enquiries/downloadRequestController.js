@@ -14,7 +14,7 @@ class DownloadRequestController {
     try {
       const result = await paginate(dataModel, req, {
         order: [["createdAt", "DESC"]],
-        searchFields: ["name", "email", "phone", "company_name", "download_title"],
+        searchFields: ["name", "email", "phone", "company_name", "download_title", "product_title"],
       });
       sendSuccessResponse(res, result, "Download requests retrieved successfully");
     } catch (error) {

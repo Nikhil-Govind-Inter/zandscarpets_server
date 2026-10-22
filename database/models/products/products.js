@@ -66,23 +66,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      data_sheet_path: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      data_sheet_original_filename: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      data_sheet_size_bytes: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      data_sheet_mime_type: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: "application/pdf",
-      },
       price: {
         type: DataTypes.DECIMAL,
         allowNull: true,
