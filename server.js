@@ -86,11 +86,8 @@ const startServer = async () => {
       throw dbError;
     }
 
-    // await sequelize.sync({ alter: true });
-    // await createAdminUser();
-    // await policyData();
-    // await seedPages();
-    // await seedMetaTags();
+    await createAdminUser();
+    await seedMetaTags();
 
     // Fail loudly if any routes failed to load during require()
     const routeFailures = backendApi.errorReport ? backendApi._routeErrors : null;
