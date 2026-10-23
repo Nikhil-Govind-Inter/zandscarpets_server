@@ -4,6 +4,8 @@ const PAGE_NAMES = [
   { label: "Services", slug: "services" },
   { label: "Contact", slug: "contact" },
   { label: "Blogs", slug: "blogs" },
+  { label: "Category", slug: "category" },
+  { label: "Products", slug: "products" },
   { label: "Downloads", slug: "downloads" },
   { label: "Privacy Policy", slug: "privacy-policy" },
   { label: "Our Work", slug: "our-work" },

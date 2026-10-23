@@ -42,12 +42,13 @@ class MetaTagController {
    * @route   GET /api/frontend/meta-data?product_id=5
    * @route   GET /api/frontend/meta-data?variant_id=3
    * @route   GET /api/frontend/meta-data?blog_id=outdoor-flooring-dubai
-   * @desc    Get meta data for a page, product, variant or blog (exactly one target)
+   * @route   GET /api/frontend/meta-data?project_id=7
+   * @desc    Get meta data for a page, product, variant, blog or project (exactly one target)
    * @access  Public
    */
   static async common(req, res) {
     try {
-      const provided = ["page", "product_id", "variant_id", "blog_id"].filter(
+      const provided = ["page", "product_id", "variant_id", "blog_id", "project_id"].filter(
         (key) =>
           req.query[key] !== undefined &&
           req.query[key] !== null &&
@@ -56,7 +57,7 @@ class MetaTagController {
 
       if (provided.length !== 1) {
         return ApiResponse.error(res, {
-          message: "Provide exactly one of `page`, `product_id`, `variant_id` or `blog_id`",
+          message: "Provide exactly one of `page`, `product_id`, `variant_id`, `blog_id` or `project_id`",
           status: HTTP_STATUS.BAD_REQUEST,
         });
       }

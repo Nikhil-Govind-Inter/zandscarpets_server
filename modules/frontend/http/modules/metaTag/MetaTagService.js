@@ -27,9 +27,9 @@ class MetaTagService {
 
   /*
    * Resolves SEO meta for one target: a page slug (`page`), a product
-   * (`product_id`), a product variant (`variant_id`) or an individual blog
-   * post (`blog_id`). Exactly one target is expected — the controller
-   * enforces that before this runs.
+   * (`product_id`), a product variant (`variant_id`), an individual blog
+   * post (`blog_id`) or a project (`project_id`). Exactly one target is
+   * expected — the controller enforces that before this runs.
    */
   static async byTarget(req) {
     const lang = req?.query?.lang === "ar" ? "ar" : "en";
@@ -37,6 +37,7 @@ class MetaTagService {
     const productId = Number.parseInt(req?.query?.product_id, 10);
     const variantId = Number.parseInt(req?.query?.variant_id, 10);
     const blogId = String(req?.query?.blog_id || "").trim();
+    const projectId = Number.parseInt(req?.query?.project_id, 10);
 
     let target;
     let where;
@@ -52,9 +53,12 @@ class MetaTagService {
     } else if (blogId) {
       target = `blog:${blogId}`;
       where = { type: "blog", blog_id: blogId };
+    } else if (Number.isInteger(projectId) && projectId > 0) {
+      target = `project:${projectId}`;
+      where = { type: "project", project_id: projectId };
     } else {
       throw new HttpError(
-        "Query param `page`, `product_id`, `variant_id` or `blog_id` is required",
+        "Query param `page`, `product_id`, `variant_id`, `blog_id` or `project_id` is required",
         400,
         "BAD_REQUEST",
       );
@@ -72,6 +76,11 @@ class MetaTagService {
           model: models.ProductVariants,
           as: "variant",
           attributes: ["id", "label"],
+        },
+        {
+          model: models.Projects,
+          as: "project",
+          attributes: ["id", "title", "slug"],
         },
       ],
     });
@@ -92,6 +101,10 @@ class MetaTagService {
           ? { id: meta.variant.id, label: meta.variant.label }
           : null,
       blog: meta.type === "blog" ? meta.blog_id : null,
+      project:
+        meta.type === "project" && meta.project
+          ? { id: meta.project.id, title: meta.project.title, slug: meta.project.slug }
+          : null,
       meta_title: t(lang, meta.meta_title, meta.meta_title_ar),
       meta_description: t(lang, meta.meta_description, meta.meta_description_ar),
       meta_keywords: t(lang, meta.meta_keywords, meta.meta_keywords_ar),

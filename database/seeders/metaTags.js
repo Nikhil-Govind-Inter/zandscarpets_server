@@ -39,6 +39,18 @@ const defaultMetaTags = [
         meta_keywords: "zandscarpets blog, carpet trends, flooring tips",
     },
     {
+        page_name: "category",
+        meta_title: "Categories | Zandscarpets",
+        meta_description: "Browse Zandscarpets' flooring and carpet products by category.",
+        meta_keywords: "zandscarpets categories, carpet categories, flooring categories",
+    },
+    {
+        page_name: "products",
+        meta_title: "Products | Zandscarpets",
+        meta_description: "Browse the full range of carpets and flooring products from Zandscarpets.",
+        meta_keywords: "zandscarpets products, carpets, flooring products",
+    },
+    {
         page_name: "downloads",
         meta_title: "Resources | Zandscarpets",
         meta_description: "Browse Zandscarpets' guides, brochures, and helpful resources on carpets and flooring.",
