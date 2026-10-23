@@ -14,7 +14,7 @@ const cookieParser = require("cookie-parser");
 const { createClient } = require("redis");
 const { connectRedis, disconnectRedis } = require("./config/redisClient");
 const { createAdminUser } = require("./database/seeders/adminUser");
-const { seedPages } = require("./database/seeders/pages");
+const { seedCurrentPages } = require("./database/seeders/pagesCurrent");
 const { seedMetaTags } = require("./database/seeders/metaTags");
 const { PORT, REDIS_URL } = require("./constants");
 
@@ -80,6 +80,7 @@ const startServer = async () => {
     }
 
     await createAdminUser();
+    await seedCurrentPages({ overwrite: false });
     await seedMetaTags();
 
     // Fail loudly if any routes failed to load during require()
