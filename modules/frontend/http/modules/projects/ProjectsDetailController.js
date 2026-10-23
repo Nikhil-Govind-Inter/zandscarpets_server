@@ -6,7 +6,7 @@ const service = require("./ProjectsDetailService");
 class ProjectsDetailController {
   /*
    * @route   GET /api/frontend/projects/:slug
-   * @desc    One active project (404 when missing or inactive)
+   * @desc    One active project incl. its related projects (?limit=6, max 12); 404 when missing or inactive
    * @access  Public
    */
   static async detail(req, res) {
@@ -19,24 +19,6 @@ class ProjectsDetailController {
       });
     } catch (error) {
       return ErrorHandler.handleControllerError(error, res, "projectsDetailController.detail");
-    }
-  }
-
-  /*
-   * @route   GET /api/frontend/projects/:slug/related?limit=6
-   * @desc    Related projects for the "related projects" carousel
-   * @access  Public
-   */
-  static async related(req, res) {
-    try {
-      const { data } = await service.related(req);
-      return ApiResponse.success(res, {
-        message: RESPONSE_MESSAGES.SUCCESS.DATA_RETRIEVED,
-        data,
-        status: HTTP_STATUS.OK,
-      });
-    } catch (error) {
-      return ErrorHandler.handleControllerError(error, res, "projectsDetailController.related");
     }
   }
 }
