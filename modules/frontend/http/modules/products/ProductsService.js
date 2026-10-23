@@ -590,8 +590,8 @@ class ProductsService {
     };
   }
 
-  // Other active products for the "related" carousel: the ones picked in the admin first (in their
-  // order), then the same category, then the latest ones
+  // Active products picked in the admin as related, for the "related" carousel. No fallback: with
+  // no picks the list is empty and the storefront hides the section.
   static async related(req) {
     const slug = String(req?.params?.slug ?? "");
     const limit = Math.min(toPositiveInt(req?.query?.limit, 8), 16);
@@ -609,12 +609,10 @@ class ProductsService {
        FROM products p
        ${CARD_JOINS}
        WHERE p.deleted_at IS NULL AND p.is_active = true AND p.id <> :id
-       ORDER BY
-         (CASE WHEN EXISTS (SELECT 1 FROM product_related_products r WHERE r.product_id = :id AND r.related_product_id = p.id) THEN 0 ELSE 1 END) ASC,
-         (CASE WHEN p.product_category_id = :categoryId THEN 0 ELSE 1 END) ASC,
-         p.sort_order ASC, p.id ASC
+         AND EXISTS (SELECT 1 FROM product_related_products r WHERE r.product_id = :id AND r.related_product_id = p.id)
+       ORDER BY p.sort_order ASC, p.id ASC
        LIMIT :limit`,
-      { replacements: { id: current.id, categoryId: current.product_category_id, limit }, type: QueryTypes.SELECT },
+      { replacements: { id: current.id, limit }, type: QueryTypes.SELECT },
     );
 
     return { data: { products: rows.map(toCard) } };
