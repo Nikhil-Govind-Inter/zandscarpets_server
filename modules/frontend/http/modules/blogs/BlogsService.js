@@ -251,8 +251,8 @@ class BlogsService {
     };
   }
 
-  // Other published posts for the "related" carousel: the ones the admin picked by hand first (in
-  // their order), then the ones sharing the most categories and tags, then the latest ones
+  // Published posts the admin picked by hand for the "related" carousel, in their order. No
+  // fallback: a post with nothing picked returns an empty list
   static async related(req) {
     const slug = String(req?.params?.slug ?? "");
     const limit = Math.min(toPositiveInt(req?.query?.limit, 6), 12);
@@ -265,22 +265,11 @@ class BlogsService {
     if (!current) throw new HttpError("Blog not found", 404, "NOT_FOUND");
 
     const rows = await sequelize.query(
-      `SELECT ${CARD_COLUMNS}
+      `SELECT ${CARD_COLUMNS}, r.sort_order AS related_sort_order
        FROM blogs b
+       JOIN blog_related_map r ON r.related_blog_id = b.id AND r.blog_id = :id
        WHERE ${PUBLISHED} AND b.id <> :id
-       ORDER BY
-         COALESCE((SELECT r.sort_order FROM blog_related_map r
-                   WHERE r.blog_id = :id AND r.related_blog_id = b.id), 2147483647) ASC,
-         (
-           (SELECT COUNT(*) FROM blog_category_map x
-            WHERE x.blog_id = b.id
-              AND x.category_id IN (SELECT category_id FROM blog_category_map WHERE blog_id = :id))
-           +
-           (SELECT COUNT(*) FROM blog_tag_map y
-            WHERE y.blog_id = b.id
-              AND y.tag_id IN (SELECT tag_id FROM blog_tag_map WHERE blog_id = :id))
-         ) DESC,
-         b.published_at DESC, b.id DESC
+       ORDER BY r.sort_order ASC, b.id ASC
        LIMIT :limit`,
       { replacements: { id: current.id, limit }, type: QueryTypes.SELECT },
     );
