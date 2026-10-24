@@ -79,9 +79,9 @@ const startServer = async () => {
       throw dbError;
     }
 
-    await createAdminUser();
-    await seedCurrentPages({ overwrite: false });
-    await seedMetaTags();
+    // await createAdminUser();
+    // await seedCurrentPages({ overwrite: false });
+    // await seedMetaTags();
 
     // Fail loudly if any routes failed to load during require()
     const routeFailures = backendApi.errorReport ? backendApi._routeErrors : null;
