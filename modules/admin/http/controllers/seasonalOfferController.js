@@ -2,6 +2,7 @@ const { models } = require("../../../../database/models");
 const {
   handleFileUploadUpdate,
   handleFileUploadStore,
+  deleteOldFile,
 } = require("../middleware/multerMiddleware");
 const {
   sendErrorResponse,
@@ -54,6 +55,19 @@ class SeasonalOfferController {
           ]);
         }
         await handleFileUploadUpdate(req, seasonalOffer, fileFields);
+        // Badge is optional: if no new file and no existing path was sent
+        // back, the admin removed it — clear it (and its file) instead of
+        // keeping the old value.
+        if (!req.files?.badge_image?.[0] && !req.body.badge_image) {
+          if (seasonalOffer.badge_image) {
+            try {
+              await deleteOldFile(seasonalOffer.badge_image);
+            } catch (error) {
+              console.error("Failed to delete old badge image:", error);
+            }
+          }
+          req.body.badge_image = null;
+        }
         await seasonalOffer.update(req.body);
       }
 
