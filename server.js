@@ -20,7 +20,7 @@ const { PORT, REDIS_URL } = require("./constants");
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8080", "https://zands.admin.intersmarthosting.in"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8080", "https://zands.admin.intersmarthosting.in","https://zands-uat.netlify.app"];
 
 app.use(
   cors({
